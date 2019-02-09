@@ -4,7 +4,6 @@ import re
 
 from setuptools import setup, find_packages
 
-
 # ------------------------------------------------------------------
 #                         HELPER FUNCTIONS
 
@@ -26,6 +25,7 @@ def find_version(*file_paths):
 
     raise RuntimeError("Unable to find version string.")
 
+
 # ------------------------------------------------------------------
 #                          POPULATE SETUP
 
@@ -35,7 +35,7 @@ setup(
     license="LGPLv3 license",
 
     namespace_packages=[
-      "hyo2"
+        "hyo2"
     ],
     packages=find_packages(exclude=[
         "*.tests", "*.tests.*", "tests.*", "tests", "*.test*",
