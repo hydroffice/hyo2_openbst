@@ -2,7 +2,7 @@ The Open BackScatter Toolchain Project
 ======================================
 
 .. image:: https://github.com/hydroffice/hyo2_openbst/raw/master/resources/png/openbst.png
-    :alt: logo
+    :alt: OpenBST logo
 
 |
 
@@ -12,7 +12,11 @@ The Open BackScatter Toolchain Project
 
 .. image:: https://api.codacy.com/project/badge/Grade/13c4893c0a7e45ddb40cfdbddd7091a3
     :target: https://www.codacy.com/app/hydroffice/hyo2_openbst/dashboard
-    :alt: codacy
+    :alt: Codacy
+
+.. image:: https://coveralls.io/repos/github/hydroffice/hyo2_openbst/badge.svg?branch=master
+    :target: https://coveralls.io/github/hydroffice/hyo2_openbst?branch=master
+    :alt: Coveralls
 
 |
 
