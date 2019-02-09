@@ -10,6 +10,14 @@ The Open BackScatter Toolchain Project
     :target: https://www.hydroffice.org/manuals/openbst/index.html
     :alt: Latest Documentation
 
+.. image:: https://ci.appveyor.com/api/projects/status/e73gnrt9n50cu2k5?svg=true
+    :target: https://ci.appveyor.com/project/giumas/hyo2-openbst
+    :alt: AppVeyor Status
+
+.. image:: https://travis-ci.org/hydroffice/hyo2_openbst.svg?branch=master
+     :target: https://travis-ci.org/hydroffice/hyo2_openbst
+     :alt: Travis-CI Status
+
 .. image:: https://api.codacy.com/project/badge/Grade/13c4893c0a7e45ddb40cfdbddd7091a3
     :target: https://www.codacy.com/app/hydroffice/hyo2_openbst/dashboard
     :alt: Codacy
@@ -22,7 +30,7 @@ The Open BackScatter Toolchain Project
 
 * Code Repository: `github <https://github.com/hydroffice/hyo2_openbst>`_
 * Project Page: `url <https://www.hydroffice.org/openbst/main>`_
-* License: `GNU LESSER GENERAL PUBLIC LICENSE version 3 (LGPL v3) <https://github.com/hydroffice/hyo2_openbst/raw/master/LICENSE>`_
+* License: `LGPLv3 <https://github.com/hydroffice/hyo2_openbst/raw/master/LICENSE>`_
 
 |
 
