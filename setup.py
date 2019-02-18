@@ -66,7 +66,7 @@ setup(
     description="Library and Application for the Open BackScatter Toolchain Project.",
     long_description=read(os.path.join(here, "README.rst")),
     url="https://www.hydroffice.org/openbst/main",
-    classifiesr=[  # https://pypi.python.org/pypi?%3Aaction=list_classifiers
+    classifiers=[  # https://pypi.python.org/pypi?%3Aaction=list_classifiers
         "Development Status :: 4 - Beta",
         "Intended Audience :: Science/Research",
         "Natural Language :: English",
@@ -81,5 +81,5 @@ setup(
     ],
     keywords="hydrography ocean mapping acoustic backscatter mosaic reflectivity",
     author="Giuseppe Masetti, Jean-Marie Augustin, Cyrille Poncelet",
-    author_email="gmasetti@ccom.unh.edu, jean.marie.augustin@ifremer.fr, cyrille.poncelet@ifremer.fr>",
+    author_email="gmasetti@ccom.unh.edu, jean.marie.augustin@ifremer.fr, cyrille.poncelet@ifremer.fr",
 )
