@@ -3,7 +3,7 @@ import socket
 import ssl
 import sys
 import traceback
-from urllib.request import urlopen
+from urllib.request import urlopen, Request
 from urllib.error import URLError
 from PySide2 import QtCore, QtGui, QtWidgets
 
@@ -227,20 +227,21 @@ class MainWindow(QtWidgets.QMainWindow):
         new_bugfix = False
         latest_version = None
         try:
-            response = urlopen(app_info.app_latest_url, timeout=1)
-            latest_version = response.read().split()[0].decode()
+            req = Request(app_info.app_latest_url)
+            with urlopen(req, timeout=1) as response:
+                latest_version = response.read().split()[0].decode()
 
-            cur_maj, cur_min, cur_fix = app_info.app_version.split('.')
-            lat_maj, lat_min, lat_fix = latest_version.split('.')
+                cur_maj, cur_min, cur_fix = app_info.app_version.split('.')
+                lat_maj, lat_min, lat_fix = latest_version.split('.')
 
-            if int(lat_maj) > int(cur_maj):
-                new_release = True
+                if int(lat_maj) > int(cur_maj):
+                    new_release = True
 
-            elif (int(lat_maj) == int(cur_maj)) and (int(lat_min) > int(cur_min)):
-                new_release = True
+                elif (int(lat_maj) == int(cur_maj)) and (int(lat_min) > int(cur_min)):
+                    new_release = True
 
-            elif (int(lat_maj) == int(cur_maj)) and (int(lat_min) == int(cur_min)) and (int(lat_fix) > int(cur_fix)):
-                new_bugfix = True
+                elif (int(lat_maj) == int(cur_maj)) and (int(lat_min) == int(cur_min)) and (int(lat_fix) > int(cur_fix)):
+                    new_bugfix = True
 
         except (URLError, ssl.SSLError, socket.timeout) as e:
             logger.info("unable to check latest release: %s" % e)
