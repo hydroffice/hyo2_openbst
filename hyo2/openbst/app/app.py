@@ -9,13 +9,13 @@ from hyo2.abc.app.app_style import AppStyle
 from hyo2.openbst.app.main_window import MainWindow
 
 
-def set_logging(default_logging=logging.WARNING, hyo2_logging=logging.INFO, figleaf_logging=logging.DEBUG):
+def set_logging(default_logging=logging.WARNING, hyo2_logging=logging.INFO, openbst_logging=logging.DEBUG):
     logging.basicConfig(
         level=default_logging,
         format="%(levelname)-9s %(name)s.%(funcName)s:%(lineno)d > %(message)s"
     )
     logging.getLogger("hyo2").setLevel(hyo2_logging)
-    logging.getLogger("hyo2.openbst").setLevel(figleaf_logging)
+    logging.getLogger("hyo2.openbst").setLevel(openbst_logging)
 
 
 set_logging()

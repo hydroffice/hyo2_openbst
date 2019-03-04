@@ -8,7 +8,7 @@ from hyo2.openbst.lib.sources.layer_type import LayerType
 
 if TYPE_CHECKING:
     # noinspection PyUnresolvedReferences
-    from hyo2.figleaf.lib.sources.layer import Layer
+    from hyo2.openbst.lib.sources.layer import Layer
 
 
 class LayerPlot:

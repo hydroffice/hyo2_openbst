@@ -10,7 +10,7 @@ from hyo2.openbst.app.tools.abstract_tool import AbstractTool
 
 if TYPE_CHECKING:
     # noinspection PyUnresolvedReferences
-    from hyo2.figleaf.app.tabs.processing_tab import ProcessingTab
+    from hyo2.openbst.app.tabs.processing_tab import ProcessingTab
 
 logger = logging.getLogger(__name__)
 
@@ -93,5 +93,5 @@ class ModifyTool(AbstractTool):
         Helper.explore_folder("https://www.hydroffice.org/manuals/figleaf/user_manual_2_3_4_modify_tool.html")
 
     def closeEvent(self, event: QtCore.QEvent) -> None:
-        self.main_wdg.modify_act.setChecked(False)
+        self.main_wdg.edit_products_bar.modify_act.setChecked(False)
         super().closeEvent(event)

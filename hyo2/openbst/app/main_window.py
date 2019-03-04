@@ -55,8 +55,14 @@ class MainWindow(QtWidgets.QMainWindow):
         # create menu
         self.menu_root = self.menuBar()
         self.menu_file = self.menu_root.addMenu("File")
+        self.menu_file_raw = self.menu_file.addMenu("Raw Data")
+        self.menu_file_products = self.menu_file.addMenu("Raster/Vector")
         self.menu_view = self.menu_root.addMenu("View")
+        self.menu_view_raw = self.menu_view.addMenu("Raw Data")
+        self.menu_view_products = self.menu_view.addMenu("Raster/Vector")
         self.menu_edit = self.menu_root.addMenu("Edit")
+        self.menu_edit_raw = self.menu_edit.addMenu("Raw Data")
+        self.menu_edit_products = self.menu_edit.addMenu("Raster/Vector")
         self.menu_setup = self.menu_root.addMenu("Setup")
         self.menu_help = self.menu_root.addMenu("Help")
         self.menu_setup_layout = None
@@ -201,7 +207,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.set_toolbars_icon_size(new_size)
 
     def set_toolbars_icon_size(self, icon_size: int) -> None:
-        # self.tab_processing.set_toolbars_icon_size(icon_size)
+        self.tab_processing.set_toolbars_icon_size(icon_size)
         self.tab_info.set_toolbars_icon_size(icon_size)
 
     # ### TAB SWITCHERS ###
@@ -301,14 +307,14 @@ class MainWindow(QtWidgets.QMainWindow):
         """ actions to be done before close the app """
 
         reply = QtWidgets.QMessageBox.Yes
-        # if self.ask_quit and self.prj.has_modified_layers():
-        #     reply = self.do_you_really_want(text="quit\nwithout saving your last changes")
+        if self.ask_quit and self.prj.has_modified_layers():
+            reply = self.do_you_really_want(text="quit\nwithout saving your last changes")
 
         if reply == QtWidgets.QMessageBox.Yes:
 
             # store current tab
             self.settings.setValue("tabs/icon_size", int(self.tabs.iconSize().width()))
-            # self.settings.setValue("toolbars/icon_size", self.tab_processing.toolbars_icon_size())
+            self.settings.setValue("toolbars/icon_size", self.tab_processing.toolbars_icon_size())
             self.settings.setValue("main_window/state", self.saveState())
             self.settings.setValue("main_window/geometry", self.saveGeometry())
 
