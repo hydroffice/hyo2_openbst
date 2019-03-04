@@ -2,6 +2,7 @@ import os
 from hyo2.abc.app.app_info import AppInfo
 from hyo2.openbst import name
 from hyo2.openbst import __version__
+from hyo2.openbst.lib.plotting import Plotting
 
 
 app_info = AppInfo()
@@ -29,3 +30,36 @@ app_info.app_icon_path = os.path.join(app_info.app_media_path, "app_icon.png")
 # icon size
 app_info.app_tabs_icon_size = 36
 app_info.app_toolbars_icon_size = 24
+
+# APPENDED to the AppInfo class
+
+# button size
+app_info.app_button_height = 24
+
+app_info.plot_font_size = 9
+app_info.plot_rc_context = {
+        'font.family': 'sans-serif',
+        'font.sans-serif': ['Tahoma', 'Bitstream Vera Sans', 'Lucida Grande', 'Verdana'],
+        'font.size': app_info.plot_font_size,
+        'figure.titlesize': app_info.plot_font_size + 1,
+        'axes.labelsize': app_info.plot_font_size,
+        'legend.fontsize': app_info.plot_font_size,
+        'xtick.labelsize': app_info.plot_font_size - 1,
+        'ytick.labelsize': app_info.plot_font_size - 1,
+        'axes.linewidth': 0.5,
+        'axes.xmargin': 0.01,
+        'axes.ymargin': 0.01,
+        'lines.linewidth': 1.0,
+        'grid.alpha': 0.2,
+    }
+
+app_info.plot_bathy_cmap = Plotting.default_cmap
+app_info.plot_imagery_cmap = Plotting.default_cmap
+
+# settings
+
+app_info.key_show_welcome_dialog = "show_welcome_dialog"
+app_info.key_max_undo_steps = "max_undo_steps"
+app_info.key_show_mouse_patch = "show_mouse_patch"
+app_info.key_raster_import_folder = "raster_import_folder"
+app_info.key_raster_export_folder = "raster_export_folder"

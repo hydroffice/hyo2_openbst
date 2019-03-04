@@ -15,9 +15,9 @@ from hyo2.abc.app.qt_progress import QtProgress
 
 from hyo2.openbst.lib import lib_info
 from hyo2.openbst.app import app_info
-# from hyo2.figleaf.lib.project import Project
-# from hyo2.figleaf.app.dialogs.welcome_dialog import WelcomeDialog
-# from hyo2.figleaf.app.tabs.processing_tab import ProcessingTab
+from hyo2.openbst.lib.project import Project
+from hyo2.openbst.app.dialogs.welcome_dialog import WelcomeDialog
+from hyo2.openbst.app.tabs.processing_tab import ProcessingTab
 
 
 logger = logging.getLogger(__name__)
@@ -44,8 +44,8 @@ class MainWindow(QtWidgets.QMainWindow):
         self.resize(1200, 800)
         self.setContentsMargins(0, 0, 0, 0)
 
-        # # project stuff
-        # self.prj = Project(progress=QtProgress(self))
+        # project stuff
+        self.prj = Project(progress=QtProgress(self))
 
         # set status bar
         self.statusBar()
@@ -71,12 +71,12 @@ class MainWindow(QtWidgets.QMainWindow):
         self.tabs = QtWidgets.QTabWidget()
         # tabs icon sizes
         self.set_tabs_icon_size(int(self.settings.value("tabs/icon_size", app_info.app_tabs_icon_size)))
-        # # - Processing
-        # self.tab_processing = ProcessingTab(main_win=self)
-        # self.tab_processing_idx = self.tabs.insertTab(0, self.tab_processing,
-        #                                               QtGui.QIcon(os.path.join(app_info.app_media_path,
-        #                                                                        "tab_processing.png")), "")
-        # self.tabs.setTabToolTip(self.tab_processing_idx, "Processing")
+        # - Processing
+        self.tab_processing = ProcessingTab(main_win=self)
+        self.tab_processing_idx = self.tabs.insertTab(0, self.tab_processing,
+                                                      QtGui.QIcon(os.path.join(app_info.app_media_path,
+                                                                               "tab_processing.png")), "")
+        self.tabs.setTabToolTip(self.tab_processing_idx, "Processing")
         # - info
         self.tab_info = InfoTab(main_win=self, lib_info=lib_info, app_info=app_info,
                                 with_online_manual=True,
@@ -120,10 +120,10 @@ class MainWindow(QtWidgets.QMainWindow):
     def show(self):
         super().show()
 
-        # show_welcome = self.settings.value(app_info.key_show_welcome_dialog, "True")
-        # if show_welcome == "True":
-        #     welcome_dialog = WelcomeDialog(parent=self)
-        #     welcome_dialog.exec_()
+        show_welcome = self.settings.value(app_info.key_show_welcome_dialog, "True")
+        if show_welcome == "True":
+            welcome_dialog = WelcomeDialog(parent=self)
+            welcome_dialog.exec_()
 
     def add_menus(self):
 
