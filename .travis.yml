@@ -3,13 +3,13 @@ language: cpp  # Travis-CI does not currently support Python and Mac OS X
 matrix:
   include:
     - os: linux
-      dist: trusty
-      env: PYTHON_VERSION=3.6
-    - os: linux
       dist: xenial
       env: PYTHON_VERSION=3.6
     - os: linux
       dist: trusty
+      env: PYTHON_VERSION=3.6
+    - os: linux
+      dist: xenial
       env: PYTHON_VERSION=3.7
     - os: osx
       env: PYTHON_VERSION=3.6
@@ -17,10 +17,10 @@ matrix:
   fast_finish: true
   allow_failures:
     - os: linux
-      dist: xenial
+      dist: trusty
       env: PYTHON_VERSION=3.6
     - os: linux
-      dist: trusty
+      dist: xenial
       env: PYTHON_VERSION=3.7
     - os: osx
       env: PYTHON_VERSION=3.6
@@ -60,6 +60,7 @@ install:
 
 script:
   - coverage run --source hyo2 setup.py test
+  - coverage report -m
 
 after_success:
   - coveralls
