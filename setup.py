@@ -41,7 +41,12 @@ setup(
         "*.tests", "*.tests.*", "tests.*", "tests", "*.test*",
     ]),
     package_data={
-
+        "": [
+            'openbst/app/media/*.*',
+            'openbst/app/dialogs/array_explorer/media/*.*',
+            'openbst/notebooks/*.ipynb',
+            'openbst/notebooks/images/*.*',
+        ],
     },
     zip_safe=False,
     ext_modules=None,
