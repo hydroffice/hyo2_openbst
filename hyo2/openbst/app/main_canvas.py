@@ -1,73 +1,34 @@
 import logging
 import os
-
-import numpy as np
 from PySide2 import QtCore, QtGui, QtWidgets
-import matplotlib
+import numpy as np
+
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
-from matplotlib import rc_context
-import matplotlib.pyplot as plt
-from matplotlib import image
 from matplotlib import patches
+from matplotlib import rc_context
+from matplotlib import image
 
-from hyo2.openbst.app.tabs.abstract_tab import AbstractTab
 from hyo2.openbst.app import app_info
+from hyo2.openbst.app.bars.navigation_toolbar import NavToolbar
 from hyo2.openbst.lib.sources.layer import EraseType, FilterType, CloneType
 from hyo2.openbst.lib.plotting import Plotting
-from hyo2.openbst.app.tabs.navigation_toolbar import NavToolbar
-from hyo2.openbst.app.tabs.bars.file_products_bar import FileProductsBar
-from hyo2.openbst.app.tabs.bars.view_products_bar import ViewProductsBar
-from hyo2.openbst.app.tabs.bars.edit_products_bar import EditProductsBar
-from hyo2.openbst.app.tabs.bars.app_settings_bar import AppSettingsBar
-from hyo2.openbst.app.tools.shift_tool import ShiftTool
-from hyo2.openbst.app.tools.colors_tool import ColorsTool
-from hyo2.openbst.app.tools.erase_tool import EraseTool
-from hyo2.openbst.app.tools.modify_tool import ModifyTool
-from hyo2.openbst.app.tools.clone_tool import CloneTool
-from hyo2.openbst.lib.sources.layer import Layer
 
-matplotlib.use('Qt5Agg')
-matplotlib.rcParams['axes.formatter.useoffset'] = False
 logger = logging.getLogger(__name__)
 
 
-class ProcessingTab(AbstractTab):
+class MainCanvas(QtWidgets.QFrame):
 
-    def __init__(self, main_win, tab_name="Processing Tab"):
-        AbstractTab.__init__(self, main_win=main_win, tab_name=tab_name)
-
-        # Enable dragging and dropping onto the GUI
-        self.setAcceptDrops(True)
-
-        icon_size = QtCore.QSize(app_info.app_toolbars_icon_size, app_info.app_toolbars_icon_size)
+    def __init__(self, main_win, main_tab, prj):
+        super().__init__(parent=main_tab)
+        self.main_win = main_win
+        self.main_tab = main_tab
+        self.prj = prj
+        self.settings = QtCore.QSettings()
 
         # empty arrays
         self.nan_arr = np.zeros((1, 1), dtype=np.float32)
         self.nan_arr[:] = np.nan
-
-        # ### CANVAS ###
-        self.canvas = None
-
-        # ### FILE PRODUCTS BAR ###
-        self.file_products_bar = FileProductsBar(main_win=self.main_win, processing_tab=self,
-                                                 canvas=self.canvas, prj=self.prj)
-        self.addToolBar(self.file_products_bar)
-
-        # ### VIEW PRODUCTS TOOLBAR ###
-        self.view_products_bar = ViewProductsBar(main_win=self.main_win, processing_tab=self,
-                                                 canvas=self.canvas, prj=self.prj)
-        self.addToolBar(self.view_products_bar)
-
-        # ### EDIT PRODUCTS TOOLBAR ###
-        self.edit_products_bar = EditProductsBar(main_win=self.main_win, processing_tab=self,
-                                                 canvas=self.canvas, prj=self.prj)
-        self.addToolBar(self.edit_products_bar)
-
-        # ### APP SETTINGS BAR ###
-        self.app_settings_bar = AppSettingsBar(main_win=self.main_win, processing_tab=self,
-                                               canvas=self.canvas, prj=self.prj)
-        self.addToolBar(self.app_settings_bar)
 
         # ### CANVAS ###
         self.colorbar = None
@@ -82,14 +43,16 @@ class ProcessingTab(AbstractTab):
                                              edgecolor=Plotting.magenta_color, linestyle=":", linewidth=1.0)
         self.mouse_patch.set_visible(False)
 
+        self.layout = QtWidgets.QVBoxLayout()
+        self.setLayout(self.layout)
         self.plot_layout = QtWidgets.QHBoxLayout()
-        self.frame_layout.addLayout(self.plot_layout)
+        self.layout.addLayout(self.plot_layout)
 
         with rc_context(app_info.plot_rc_context):
             self.f = Figure()
             self.f.patch.set_alpha(0.0)
             self.c = FigureCanvas(self.f)
-            self.c.setParent(self.frame)
+            self.c.setParent(self)
             # noinspection PyUnresolvedReferences
             self.c.setFocusPolicy(QtCore.Qt.ClickFocus)  # key for press events!!!
             self.c.setFocus()
@@ -107,76 +70,8 @@ class ProcessingTab(AbstractTab):
             self.c.mpl_connect('axes_leave_event', self.on_leave_axes)
 
         # navigation
-        self.nav = NavToolbar(canvas=self.c, parent=self.frame)
-        self.frame_layout.addWidget(self.nav)
-
-        # ### TOOLS ###
-        self.colors_tool = ColorsTool(main_wdg=self, parent=self)
-        self.shift_tool = ShiftTool(main_wdg=self, parent=self)
-        self.erase_tool = EraseTool(main_wdg=self, parent=self)
-        self.modify_tool = ModifyTool(main_wdg=self, parent=self)
-        self.clone_tool = CloneTool(main_wdg=self, parent=self)
-
-        self.on_empty_draw()
-
-    # ### ICON SIZE ###
-
-    def toolbars_icon_size(self) -> int:
-        return self.file_products_bar.iconSize().height()
-
-    def set_toolbars_icon_size(self, icon_size: int) -> None:
-        self.file_products_bar.setIconSize(QtCore.QSize(icon_size, icon_size))
-
-    # ### DRAG&DROP ###
-
-    def dragEnterEvent(self, e):
-        if e.mimeData().hasUrls:
-            e.accept()
-        else:
-            e.ignore()
-
-    def dragMoveEvent(self, e):
-        if e.mimeData().hasUrls:
-            e.accept()
-        else:
-            e.ignore()
-
-    def dropEvent(self, e):
-        """Drop files directly onto the widget"""
-        if e.mimeData().hasUrls:
-            # noinspection PyUnresolvedReferences
-            e.setDropAction(QtCore.Qt.CopyAction)
-            e.accept()
-
-            # Workaround for OSx dragging and dropping
-            for url in e.mimeData().urls():
-
-                dropped_path = str(url.toLocalFile())
-                dropped_path = os.path.abspath(dropped_path).replace("\\", "/")
-                logger.debug("dropped path: %s" % dropped_path)
-
-                if os.path.isdir(dropped_path):
-                    msg = 'Drag-and-drop is not currently possible with a folder!\n\n' \
-                          'Dropped path: %s\n' % dropped_path
-                    # noinspection PyCallByClass
-                    QtWidgets.QMessageBox.critical(self, "Drag-and-drop Error", msg, QtWidgets.QMessageBox.Ok)
-                    return
-
-                if os.path.splitext(dropped_path)[-1] in [".bag", ".tif", ".tiff", ".asc", ]:
-                    self.load_raster(path=dropped_path)
-
-                else:
-                    msg = 'Drag & drop is currently only possible with the following file extensions:\n' \
-                          '- BAG: .bag -> bathymetry + uncertainty\n' \
-                          '- GeoTiff: .tif, .tiff -> (assumed) backscatter mosaic\n' \
-                          '- ASCII Grid: .asc + .prj -> user prompted for type selection\n\n' \
-                          'Dropped path:\n' \
-                          '%s' % dropped_path
-                    # noinspection PyCallByClass
-                    QtWidgets.QMessageBox.critical(self, "Input Error", msg, QtWidgets.QMessageBox.Ok)
-
-        else:
-            e.ignore()
+        self.nav = NavToolbar(canvas=self.c, parent=self)
+        self.layout.addWidget(self.nav)
 
     # ### PLOT INTERACTION ###
 
@@ -212,20 +107,20 @@ class ProcessingTab(AbstractTab):
 
         visible = False
         radius = 0
-        if self.erase_tool.isVisible():
+        if self.main_tab.erase_tool.isVisible():
             visible = True
-            radius = self.erase_tool.size.value()
-        elif self.modify_tool.isVisible():
+            radius = self.main_tab.erase_tool.size.value()
+        elif self.main_tab.modify_tool.isVisible():
             visible = True
-            radius = self.modify_tool.size.value()
-        elif self.clone_tool.isVisible():
+            radius = self.main_tab.modify_tool.size.value()
+        elif self.main_tab.clone_tool.isVisible():
             visible = True
-            radius = self.clone_tool.size.value()
+            radius = self.main_tab.clone_tool.size.value()
 
         if visible:
             # logger.debug("visible")
             if (event.xdata is not None) and (event.ydata is not None):
-                layer = self.current_layer()
+                layer = self.main_tab.current_layer()
                 dx_2, dy_2 = layer.dcdr2dxdy(dc=radius, dr=radius)
                 self.mouse_patch.xy = event.xdata - dx_2, event.ydata - dy_2
                 self.mouse_patch.set_width(dx_2 * 2)
@@ -278,9 +173,9 @@ class ProcessingTab(AbstractTab):
         last_y = event.mouseevent.ydata
         logger.debug("ground coords -> x: %.3f, y: %.3f" % (last_x, last_y))  # click location
 
-        if self.erase_tool.isVisible():
+        if self.main_tab.erase_tool.isVisible():
 
-            erase_str = self.erase_tool.algo.currentText()
+            erase_str = self.main_tab.erase_tool.algo.currentText()
             if erase_str == "Plain":
                 erase_type = EraseType.Plain
             elif erase_str == "Triangle":
@@ -293,18 +188,18 @@ class ProcessingTab(AbstractTab):
                 raise RuntimeError("Unknown filter: %s" % erase_str)
 
             other_layers = None
-            if self.erase_tool.all_layers.isChecked():
+            if self.main_tab.erase_tool.all_layers.isChecked():
                 other_layers = self.other_raster_layers_for_current_key()
 
-            self.current_layer().erase(pnt_x=last_x, pnt_y=last_y,
-                                       sz=self.erase_tool.size.value(),
-                                       use_radius=self.erase_tool.radius.isChecked(),
-                                       erase_type=erase_type,
-                                       other_layers=other_layers)
+            self.main_tab.current_layer().erase(pnt_x=last_x, pnt_y=last_y,
+                                                sz=self.main_tab.erase_tool.size.value(),
+                                                use_radius=self.main_tab.erase_tool.radius.isChecked(),
+                                                erase_type=erase_type,
+                                                other_layers=other_layers)
 
-        elif self.modify_tool.isVisible():
+        elif self.main_tab.modify_tool.isVisible():
 
-            filter_str = self.modify_tool.algo.currentText()
+            filter_str = self.main_tab.modify_tool.algo.currentText()
             if filter_str == "Gaussian Filter":
                 filter_type = FilterType.Gaussian
             elif filter_str == "Median Filter":
@@ -312,14 +207,14 @@ class ProcessingTab(AbstractTab):
             else:
                 raise RuntimeError("Unknown filter: %s" % filter_str)
 
-            self.current_layer().modify(pnt_x=last_x, pnt_y=last_y,
-                                        sz=self.modify_tool.size.value(),
-                                        use_radius=self.modify_tool.radius.isChecked(),
-                                        whole=self.modify_tool.whole.isChecked(),
-                                        filter_type=filter_type,
-                                        random_noise=self.modify_tool.noise.isChecked())
+            self.main_tab.current_layer().modify(pnt_x=last_x, pnt_y=last_y,
+                                                 sz=self.main_tab.modify_tool.size.value(),
+                                                 use_radius=self.main_tab.modify_tool.radius.isChecked(),
+                                                 whole=self.main_tab.modify_tool.whole.isChecked(),
+                                                 filter_type=filter_type,
+                                                 random_noise=self.main_tab.modify_tool.noise.isChecked())
 
-        elif self.clone_tool.isVisible():
+        elif self.main_tab.clone_tool.isVisible():
 
             if len(self.cln_x) == 0:
                 msg = "First middle click on the area to be used\n as a reference for the cloning."
@@ -327,7 +222,7 @@ class ProcessingTab(AbstractTab):
                 QtWidgets.QMessageBox.information(self, "Cloning Info", msg, QtWidgets.QMessageBox.Ok)
                 return
 
-            filter_str = self.clone_tool.algo.currentText()
+            filter_str = self.main_tab.clone_tool.algo.currentText()
             if filter_str == "Bell":
                 filter_type = CloneType.Bell
             elif filter_str == "Hill":
@@ -347,11 +242,11 @@ class ProcessingTab(AbstractTab):
             else:
                 raise RuntimeError("Unknown filter: %s" % filter_str)
 
-            self.current_layer().clone(pnt_x=last_x, pnt_y=last_y,
-                                       clone_x=self.cln_x[0], clone_y=self.cln_y[0],
-                                       sz=self.clone_tool.size.value(),
-                                       use_radius=self.clone_tool.radius.isChecked(),
-                                       filter_type=filter_type)
+            self.main_tab.current_layer().clone(pnt_x=last_x, pnt_y=last_y,
+                                                clone_x=self.cln_x[0], clone_y=self.cln_y[0],
+                                                sz=self.main_tab.clone_tool.size.value(),
+                                                use_radius=self.main_tab.clone_tool.radius.isChecked(),
+                                                filter_type=filter_type)
 
         else:  # nothing to do
             return
@@ -372,151 +267,7 @@ class ProcessingTab(AbstractTab):
             self.mouse_patch.set_visible(False)
             event.canvas.draw_idle()
 
-    def change_layer(self, layer):
-
-        if layer.is_raster():
-            logger.debug("is raster")
-            self.mat_ax.set_data(layer.array)
-            self.mat_ax.set_extent(layer.plot.extent)
-            self.mat_ax.set_clim(layer.plot.clim)
-            self.mat_ax.set_cmap(layer.plot.cmap)
-            if layer.plot.with_shading:
-                self.shd_ax.set_data(layer.plot.shaded)
-            else:
-                self.shd_ax.set_data(self.nan_arr)
-            self.shd_ax.set_extent(layer.plot.extent)
-
-            if layer.undo_array_available():
-                self.activate_undo()
-            else:
-                self.deactivate_undo()
-
-            self.set_plot_aspect_and_positions()
-
-            self.raster_loaded()
-
-        else:
-            self.mat_ax.set_data(self.nan_arr)
-            self.shd_ax.set_data(self.nan_arr)
-
-        if layer.is_vector():
-            self.fts_ax.set_offsets(np.vstack((layer.features_x, layer.features_y)).T)
-
-            self.vector_loaded()
-
-        else:
-            self.fts_ax.set_offsets(np.vstack(([], [])).T)
-
-        self.c.resize_event()
-        self.close_all_tools()
-
-    # ### BUTTONS' ACTIONS ###
-
-    def raster_loaded(self):
-        self.file_products_bar.raster_loaded()
-        self.view_products_bar.raster_loaded()
-        self.edit_products_bar.raster_loaded()
-
-    def raster_unloaded(self):
-        self.file_products_bar.raster_unloaded()
-        self.view_products_bar.raster_unloaded()
-        self.edit_products_bar.raster_unloaded()
-
-    def vector_loaded(self):
-        self.file_products_bar.vector_loaded()
-        self.view_products_bar.vector_loaded()
-        self.edit_products_bar.vector_loaded()
-
-    def vector_unloaded(self):
-        self.file_products_bar.vector_unloaded()
-        self.view_products_bar.vector_unloaded()
-        self.edit_products_bar.vector_unloaded()
-
-    # ### TOOLS ###
-
-    def close_all_tools(self):
-        self.edit_products_bar.uncheck_all_tools()
-
-        self.close_colors_tool()
-        self.close_shift_tool()
-        self.close_erase_tool()
-        self.close_modify_tool()
-        self.close_clone_tool()
-
-    # colors
-
-    def open_colors_tool(self):
-        self.close_shift_tool()
-        self.close_erase_tool()
-        self.close_modify_tool()
-        self.close_clone_tool()
-        self.colors_tool.show()
-
-    def close_colors_tool(self):
-        self.colors_tool.hide()
-
-    # shift
-
-    def open_shift_tool(self):
-        self.close_colors_tool()
-        self.close_erase_tool()
-        self.close_modify_tool()
-        self.close_clone_tool()
-        self.shift_tool.show()
-
-    def close_shift_tool(self):
-        self.shift_tool.hide()
-
-    # erase
-
-    def open_erase_tool(self):
-        self.close_colors_tool()
-        self.close_shift_tool()
-        self.close_modify_tool()
-        self.close_clone_tool()
-        self.erase_tool.show()
-
-    def close_erase_tool(self):
-        self.erase_tool.hide()
-
-    # modify
-
-    def open_modify_tool(self):
-        self.close_colors_tool()
-        self.close_shift_tool()
-        self.close_erase_tool()
-        self.close_clone_tool()
-        self.modify_tool.show()
-
-    def close_modify_tool(self):
-        self.modify_tool.hide()
-
-    # clone
-
-    def open_clone_tool(self):
-        self.close_colors_tool()
-        self.close_shift_tool()
-        self.close_erase_tool()
-        self.close_modify_tool()
-        self.clone_tool.show()
-
-    def close_clone_tool(self):
-        self.clone_tool.hide()
-
-    # undo
-
-    def activate_undo(self):
-        self.edit_products_bar.activate_undo()
-
-    def deactivate_undo(self):
-        self.edit_products_bar.deactivate_undo()
-
     # # ### PLOTTING ###
-
-    def set_plot_aspect_and_positions(self):
-        self.data_ax.set_aspect(1.0)
-        self.data_ax.set_position([0.06, 0.02, 0.85, 0.94])
-        self.colorbar.ax.set_position([0.93, 0.02, 0.03, 0.94])
 
     def on_empty_draw(self):
 
@@ -567,7 +318,7 @@ class ProcessingTab(AbstractTab):
 
                 if self.prj.has_layers():
 
-                    layer = self.file_products_bar.current_layer()
+                    layer = self.main_tab.file_products_bar.current_layer()
 
                     col, row = layer.xy2cr(x=easting, y=northing)
                     if (col is None) or (row is None):
@@ -599,6 +350,11 @@ class ProcessingTab(AbstractTab):
 
             self.c.draw()
 
+    def set_plot_aspect_and_positions(self):
+        self.data_ax.set_aspect(1.0)
+        self.data_ax.set_position([0.06, 0.02, 0.85, 0.94])
+        self.colorbar.ax.set_position([0.93, 0.02, 0.03, 0.94])
+
     def redraw(self):
         """Redraw the canvases, update the locators"""
 
@@ -622,11 +378,39 @@ class ProcessingTab(AbstractTab):
 
             self.c.draw_idle()
 
+    def change_layer(self, layer):
+
+        if layer.is_raster():
+            logger.debug("is raster")
+            self.mat_ax.set_data(layer.array)
+            self.mat_ax.set_extent(layer.plot.extent)
+            self.mat_ax.set_clim(layer.plot.clim)
+            self.mat_ax.set_cmap(layer.plot.cmap)
+            if layer.plot.with_shading:
+                self.shd_ax.set_data(layer.plot.shaded)
+            else:
+                self.shd_ax.set_data(self.nan_arr)
+            self.shd_ax.set_extent(layer.plot.extent)
+
+            self.set_plot_aspect_and_positions()
+
+        else:
+            self.mat_ax.set_data(self.nan_arr)
+            self.shd_ax.set_data(self.nan_arr)
+
+        if layer.is_vector():
+            self.fts_ax.set_offsets(np.vstack((layer.features_x, layer.features_y)).T)
+
+        else:
+            self.fts_ax.set_offsets(np.vstack(([], [])).T)
+
+        self.c.resize_event()
+
     def update_plot_data(self):
-        layer_key = self.current_layer_key()
+        layer_key = self.main_tab.current_layer_key()
         logger.debug("update %s" % (layer_key, ))
 
-        layer = self.current_layer()
+        layer = self.main_tab.current_layer()
 
         if layer.is_raster():
             self.mat_ax.set_data(layer.array)
@@ -638,22 +422,22 @@ class ProcessingTab(AbstractTab):
                 self.shd_ax.set_data(self.nan_arr)
 
             if layer.undo_array_available():
-                self.activate_undo()
+                self.main_tab.activate_undo()
             else:
-                self.deactivate_undo()
+                self.main_tab.deactivate_undo()
 
         if layer.is_vector():
             self.fts_ax.set_offsets(np.vstack((layer.features_x, layer.features_y)).T)
 
             if layer.undo_features_available():
-                self.activate_undo()
+                self.main_tab.activate_undo()
             else:
-                self.deactivate_undo()
+                self.main_tab.deactivate_undo()
 
         self.redraw()
 
     def update_shading(self):
-        layer = self.current_layer()
+        layer = self.main_tab.current_layer()
         if layer.plot.with_shading:
             self.shd_ax.set_data(layer.plot.shaded)
         else:
@@ -669,11 +453,5 @@ class ProcessingTab(AbstractTab):
         self.mat_ax.set_clim(self.current_layer().plot.clim)
         self.redraw()
 
-    def current_layer_key(self) -> str:
-        return self.file_products_bar.current_layer_key()
-
-    def current_layer(self) -> Layer:
-        return self.file_products_bar.current_layer()
-
-    def current_layer_array(self) -> np.ndarray:
-        return self.file_products_bar.current_layer_array()
+    def resize_event(self):
+        self.c.resize_event()

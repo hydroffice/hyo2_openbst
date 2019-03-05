@@ -17,7 +17,7 @@ from hyo2.openbst.lib import lib_info
 from hyo2.openbst.app import app_info
 from hyo2.openbst.lib.project import Project
 from hyo2.openbst.app.dialogs.welcome_dialog import WelcomeDialog
-from hyo2.openbst.app.tabs.processing_tab import ProcessingTab
+from hyo2.openbst.app.main_tab import MainTab
 
 
 logger = logging.getLogger(__name__)
@@ -78,7 +78,7 @@ class MainWindow(QtWidgets.QMainWindow):
         # tabs icon sizes
         self.set_tabs_icon_size(int(self.settings.value("tabs/icon_size", app_info.app_tabs_icon_size)))
         # - Processing
-        self.tab_processing = ProcessingTab(main_win=self)
+        self.tab_processing = MainTab(main_win=self)
         self.tab_processing_idx = self.tabs.insertTab(0, self.tab_processing,
                                                       QtGui.QIcon(os.path.join(app_info.app_media_path,
                                                                                "tab_processing.png")), "")
@@ -246,7 +246,8 @@ class MainWindow(QtWidgets.QMainWindow):
                 elif (int(lat_maj) == int(cur_maj)) and (int(lat_min) > int(cur_min)):
                     new_release = True
 
-                elif (int(lat_maj) == int(cur_maj)) and (int(lat_min) == int(cur_min)) and (int(lat_fix) > int(cur_fix)):
+                elif (int(lat_maj) == int(cur_maj)) and (int(lat_min) == int(cur_min)) \
+                        and (int(lat_fix) > int(cur_fix)):
                     new_bugfix = True
 
         except (URLError, ssl.SSLError, socket.timeout) as e:
@@ -318,7 +319,7 @@ class MainWindow(QtWidgets.QMainWindow):
             self.settings.setValue("main_window/state", self.saveState())
             self.settings.setValue("main_window/geometry", self.saveGeometry())
 
-            # self.prj.close_layers()
+            self.prj.close_layers()
 
             event.accept()
             super().closeEvent(event)

@@ -2,7 +2,7 @@ import logging
 import os
 
 from hyo2.openbst.app import app_info
-from hyo2.openbst.app.tabs.bars.abstract_bar import AbstractBar
+from hyo2.openbst.app.bars.abstract_bar import AbstractBar
 from hyo2.openbst.app.dialogs.settings_dialog import SettingsDialog
 
 from PySide2 import QtGui, QtWidgets

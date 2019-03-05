@@ -1,11 +1,8 @@
 import logging
 import os
 
-import numpy as np
-from hyo2.openbst.lib.sources.layer_type import LayerType
-from hyo2.openbst.lib.sources.layer import Layer
 from hyo2.openbst.app import app_info
-from hyo2.openbst.app.tabs.bars.abstract_bar import AbstractBar
+from hyo2.openbst.app.bars.abstract_bar import AbstractBar
 
 from PySide2 import QtGui, QtWidgets
 

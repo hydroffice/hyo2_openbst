@@ -8,7 +8,7 @@ from hyo2.openbst.lib.sources.layer_type import LayerType
 from hyo2.openbst.lib.sources.format import FormatType
 from hyo2.openbst.lib.sources.layer import Layer
 from hyo2.openbst.app import app_info
-from hyo2.openbst.app.tabs.bars.abstract_bar import AbstractBar
+from hyo2.openbst.app.bars.abstract_bar import AbstractBar
 
 logger = logging.getLogger(__name__)
 
@@ -121,7 +121,7 @@ class FileProductsBar(AbstractBar):
         if len(self.prj.layers_list) == 0:
             self.processing_tab.raster_unloaded()
             self.processing_tab.on_empty_draw()
-            self.processing_tab.c.resize_event()
+            self.canvas.resize_event()
         else:
             self.layers_combo.setCurrentIndex(0)
             self.on_layers_combo(0)
