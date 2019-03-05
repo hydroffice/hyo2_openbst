@@ -1,3 +1,4 @@
+import logging
 import os
 import socket
 import ssl
@@ -7,18 +8,12 @@ from urllib.request import urlopen, Request
 from urllib.error import URLError
 from PySide2 import QtCore, QtGui, QtWidgets
 
-import logging
-
 from hyo2.abc.app.dialogs.exception.exception_dialog import ExceptionDialog
 from hyo2.abc.app.tabs.info.info_tab import InfoTab
-from hyo2.abc.app.qt_progress import QtProgress
-
 from hyo2.openbst.lib import lib_info
 from hyo2.openbst.app import app_info
-from hyo2.openbst.lib.project import Project
 from hyo2.openbst.app.dialogs.welcome_dialog import WelcomeDialog
 from hyo2.openbst.app.main_tab import MainTab
-
 
 logger = logging.getLogger(__name__)
 
@@ -43,9 +38,6 @@ class MainWindow(QtWidgets.QMainWindow):
         self.setMinimumSize(600, 400)
         self.resize(1200, 800)
         self.setContentsMargins(0, 0, 0, 0)
-
-        # project stuff
-        self.prj = Project(progress=QtProgress(self))
 
         # set status bar
         self.statusBar()
@@ -78,11 +70,10 @@ class MainWindow(QtWidgets.QMainWindow):
         # tabs icon sizes
         self.set_tabs_icon_size(int(self.settings.value("tabs/icon_size", app_info.app_tabs_icon_size)))
         # - Processing
-        self.tab_processing = MainTab(main_win=self)
-        self.tab_processing_idx = self.tabs.insertTab(0, self.tab_processing,
-                                                      QtGui.QIcon(os.path.join(app_info.app_media_path,
-                                                                               "tab_processing.png")), "")
-        self.tabs.setTabToolTip(self.tab_processing_idx, "Processing")
+        self.tab_main = MainTab(main_win=self)
+        self.tab_main_idx = self.tabs.insertTab(0, self.tab_main,
+                                                QtGui.QIcon(os.path.join(app_info.app_media_path, "tab_main.png")), "")
+        self.tabs.setTabToolTip(self.tab_main_idx, "Main")
         # - info
         self.tab_info = InfoTab(main_win=self, lib_info=lib_info, app_info=app_info,
                                 with_online_manual=True,
@@ -94,8 +85,7 @@ class MainWindow(QtWidgets.QMainWindow):
                                 with_unh_link=True,
                                 with_license=True)
         self.tab_info_idx = self.tabs.insertTab(1, self.tab_info,
-                                                QtGui.QIcon(os.path.join(app_info.app_media_path,
-                                                                         "tab_info.png")), "")
+                                                QtGui.QIcon(os.path.join(app_info.app_media_path, "tab_info.png")), "")
         self.tabs.setTabToolTip(self.tab_info_idx, "Info")
         # noinspection PyUnresolvedReferences
         self.tabs.currentChanged.connect(self._on_tab_changed)
@@ -198,7 +188,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def resize_toolbars_icons(self) -> None:
         logger.debug("resize tabs icons")
-        cur_size = self.tab_processing.toolbars_icon_size()
+        cur_size = self.tab_main.toolbars_icon_size()
         # noinspection PyCallByClass
         new_size, ret = QtWidgets.QInputDialog.getInt(
             self, "Toolbars", "Set toolbars icon size in pixels:", cur_size, 8, 126)
@@ -207,7 +197,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.set_toolbars_icon_size(new_size)
 
     def set_toolbars_icon_size(self, icon_size: int) -> None:
-        self.tab_processing.set_toolbars_icon_size(icon_size)
+        self.tab_main.set_toolbars_icon_size(icon_size)
         self.tab_info.set_toolbars_icon_size(icon_size)
 
     # ### TAB SWITCHERS ###
@@ -218,8 +208,8 @@ class MainWindow(QtWidgets.QMainWindow):
             self.tabs.currentWidget().redraw()
 
     def switch_to_processing_tab(self) -> None:
-        if self.tabs.currentIndex() != self.tab_processing_idx:
-            self.tabs.setCurrentIndex(self.tab_processing_idx)
+        if self.tabs.currentIndex() != self.tab_main_idx:
+            self.tabs.setCurrentIndex(self.tab_main_idx)
 
     def switch_to_info_tab(self) -> None:
         if self.tabs.currentIndex() != self.tab_info_idx:
@@ -308,18 +298,18 @@ class MainWindow(QtWidgets.QMainWindow):
         """ actions to be done before close the app """
 
         reply = QtWidgets.QMessageBox.Yes
-        if self.ask_quit and self.prj.has_modified_layers():
+        if self.ask_quit and self.tab_main.prj.has_modified_layers():
             reply = self.do_you_really_want(text="quit\nwithout saving your last changes")
 
         if reply == QtWidgets.QMessageBox.Yes:
 
             # store current tab
             self.settings.setValue("tabs/icon_size", int(self.tabs.iconSize().width()))
-            self.settings.setValue("toolbars/icon_size", self.tab_processing.toolbars_icon_size())
+            self.settings.setValue("toolbars/icon_size", self.tab_main.toolbars_icon_size())
             self.settings.setValue("main_window/state", self.saveState())
             self.settings.setValue("main_window/geometry", self.saveGeometry())
 
-            self.prj.close_layers()
+            self.tab_main.prj.close_layers()
 
             event.accept()
             super().closeEvent(event)

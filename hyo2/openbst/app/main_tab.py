@@ -11,11 +11,12 @@ from hyo2.openbst.app.bars.file_products_bar import FileProductsBar
 from hyo2.openbst.app.bars.view_products_bar import ViewProductsBar
 from hyo2.openbst.app.bars.edit_products_bar import EditProductsBar
 from hyo2.openbst.app.bars.app_settings_bar import AppSettingsBar
-from hyo2.openbst.app.tools.shift_tool import ShiftTool
-from hyo2.openbst.app.tools.colors_tool import ColorsTool
-from hyo2.openbst.app.tools.erase_tool import EraseTool
-from hyo2.openbst.app.tools.modify_tool import ModifyTool
-from hyo2.openbst.app.tools.clone_tool import CloneTool
+from hyo2.openbst.app.tools.product_shift_tool import ProductShiftTool
+from hyo2.openbst.app.tools.product_colors_tool import ProductColorsTool
+from hyo2.openbst.app.tools.product_erase_tool import ProductEraseTool
+from hyo2.openbst.app.tools.product_modify_tool import ProductModifyTool
+from hyo2.openbst.app.tools.product_clone_tool import ProductCloneTool
+from hyo2.openbst.lib.project import Project
 from hyo2.openbst.lib.sources.layer import Layer
 
 matplotlib.use('Qt5Agg')
@@ -31,9 +32,7 @@ class MainTab(QtWidgets.QMainWindow):
         self.settings = QtCore.QSettings()
 
         self.main_win = main_win
-        if not hasattr(main_win, "prj"):
-            raise TypeError("Passed invalid reference to the main window: %s" % type(main_win))
-        self.prj = self.main_win.prj
+        self.prj = Project(progress=QtProgress(self))
         self.tab_idx = -1
         self.progress = QtProgress(parent=self)
 
@@ -67,11 +66,16 @@ class MainTab(QtWidgets.QMainWindow):
         self.addToolBar(self.app_settings_bar)
 
         # ### TOOLS ###
-        self.colors_tool = ColorsTool(main_wdg=self, parent=self)
-        self.shift_tool = ShiftTool(main_wdg=self, parent=self)
-        self.erase_tool = EraseTool(main_wdg=self, parent=self)
-        self.modify_tool = ModifyTool(main_wdg=self, parent=self)
-        self.clone_tool = CloneTool(main_wdg=self, parent=self)
+        self.colors_tool = ProductColorsTool(main_win=self.main_win, main_tab=self,
+                                             main_canvas=self.canvas, prj=self.prj)
+        self.shift_tool = ProductShiftTool(main_win=self.main_win, main_tab=self,
+                                           main_canvas=self.canvas, prj=self.prj)
+        self.erase_tool = ProductEraseTool(main_win=self.main_win, main_tab=self,
+                                           main_canvas=self.canvas, prj=self.prj)
+        self.modify_tool = ProductModifyTool(main_win=self.main_win, main_tab=self,
+                                             main_canvas=self.canvas, prj=self.prj)
+        self.clone_tool = ProductCloneTool(main_win=self.main_win, main_tab=self,
+                                           main_canvas=self.canvas, prj=self.prj)
 
         self.on_empty_draw()
 

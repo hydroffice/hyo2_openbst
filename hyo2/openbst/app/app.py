@@ -4,8 +4,8 @@ import traceback
 
 from PySide2 import QtCore, QtWidgets
 
-from hyo2.openbst import name as app_name
 from hyo2.abc.app.app_style import AppStyle
+from hyo2.openbst import name as app_name
 from hyo2.openbst.app.main_window import MainWindow
 
 

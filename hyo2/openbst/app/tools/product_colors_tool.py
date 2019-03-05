@@ -10,16 +10,18 @@ from hyo2.openbst.app import app_info
 from hyo2.openbst.app.tools.abstract_tool import AbstractTool
 
 if TYPE_CHECKING:
-    # noinspection PyUnresolvedReferences
-    from hyo2.openbst.app.tabs.processing_tab import ProcessingTab
+    from hyo2.openbst.app.main_window import MainWindow
+    from hyo2.openbst.app.main_tab import MainTab
+    from hyo2.openbst.app.main_canvas import MainCanvas
+    from hyo2.openbst.lib.project import Project
 
 logger = logging.getLogger(__name__)
 
 
-class ColorsTool(AbstractTool):
+class ProductColorsTool(AbstractTool):
 
-    def __init__(self, main_wdg='ProcessingTab', parent: QtWidgets.QWidget = None) -> None:
-        super().__init__(main_wdg=main_wdg, parent=parent)
+    def __init__(self, main_win: 'MainWindow', main_tab: 'MainTab', main_canvas: 'MainCanvas', prj: 'Project') -> None:
+        super().__init__(main_win=main_win, main_tab=main_tab, main_canvas=main_canvas, prj=prj)
 
         self.setWindowTitle("Colors Tool")
         self.resize(480, 100)
@@ -167,8 +169,8 @@ class ColorsTool(AbstractTool):
 
         vbox.addStretch()
 
-    def show(self):
-        layer = self.main_wdg.current_layer()
+    def show(self) -> None:
+        layer = self.main_tab.current_layer()
 
         # ### COLORMAP ###
 
@@ -260,34 +262,34 @@ class ColorsTool(AbstractTool):
 
     # ### COLORMAP ###
 
-    def on_apply_colormap(self):
+    def on_apply_colormap(self) -> None:
         cmap_key = self.cm.currentText()
         logger.debug("changed colormap: %s" % cmap_key)
 
-        layer = self.main_wdg.current_layer()
+        layer = self.main_tab.current_layer()
         layer.plot.cmap = Plotting.cmaps[cmap_key]
-        self.main_wdg.update_plot_cmap()
+        self.main_tab.update_plot_cmap()
 
-    def on_reset_colormap(self):
-        layer = self.main_wdg.current_layer()
+    def on_reset_colormap(self) -> None:
+        layer = self.main_tab.current_layer()
         layer.plot.init_cmap()
-        self.main_wdg.update_plot_cmap()
+        self.main_tab.update_plot_cmap()
         reset_cmap = Plotting.cmaps.inv[layer.plot.cmap]
         logger.debug("reset colormap: %s" % reset_cmap)
         self.cm.setCurrentText(reset_cmap)
 
-    def on_modified_range(self):
+    def on_modified_range(self) -> None:
         self.min.setStyleSheet("background-color: rgba(255, 255, 153, 255);")
         self.max.setStyleSheet("background-color: rgba(255, 255, 153, 255);")
 
-    def on_apply_range(self):
+    def on_apply_range(self) -> None:
         logger.debug("apply range")
         self.min.setStyleSheet("background-color: rgba(255, 255, 255, 255);")
         self.max.setStyleSheet("background-color: rgba(255, 255, 255, 255);")
 
         min_value = float(self.min.text())
         max_value = float(self.max.text())
-        layer = self.main_wdg.current_layer()
+        layer = self.main_tab.current_layer()
 
         if min_value >= max_value:
             msg = "The selected values are invalid: %f and %f" % (min_value, max_value)
@@ -300,18 +302,18 @@ class ColorsTool(AbstractTool):
 
         layer.plot.array_min = min_value
         layer.plot.array_max = max_value
-        self.main_wdg.update_plot_range()
+        self.main_tab.update_plot_range()
 
-    def on_reset_range(self):
+    def on_reset_range(self) -> None:
         logger.debug("reset range")
-        layer = self.main_wdg.current_layer()
+        layer = self.main_tab.current_layer()
         self.min.setText("%.3f" % layer.array_min)
         self.max.setText("%.3f" % layer.array_max)
         self.on_apply_range()
 
     # ### SHADING ###
 
-    def on_checked_shading(self):
+    def on_checked_shading(self) -> None:
         logger.debug("on checked shading: %s" % self.shade.isChecked())
         if self.shade.isChecked():
             self.shade_exag_lbl.setEnabled(True)
@@ -333,30 +335,30 @@ class ColorsTool(AbstractTool):
 
         self.on_apply_shade()
 
-    def on_modified_shade(self):
+    def on_modified_shade(self) -> None:
         self.shade_exag.setStyleSheet("background-color: rgba(255, 255, 153, 255);")
         self.shade_az.setStyleSheet("background-color: rgba(255, 255, 153, 255);")
         self.shade_elev.setStyleSheet("background-color: rgba(255, 255, 153, 255);")
 
-    def on_apply_shade(self):
+    def on_apply_shade(self) -> None:
         logger.debug("apply shade")
         self.shade_exag.setStyleSheet("background-color: rgba(255, 255, 255, 255);")
         self.shade_az.setStyleSheet("background-color: rgba(255, 255, 255, 255);")
         self.shade_elev.setStyleSheet("background-color: rgba(255, 255, 255, 255);")
 
-        layer = self.main_wdg.current_layer()
+        layer = self.main_tab.current_layer()
         layer.plot.with_shading = self.shade.isChecked()
         layer.plot.shade_exag = float(self.shade_exag.text())
         layer.plot.shade_az = float(self.shade_az.text())
         layer.plot.shade_elev = float(self.shade_elev.text())
         layer.plot.apply_shading()
 
-        self.main_wdg.update_shading()
+        self.main_tab.update_shading()
 
-    def on_reset_shade(self):
+    def on_reset_shade(self) -> None:
         logger.debug("reset shade")
 
-        layer = self.main_wdg.current_layer()
+        layer = self.main_tab.current_layer()
         layer.plot.reset_shading_settings()
 
         self.shade.setChecked(layer.plot.with_shading)
@@ -370,10 +372,10 @@ class ColorsTool(AbstractTool):
     # ### OTHER STUFF ###
 
     @classmethod
-    def click_open_manual(cls):
+    def click_open_manual(cls) -> None:
         logger.debug("open manual")
-        Helper.explore_folder("https://www.hydroffice.org/manuals/figleaf/user_manual_2_3_1_colors_tool.html")
+        Helper.explore_folder("https://www.hydroffice.org/manuals/openbst/user_manual_2_tool_product_colors.html")
 
     def closeEvent(self, event: QtCore.QEvent) -> None:
-        self.main_wdg.edit_products_bar.colors_act.setChecked(False)
+        self.main_tab.edit_products_bar.colors_act.setChecked(False)
         super().closeEvent(event)

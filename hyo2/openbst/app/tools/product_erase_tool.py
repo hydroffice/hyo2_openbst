@@ -9,16 +9,18 @@ from hyo2.openbst.app import app_info
 from hyo2.openbst.app.tools.abstract_tool import AbstractTool
 
 if TYPE_CHECKING:
-    # noinspection PyUnresolvedReferences
-    from hyo2.openbst.app.tabs.processing_tab import ProcessingTab
+    from hyo2.openbst.app.main_window import MainWindow
+    from hyo2.openbst.app.main_tab import MainTab
+    from hyo2.openbst.app.main_canvas import MainCanvas
+    from hyo2.openbst.lib.project import Project
 
 logger = logging.getLogger(__name__)
 
 
-class EraseTool(AbstractTool):
+class ProductEraseTool(AbstractTool):
 
-    def __init__(self, main_wdg='ProcessingTab', parent: QtWidgets.QWidget = None) -> None:
-        super().__init__(main_wdg=main_wdg, parent=parent)
+    def __init__(self, main_win: 'MainWindow', main_tab: 'MainTab', main_canvas: 'MainCanvas', prj: 'Project') -> None:
+        super().__init__(main_win=main_win, main_tab=main_tab, main_canvas=main_canvas, prj=prj)
 
         self.setWindowTitle("Erase Tool")
         self.resize(320, 120)
@@ -80,8 +82,8 @@ class EraseTool(AbstractTool):
 
         vbox.addStretch()
 
-    def show(self):
-        layer = self.main_wdg.current_layer()
+    def show(self) -> None:
+        layer = self.main_tab.current_layer()
 
         if layer.is_vector() and not layer.is_raster():
             self.algo_lbl.setDisabled(True)
@@ -99,10 +101,10 @@ class EraseTool(AbstractTool):
     # ### OTHER STUFF ###
 
     @classmethod
-    def click_open_manual(cls):
+    def click_open_manual(cls) -> None:
         logger.debug("open manual")
-        Helper.explore_folder("https://www.hydroffice.org/manuals/figleaf/user_manual_2_3_3_erase_tool.html")
+        Helper.explore_folder("https://www.hydroffice.org/manuals/openbst/user_manual_2_tool_product_erase.html")
 
     def closeEvent(self, event: QtCore.QEvent) -> None:
-        self.main_wdg.edit_products_bar.erase_act.setChecked(False)
+        self.main_tab.edit_products_bar.erase_act.setChecked(False)
         super().closeEvent(event)

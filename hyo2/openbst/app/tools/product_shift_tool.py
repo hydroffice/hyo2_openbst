@@ -10,16 +10,18 @@ from hyo2.openbst.app import app_info
 from hyo2.abc.lib.helper import Helper
 
 if TYPE_CHECKING:
-    # noinspection PyUnresolvedReferences
-    from hyo2.openbst.app.tabs.processing_tab import ProcessingTab
+    from hyo2.openbst.app.main_window import MainWindow
+    from hyo2.openbst.app.main_tab import MainTab
+    from hyo2.openbst.app.main_canvas import MainCanvas
+    from hyo2.openbst.lib.project import Project
 
 logger = logging.getLogger(__name__)
 
 
-class ShiftTool(AbstractTool):
+class ProductShiftTool(AbstractTool):
 
-    def __init__(self, main_wdg='ProcessingTab', parent: QtWidgets.QWidget = None) -> None:
-        super().__init__(main_wdg=main_wdg, parent=parent)
+    def __init__(self, main_win: 'MainWindow', main_tab: 'MainTab', main_canvas: 'MainCanvas', prj: 'Project') -> None:
+        super().__init__(main_win=main_win, main_tab=main_tab, main_canvas=main_canvas, prj=prj)
 
         self.setWindowTitle("Shift Tool")
         self.resize(240, 100)
@@ -40,6 +42,7 @@ class ShiftTool(AbstractTool):
         validator = QtGui.QDoubleValidator(-99999.0, 99999.0, 9, self.shift)
         validator.setNotation(QtGui.QDoubleValidator.StandardNotation)
         self.shift.setValidator(validator)
+        # noinspection PyUnresolvedReferences
         self.shift.setAlignment(QtCore.Qt.AlignRight | QtCore.Qt.AlignVCenter)
         self.shift.setReadOnly(False)
         self.shift.setFixedWidth(field_sz)
@@ -61,14 +64,14 @@ class ShiftTool(AbstractTool):
         vbox.addStretch()
 
     @classmethod
-    def click_open_manual(cls):
+    def click_open_manual(cls) -> None:
         logger.debug("open manual")
-        Helper.explore_folder("https://www.hydroffice.org/manuals/figleaf/user_manual_2_3_2_shift_tool.html")
+        Helper.explore_folder("https://www.hydroffice.org/manuals/openbst/user_manual_2_tool_product_shift.html")
 
-    def on_modified_shift(self):
+    def on_modified_shift(self) -> None:
         self.shift.setStyleSheet("background-color: rgba(255, 255, 153, 255);")
 
-    def on_apply_shift(self):
+    def on_apply_shift(self) -> None:
         logger.debug("apply shift")
         self.shift.setStyleSheet("background-color: rgba(255, 255, 255, 255);")
 
@@ -82,10 +85,10 @@ class ShiftTool(AbstractTool):
 
         logger.debug("applying shift: %s" % shift_value)
 
-        layer = self.main_wdg.current_layer()
+        layer = self.main_tab.current_layer()
         layer.shift(value=shift_value)
 
-        self.main_wdg.update_plot_data()
+        self.main_tab.update_plot_data()
 
         # noinspection PyUnresolvedReferences
         self.shift.returnPressed.disconnect()
@@ -104,5 +107,5 @@ class ShiftTool(AbstractTool):
         QtWidgets.QMessageBox.information(self, "Shift Applied", msg, QtWidgets.QMessageBox.Ok)
 
     def closeEvent(self, event: QtCore.QEvent) -> None:
-        self.main_wdg.edit_products_bar.shift_act.setChecked(False)
+        self.main_tab.edit_products_bar.shift_act.setChecked(False)
         super().closeEvent(event)
