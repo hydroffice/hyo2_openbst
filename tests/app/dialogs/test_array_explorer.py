@@ -16,7 +16,6 @@ from hyo2.openbst.app.dialogs.array_explorer.array_explorer import ArrayExplorer
 @unittest.skipUnless(Helper.is_windows(), "Windows-only")
 class TestAppArrayExplorer(unittest.TestCase):
 
-
     def test_visibility(self):
 
         # noinspection PyUnresolvedReferences
