@@ -43,6 +43,7 @@ setup(
     package_data={
         "": [
             'openbst/app/media/*.*',
+            'openbst/app/media/LICENSE',
             'openbst/app/dialogs/array_explorer/media/*.*',
             'openbst/notebooks/*.ipynb',
             'openbst/notebooks/images/*.*',

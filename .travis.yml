@@ -62,5 +62,8 @@ install:
 script:
   - py.test --cov=hyo2 tests/
 
+after_script:
+  - coverage report -m
+
 after_success:
   - coveralls
