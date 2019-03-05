@@ -47,8 +47,11 @@ class ArrayExplorer(QtWidgets.QDialog):
 
         # Info
         if self.with_info_button:
-            self.info_action = self.main_tb.addAction(
-                QtGui.QIcon(os.path.join(self.media, 'info.png')), "Info", self.do_info)
+            self.info_action = QtWidgets.QAction(QtGui.QIcon(os.path.join(self.media, 'info.png')), "Info", self)
+            self.info_action.setStatusTip("Show Info")
+            # noinspection PyUnresolvedReferences
+            self.info_action.triggered.connect(self.do_info)
+            self.main_tb.addAction(self.info_action)
             if self.with_menu:
                 self.file_menu.addAction(self.info_action)
 
@@ -102,6 +105,7 @@ class ArrayExplorer(QtWidgets.QDialog):
         self.left_layout.addStretch()
         self.left_label = QtWidgets.QLabel()
         self.left_label.setStyleSheet("font-size: small; color: rgba(25,115,200,255);")
+        # noinspection PyUnresolvedReferences
         self.left_label.setAlignment(QtCore.Qt.AlignCenter)
         self.left_label.setText(self.array_info())
         self.left_layout.addWidget(self.left_label)

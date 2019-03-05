@@ -10,6 +10,9 @@ env:
 
 matrix:
   fast_finish: true
+  include:
+  - os: linux
+    dist: xenial
   allow_failures:
   - os: osx
   - env: PYTHON_VERSION=3.7
