@@ -207,7 +207,7 @@ class MainWindow(QtWidgets.QMainWindow):
         if hasattr(self.tabs.currentWidget(), "redraw"):
             self.tabs.currentWidget().redraw()
 
-    def switch_to_processing_tab(self) -> None:
+    def switch_to_main_tab(self) -> None:
         if self.tabs.currentIndex() != self.tab_main_idx:
             self.tabs.setCurrentIndex(self.tab_main_idx)
 

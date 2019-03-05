@@ -26,9 +26,9 @@ logger = logging.getLogger(__name__)
 
 class MainTab(QtWidgets.QMainWindow):
 
-    def __init__(self, main_win, tab_name: str = "Processing Tab"):
+    def __init__(self, main_win):
         super().__init__(parent=main_win)
-        self.setWindowTitle(tab_name)
+        self.setWindowTitle("Main Tab")
         self.settings = QtCore.QSettings()
 
         self.main_win = main_win

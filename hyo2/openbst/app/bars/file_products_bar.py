@@ -87,7 +87,7 @@ class FileProductsBar(AbstractBar):
     def on_load_product(self) -> None:
         logger.debug("User wants to load raster")
 
-        self.main_win.switch_to_processing_tab()
+        self.main_win.switch_to_main_tab()
 
         # noinspection PyCallByClass
         selection, _ = QtWidgets.QFileDialog.getOpenFileName(self, "Add raster",
