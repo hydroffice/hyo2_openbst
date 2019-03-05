@@ -1,4 +1,3 @@
-sudo: true
 language: cpp  # Travis-CI does not currently support Python and Mac OS X
 
 matrix:
@@ -58,9 +57,12 @@ install:
   - pip install .
   - rm -f $HOME/miniconda/envs/test-environment/qt.conf
   - conda list --show-channel-urls
-  - coverage run --source hyo2 setup.py test
 
 script:
+  - python -m unittest discover
+
+after_script:
+  - coverage run --source hyo2 setup.py test
   - coverage report -m
 
 after_success:
