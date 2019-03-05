@@ -56,14 +56,11 @@ install:
   - pip install https://github.com/hydroffice/hyo2_abc/archive/master.zip
   - pip install .
   - rm -f $HOME/miniconda/envs/test-environment/qt.conf
+  - pip install pytest pytest-cov
   - conda list --show-channel-urls
 
 script:
-  - python -m unittest discover
-
-after_script:
-  - coverage run --source hyo2 setup.py test
-  - coverage report -m
+  - py.test --cov=hyo2 tests/
 
 after_success:
   - coveralls

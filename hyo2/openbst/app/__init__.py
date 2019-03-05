@@ -1,8 +1,8 @@
 import os
+from hyo2.openbst.lib.plotting import Plotting  # on Linux, this must be imported first
 from hyo2.abc.app.app_info import AppInfo
 from hyo2.openbst import name
 from hyo2.openbst import __version__
-from hyo2.openbst.lib.plotting import Plotting
 
 
 app_info = AppInfo()
