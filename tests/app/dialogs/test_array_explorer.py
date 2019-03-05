@@ -6,13 +6,16 @@ from PySide2 import QtCore, QtWidgets
 # import logging
 # logging.basicConfig(level=logging.DEBUG)
 
+from hyo2.abc.lib.helper import Helper
 from hyo2.openbst.lib.sources.format import FormatType
 from hyo2.openbst.lib.sources.layer_type import LayerType
 from hyo2.openbst.lib.sources.layer import Layer
 from hyo2.openbst.app.dialogs.array_explorer.array_explorer import ArrayExplorer
 
 
+@unittest.skipUnless(Helper.is_windows(), "Windows-only")
 class TestAppArrayExplorer(unittest.TestCase):
+
 
     def test_visibility(self):
 
