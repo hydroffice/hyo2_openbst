@@ -59,7 +59,7 @@ class TestLibProject(unittest.TestCase):
         input_path = self.testing.download_test_files(ext=".bag")[0]
         self.assertFalse(Project.is_vr(path=input_path))
 
-    def test_load_from_source(self):
+    def test_load_from_source_and_save(self):
 
         prj = Project()
 
@@ -68,15 +68,34 @@ class TestLibProject(unittest.TestCase):
             prj.load_from_source(input_path)
             self.assertGreater(len(prj.layers_dict), 0)
 
+            output_path = os.path.join(self.testing.output_data_folder(),
+                                       "PRJ_" + os.path.basename(input_path))
+            success = prj.save_layer_by_key(layer_key=list(prj.layers_dict.keys())[0],
+                                            output_path=output_path,
+                                            open_folder=False)
+            self.assertTrue(success)
+
         # GeoTIFF
         for input_path in self.testing.download_test_files(ext=".tif"):
             prj.load_from_source(input_path)
             self.assertGreater(len(prj.layers_dict), 0)
 
+            output_path = os.path.join(self.testing.output_data_folder(),
+                                       "PRJ_" + os.path.basename(input_path))
+            success = prj.save_layer_by_key(layer_key=list(prj.layers_dict.keys())[0],
+                                            output_path=output_path,
+                                            open_folder=False)
+
         # ASCII Grid
         for input_path in self.testing.download_test_files(ext=".asc"):
             prj.load_from_source(input_path)
             self.assertGreater(len(prj.layers_dict), 0)
+
+            output_path = os.path.join(self.testing.output_data_folder(),
+                                       "PRJ_" + os.path.basename(input_path))
+            success = prj.save_layer_by_key(layer_key=list(prj.layers_dict.keys())[0],
+                                            output_path=output_path,
+                                            open_folder=False)
 
 
 def suite():

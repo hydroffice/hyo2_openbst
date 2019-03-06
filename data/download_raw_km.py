@@ -36,7 +36,7 @@ elif clear_download_folder:
     shutil.rmtree(download_folder)
     os.makedirs(download_folder)
 raw_km_folder = os.path.join(download_folder, "raw_km")
-if not os.path.exists(download_folder):
+if not os.path.exists(raw_km_folder):
     os.makedirs(raw_km_folder)
 elif clear_download_folder:
     shutil.rmtree(raw_km_folder)

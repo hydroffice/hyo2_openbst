@@ -1,4 +1,5 @@
 import logging
+import os
 import os.path
 import shutil
 from hyo2.abc.lib.ftp import Ftp
@@ -29,7 +30,7 @@ elif clear_download_folder:
     shutil.rmtree(download_folder)
     os.makedirs(download_folder)
 products_folder = os.path.join(download_folder, "products")
-if not os.path.exists(download_folder):
+if not os.path.exists(products_folder):
     os.makedirs(products_folder)
 elif clear_download_folder:
     shutil.rmtree(products_folder)
