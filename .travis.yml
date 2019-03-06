@@ -62,7 +62,7 @@ install:
   - python data/download_products.py
 
 script:
-  - py.test --cov=hyo2 tests/
+  - py.test --cov
 
 after_script:
   - coverage report -m
