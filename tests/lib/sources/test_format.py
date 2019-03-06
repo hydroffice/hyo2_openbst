@@ -28,7 +28,7 @@ class TestLibFormat(unittest.TestCase):
         self.testing = Testing(
             root_folder=os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir, os.pardir, os.pardir)))
 
-    def test_read(self):
+    def test_retrieve_spatial_info_with_gdal(self):
 
         for input_path in self.testing.input_test_files(ext=".tif"):
             fmt = FakeFormat(path=input_path)
