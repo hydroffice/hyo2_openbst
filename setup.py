@@ -57,6 +57,9 @@ setup(
     ],
     install_requires=[
         "hyo2.abc",
+        "netCDF4",
+        "h5py",
+        "lxml",
     ],
     python_requires='>=3.5',
     entry_points={
