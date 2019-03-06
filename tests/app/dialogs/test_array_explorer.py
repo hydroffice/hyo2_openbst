@@ -13,7 +13,7 @@ from hyo2.openbst.lib.sources.layer import Layer
 from hyo2.openbst.app.dialogs.array_explorer.array_explorer import ArrayExplorer
 
 
-# @unittest.skipUnless(Helper.is_windows(), "Windows-only")
+@unittest.skipIf(Helper.is_linux(), "Skip Linux")
 class TestAppArrayExplorer(unittest.TestCase):
 
     def test_visibility(self):

@@ -59,6 +59,7 @@ install:
   - rm -f $HOME/miniconda/envs/test-environment/qt.conf
   - pip install pytest pytest-cov
   - conda list --show-channel-urls
+  - python data/download_products.py
 
 script:
   - py.test --cov=hyo2 tests/

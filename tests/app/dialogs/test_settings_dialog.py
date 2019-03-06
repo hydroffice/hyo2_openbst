@@ -9,7 +9,7 @@ from hyo2.abc.lib.helper import Helper
 from hyo2.openbst.app.dialogs.settings_dialog import SettingsDialog
 
 
-@unittest.skipUnless(Helper.is_windows(), "Windows-only")
+@unittest.skipIf(Helper.is_linux(), "Skip Linux")
 class TestAppSettingsDialog(unittest.TestCase):
 
     def test_visibility(self):
