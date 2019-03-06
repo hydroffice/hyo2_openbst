@@ -59,7 +59,7 @@ build_script:
 
 test: off
 test_script:
-  - py.test --cov=hyo2/openbst
+  - py.test --cov=hyo2.openbst
   - coveralls
 
 after_test:

@@ -62,7 +62,7 @@ install:
   - python data/download_products.py
 
 script:
-  - py.test --cov=hyo2/openbst
+  - py.test --cov=hyo2.openbst
 
 after_success:
   - coveralls
