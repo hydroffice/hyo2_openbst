@@ -28,18 +28,26 @@ data_files = [
     "0019_20180908_175305.xsf",
 ]
 
-# create an empty `downloaded` folder
-downloaded_folder = os.path.join(os.path.abspath(os.path.dirname(__file__)), "download")
-if os.path.exists(downloaded_folder) and clear_download_folder:
-    shutil.rmtree(downloaded_folder)
-os.makedirs(downloaded_folder)
+# create an empty `download` folder
+download_folder = os.path.join(os.path.abspath(os.path.dirname(__file__)), "download")
+if not os.path.exists(download_folder):
+    os.makedirs(download_folder)
+elif clear_download_folder:
+    shutil.rmtree(download_folder)
+    os.makedirs(download_folder)
+raw_km_folder = os.path.join(download_folder, "raw_km")
+if not os.path.exists(download_folder):
+    os.makedirs(raw_km_folder)
+elif clear_download_folder:
+    shutil.rmtree(raw_km_folder)
+    os.makedirs(raw_km_folder)
 
 # actually downloading the file with wget
 for fid in data_files:
 
-    data_src = os.path.join("fromccom/hydroffice/openbst/testdata", fid)
-    data_dst = os.path.abspath(os.path.join(downloaded_folder, fid))
-    print("> downloading %s" % data_src)
+    data_src = os.path.join("fromccom/hydroffice/openbst/testdata/raw_km", fid)
+    data_dst = os.path.abspath(os.path.join(raw_km_folder, fid))
+    print("> downloading %s to %s" % (data_src, data_dst))
 
     try:
         ftp = Ftp("ftp.ccom.unh.edu", show_progress=True, debug_mode=False)
