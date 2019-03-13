@@ -99,16 +99,16 @@ class ViewProductsBar(AbstractBar):
             plt.setp(bin_patches, 'facecolor', Plotting.blue_color, 'alpha', 0.75)
 
             plt.axvline(min_range, color='r', linestyle=':', label="min")
-            plt.text(min_range + delta, 0.01, "%.2f" % min_range, color='r')
+            plt.text(min_range + delta, 0.003, "%.2f" % min_range, color='r')
 
             plt.axvline(avg_value, color='y', linestyle=':', label="mean")
-            plt.text(avg_value + delta, 0.01, "%.2f" % avg_value, color='y')
+            plt.text(avg_value + delta, 0.003, "%.2f" % avg_value, color='y')
 
             plt.axvline(med_value, color='m', linestyle=':', label="median")
             plt.text(med_value + delta, 0.01, "%.2f" % med_value, color='m')
 
             plt.axvline(max_range, color='b', linestyle=':', label="max")
-            plt.text(max_range + delta, 0.01, "%.2f" % max_range, color='b')
+            plt.text(max_range + delta, 0.003, "%.2f" % max_range, color='b')
 
             plt.grid(True)
             plt.legend()

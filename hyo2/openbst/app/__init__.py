@@ -36,7 +36,7 @@ app_info.app_toolbars_icon_size = 24
 # button size
 app_info.app_button_height = 24
 
-app_info.plot_font_size = 9
+app_info.plot_font_size = 10
 app_info.plot_rc_context = {
         'font.family': 'sans-serif',
         'font.sans-serif': ['Tahoma', 'Bitstream Vera Sans', 'Lucida Grande', 'Verdana'],
@@ -49,7 +49,7 @@ app_info.plot_rc_context = {
         'axes.linewidth': 0.5,
         'axes.xmargin': 0.01,
         'axes.ymargin': 0.01,
-        'lines.linewidth': 1.0,
+        'lines.linewidth': 1.5,
         'grid.alpha': 0.2,
     }
 
