@@ -298,7 +298,7 @@ class MainWindow(QtWidgets.QMainWindow):
         """ actions to be done before close the app """
 
         reply = QtWidgets.QMessageBox.Yes
-        if self.ask_quit and self.tab_main.prj.has_modified_layers():
+        if self.ask_quit and self.tab_main.prj.has_modified_product_layers():
             reply = self.do_you_really_want(text="quit\nwithout saving your last changes")
 
         if reply == QtWidgets.QMessageBox.Yes:
@@ -309,7 +309,7 @@ class MainWindow(QtWidgets.QMainWindow):
             self.settings.setValue("main_window/state", self.saveState())
             self.settings.setValue("main_window/geometry", self.saveGeometry())
 
-            self.tab_main.prj.close_layers()
+            self.tab_main.prj.close_product_layers()
 
             event.accept()
             super().closeEvent(event)

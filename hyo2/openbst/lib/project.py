@@ -29,9 +29,13 @@ class Project:
 
         self.progress = progress
 
-        self._layer_paths_dict = dict()
-        self._layers_dict = dict()
-        self._layers_list = list()
+        self._raw_paths_dict = dict()
+        self._raw_dict = dict()
+        self._raw_list = list()
+
+        self._product_layer_paths_dict = dict()
+        self._product_layers_dict = dict()
+        self._product_layers_list = list()
 
     # ### OUTPUT FOLDER ###
 
@@ -57,32 +61,32 @@ class Project:
     def open_output_folder(self):
         Helper.explore_folder(self.output_folder)
 
-    # ### TEMP FOLDER ###
+    # ### RAW FOLDER ###
 
     @property
-    def temp_folder(self):
-        temp_folder = os.path.join(self.output_folder, "temp")
+    def raw_folder(self):
+        temp_folder = os.path.join(self.output_folder, "raw")
         if not os.path.exists(temp_folder):
             os.makedirs(temp_folder)
 
         return temp_folder
 
-    def is_temp_folder_empty(self) -> bool:
-        return len(os.listdir(self.temp_folder)) == 0
+    def is_raw_folder_empty(self) -> bool:
+        return len(os.listdir(self.raw_folder)) == 0
 
-    def clear_temp_folder(self) -> None:
+    def clear_raw_folder(self) -> None:
 
-        if self.is_temp_folder_empty():
+        if self.is_raw_folder_empty():
             return
 
         try:
-            shutil.rmtree(self.temp_folder)
+            shutil.rmtree(self.raw_folder)
 
         except PermissionError as e:
-            logger.info("unable to clean the temp folder: %s" % e)
+            logger.info("unable to clean the raw folder: %s" % e)
             return
 
-        logger.debug("cleared: %s" % self.temp_folder)
+        logger.debug("cleared: %s" % self.raw_folder)
 
     # ### EXPORT FOLDER ###
 
@@ -94,10 +98,14 @@ class Project:
 
         return export_folder
 
-    # ### LAYERS ###
+    # ### RAW SOURCES ###
+
+    
+
+    # ### PRODUCT LAYERS ###
 
     @classmethod
-    def is_vr(cls, path: str) -> bool:
+    def is_product_vr(cls, path: str) -> bool:
 
         data_source_types = Product.retrieve_layer_and_format_types(path)
         if len(data_source_types) == 0:
@@ -109,21 +117,21 @@ class Project:
         return ProductFormatBag.is_vr(path=path)
 
     @property
-    def layers_dict(self) -> dict:
-        return self._layers_dict
+    def product_layers_dict(self) -> dict:
+        return self._product_layers_dict
 
     @property
-    def layers_list(self) -> list:
-        return self._layers_list
+    def product_layers_list(self) -> list:
+        return self._product_layers_list
 
     @property
-    def ordered_layers_list(self) -> list:
+    def ordered_product_layers_list(self) -> list:
         layers_list = list()
 
         basename_list = list()
         last_name = None
 
-        for lk in list(reversed(self._layers_list)):
+        for lk in list(reversed(self._product_layers_list)):
 
             cur_token, cur_name = lk.split(":")
             # logger.debug("%s : %s" % (cur_token, cur_name))
@@ -145,12 +153,12 @@ class Project:
         return layers_list
 
     @property
-    def layer_paths_dict(self) -> dict:
-        return self._layer_paths_dict
+    def product_layer_paths_dict(self) -> dict:
+        return self._product_layer_paths_dict
 
-    def layer_keys_by_basename(self, basename: str) -> list:
+    def product_layer_keys_by_basename(self, basename: str) -> list:
         layer_keys = list()
-        key_list = list(self._layers_dict.keys())
+        key_list = list(self._product_layers_dict.keys())
 
         for layer_key in key_list:
 
@@ -159,9 +167,9 @@ class Project:
 
         return layer_keys
 
-    def other_raster_layers_for_key(self, layer_key: str):
+    def other_product_layers_for_key(self, layer_key: str):
         other_layers = list()
-        key_list = list(self._layers_dict.keys())
+        key_list = list(self._product_layers_dict.keys())
         layer_basename = layer_key.split(":")[-1]
 
         for key in key_list:
@@ -169,14 +177,14 @@ class Project:
                 continue
 
             if layer_basename == key.split(":")[-1]:
-                if self._layers_dict[key].is_raster():
-                    other_layers.append(self._layers_dict[key])
+                if self._product_layers_dict[key].is_raster():
+                    other_layers.append(self._product_layers_dict[key])
 
         return other_layers
 
-    def load_from_source(self, path: str,
-                         hint_type: ProductLayerType = ProductLayerType.UNKNOWN,
-                         exclude_types: Optional[list] = None) -> bool:
+    def load_product_from_source(self, path: str,
+                                 hint_type: ProductLayerType = ProductLayerType.UNKNOWN,
+                                 exclude_types: Optional[list] = None) -> bool:
         layer_format_types = Product.retrieve_layer_and_format_types(path, hint_type)
 
         if exclude_types is not None:
@@ -206,29 +214,29 @@ class Project:
             logger.debug("raster key: %s" % layer_key)
 
             # if already exists, first close existing layer
-            self.close_layer_by_key(layer_key=layer_key)
+            self.close_product_layer_by_key(layer_key=layer_key)
 
             if layer_type not in actual_layers.keys():
                 logging.warning("skipping unretrieved %s layer" % layer_type)
                 continue
 
             # actually add the layer to the dicts and to the list
-            self._layers_dict[layer_key] = actual_layers[layer_type]
-            self._layers_list.append(layer_key)
-            self._layer_paths_dict[layer_key] = path
+            self._product_layers_dict[layer_key] = actual_layers[layer_type]
+            self._product_layers_list.append(layer_key)
+            self._product_layer_paths_dict[layer_key] = path
 
             self.progress.add(quantum=progress_quantum)
 
         self.progress.end()
         return True
 
-    def has_layers(self) -> bool:
+    def has_product_layers(self) -> bool:
 
-        return len(self._layers_list) != 0
+        return len(self._product_layers_list) != 0
 
-    def has_modified_layers(self) -> bool:
+    def has_modified_product_layers(self) -> bool:
 
-        for layer_key, layer in self._layers_dict.items():
+        for layer_key, layer in self._product_layers_dict.items():
 
             if layer.modified:
                 logger.debug("%s was modified" % layer_key)
@@ -236,39 +244,38 @@ class Project:
 
         return False
 
-    def close_layer_by_key(self, layer_key: str) -> bool:
-        if layer_key not in self.layers_dict.keys():
+    def close_product_layer_by_key(self, layer_key: str) -> bool:
+        if layer_key not in self.product_layers_dict.keys():
             return False
 
-        del self._layers_dict[layer_key]
-        del self._layer_paths_dict[layer_key]
-        self._layers_list.remove(layer_key)
+        del self._product_layers_dict[layer_key]
+        del self._product_layer_paths_dict[layer_key]
+        self._product_layers_list.remove(layer_key)
         return True
 
-    def close_layer_by_basename(self, layer_basename: str) -> bool:
+    def close_product_layer_by_basename(self, layer_basename: str) -> bool:
 
-        layers_key = self.layer_keys_by_basename(basename=layer_basename)
+        layers_key = self.product_layer_keys_by_basename(basename=layer_basename)
 
         for layer_key in layers_key:
-            self.close_layer_by_key(layer_key)
+            self.close_product_layer_by_key(layer_key)
 
         return True
 
-    def close_layers(self) -> None:
-        self._layers_dict.clear()
-        self._layers_list.clear()
-        self._layer_paths_dict.clear()
-        self.clear_temp_folder()
+    def close_product_layers(self) -> None:
+        self._product_layers_dict.clear()
+        self._product_layers_list.clear()
+        self._product_layer_paths_dict.clear()
 
-    def save_layer_by_key(self, layer_key: str, output_path: str, open_folder: bool = False) -> bool:
+    def save_product_layer_by_key(self, layer_key: str, output_path: str, open_folder: bool = False) -> bool:
 
         # first check whether the layer key is a valid one
-        if layer_key not in self._layers_dict.keys():
+        if layer_key not in self._product_layers_dict.keys():
             logger.warning("missing layer key: %s" % layer_key)
             return False
 
         # retrieve the input path and make a copy
-        input_path = self._layer_paths_dict[layer_key]
+        input_path = self._product_layer_paths_dict[layer_key]
         output_folder = os.path.dirname(output_path)
         try:
             shutil.copyfile(input_path, output_path)
@@ -287,18 +294,18 @@ class Project:
 
         # retrieve all the layer keys interested by the saving operations
         layer_basename = layer_key.split(":")[-1]
-        output_layer_keys = self.layer_keys_by_basename(basename=layer_basename)
+        output_layer_keys = self.product_layer_keys_by_basename(basename=layer_basename)
         logger.debug("saving %s with keys %s" % (layer_basename, output_layer_keys))
 
         # retrieve the layers interested by the saving operations
         output_layers = dict()
         output_format = None
         for output_layer_key in output_layer_keys:
-            if output_layer_key not in self._layers_dict.keys():
+            if output_layer_key not in self._product_layers_dict.keys():
                 continue
-            output_layers[self._layers_dict[output_layer_key].layer_type] = \
-                self._layers_dict[output_layer_key]
-            output_format = self._layers_dict[output_layer_key].format_type
+            output_layers[self._product_layers_dict[output_layer_key].layer_type] = \
+                self._product_layers_dict[output_layer_key]
+            output_format = self._product_layers_dict[output_layer_key].format_type
         # check if at least a layer was identified
         if len(output_layers) == 0:
             logger.warning("no layers to save")
@@ -316,7 +323,9 @@ class Project:
         msg = "<%s>\n" % self.__class__.__name__
 
         msg += "  <output folder: %s>\n" % self.output_folder
-        msg += "  <temp folder: %s>\n" % self.temp_folder
-        msg += "  <layers: %s>\n" % len(self._layer_paths_dict)
+        msg += "  <raw folder: %s>\n" % self.raw_folder
+        msg += "  <export folder: %s>\n" % self.export_folder
+        msg += "  <raws: %s>\n" % len(self._raw_paths_dict)
+        msg += "  <product layers: %s>\n" % len(self._product_layer_paths_dict)
 
         return msg

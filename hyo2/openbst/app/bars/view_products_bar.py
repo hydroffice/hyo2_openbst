@@ -62,7 +62,7 @@ class ViewProductsBar(AbstractBar):
         layer_key = self.main_tab.current_layer_key()
         logger.debug("User wants to retrieve info from %s" % layer_key)
 
-        msg = "Layer Key: %s\n\n%s" % (layer_key, self.prj.layers_dict[layer_key].info_str())
+        msg = "Layer Key: %s\n\n%s" % (layer_key, self.prj.product_layers_dict[layer_key].info_str())
         # noinspection PyCallByClass
         QtWidgets.QMessageBox.information(self, "Grid Info", msg, QtWidgets.QMessageBox.Ok)
 

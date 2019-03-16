@@ -27,18 +27,18 @@ class TestLibProject(unittest.TestCase):
         prj.output_folder = os.path.dirname(__file__)
         self.assertTrue(os.path.exists(prj.output_folder))
 
-    def test_temp_folder(self):
+    def test_raw_folder(self):
         prj = Project()
 
-        self.assertTrue(os.path.exists(prj.temp_folder))
+        self.assertTrue(os.path.exists(prj.raw_folder))
 
-        test_folder = os.path.join(os.path.dirname(__file__), "test_temp_folder")
+        test_folder = os.path.join(os.path.dirname(__file__), "test_raw_folder")
         if os.path.exists(test_folder):
             shutil.rmtree(test_folder)
         os.mkdir(test_folder)
         prj.output_folder = test_folder
-        self.assertTrue(os.path.exists(prj.temp_folder))
-        self.assertTrue(prj.is_temp_folder_empty())
+        self.assertTrue(os.path.exists(prj.raw_folder))
+        self.assertTrue(prj.is_raw_folder_empty())
         shutil.rmtree(test_folder)
 
     def test_export_folder(self):
@@ -56,7 +56,7 @@ class TestLibProject(unittest.TestCase):
 
     def test_is_vr(self):
         input_path = self.testing.download_test_files(ext=".bag")[0]
-        self.assertFalse(Project.is_vr(path=input_path))
+        self.assertFalse(Project.is_product_vr(path=input_path))
 
     def test_load_from_source_and_save(self):
 
@@ -64,37 +64,37 @@ class TestLibProject(unittest.TestCase):
 
         # BAG
         for input_path in self.testing.download_test_files(ext=".bag"):
-            prj.load_from_source(input_path)
-            self.assertGreater(len(prj.layers_dict), 0)
+            prj.load_product_from_source(input_path)
+            self.assertGreater(len(prj.product_layers_dict), 0)
 
             output_path = os.path.join(self.testing.output_data_folder(),
                                        "PRJ_" + os.path.basename(input_path))
-            success = prj.save_layer_by_key(layer_key=list(prj.layers_dict.keys())[0],
-                                            output_path=output_path,
-                                            open_folder=False)
+            success = prj.save_product_layer_by_key(layer_key=list(prj.product_layers_dict.keys())[0],
+                                                    output_path=output_path,
+                                                    open_folder=False)
             self.assertTrue(success)
 
         # GeoTIFF
         for input_path in self.testing.download_test_files(ext=".tif"):
-            prj.load_from_source(input_path)
-            self.assertGreater(len(prj.layers_dict), 0)
+            prj.load_product_from_source(input_path)
+            self.assertGreater(len(prj.product_layers_dict), 0)
 
             output_path = os.path.join(self.testing.output_data_folder(),
                                        "PRJ_" + os.path.basename(input_path))
-            success = prj.save_layer_by_key(layer_key=list(prj.layers_dict.keys())[0],
-                                            output_path=output_path,
-                                            open_folder=False)
+            success = prj.save_product_layer_by_key(layer_key=list(prj.product_layers_dict.keys())[0],
+                                                    output_path=output_path,
+                                                    open_folder=False)
 
         # ASCII Grid
         for input_path in self.testing.download_test_files(ext=".asc"):
-            prj.load_from_source(input_path)
-            self.assertGreater(len(prj.layers_dict), 0)
+            prj.load_product_from_source(input_path)
+            self.assertGreater(len(prj.product_layers_dict), 0)
 
             output_path = os.path.join(self.testing.output_data_folder(),
                                        "PRJ_" + os.path.basename(input_path))
-            success = prj.save_layer_by_key(layer_key=list(prj.layers_dict.keys())[0],
-                                            output_path=output_path,
-                                            open_folder=False)
+            success = prj.save_product_layer_by_key(layer_key=list(prj.product_layers_dict.keys())[0],
+                                                    output_path=output_path,
+                                                    open_folder=False)
 
 
 def suite():
