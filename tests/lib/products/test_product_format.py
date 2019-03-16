@@ -3,10 +3,10 @@ import unittest
 
 from hyo2.abc.lib.testing import Testing
 from hyo2.openbst.app import app_info  # for GDAL data
-from hyo2.openbst.lib.sources.bag import Format, FormatType
+from hyo2.openbst.lib.products.product_format import ProductFormat, ProductFormatType
 
 
-class FakeFormat(Format):
+class FakeFormat(ProductFormat):
 
     def read_data_types(self, data_types: list) -> dict:
         return dict()
@@ -18,11 +18,11 @@ class FakeFormat(Format):
 class TestLibFormatType(unittest.TestCase):
 
     def test_all(self):
-        for fmt_type in FormatType:
+        for fmt_type in ProductFormatType:
             self.assertGreaterEqual(fmt_type.value, 0)
 
 
-class TestLibFormat(unittest.TestCase):
+class TestLibProductFormat(unittest.TestCase):
 
     def setUp(self):
         self.testing = Testing(
@@ -38,5 +38,5 @@ class TestLibFormat(unittest.TestCase):
 
 def suite():
     s = unittest.TestSuite()
-    s.addTests(unittest.TestLoader().loadTestsFromTestCase(TestLibFormat))
+    s.addTests(unittest.TestLoader().loadTestsFromTestCase(TestLibProductFormat))
     return s

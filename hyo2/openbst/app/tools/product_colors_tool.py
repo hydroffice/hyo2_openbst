@@ -5,7 +5,7 @@ from typing import TYPE_CHECKING
 from PySide2 import QtCore, QtGui, QtWidgets
 
 from hyo2.abc.lib.helper import Helper
-from hyo2.openbst.lib.plotting import Plotting
+from hyo2.openbst.lib.products.product_plotting import ProductPlotting
 from hyo2.openbst.app import app_info
 from hyo2.openbst.app.tools.abstract_tool import AbstractTool
 
@@ -39,7 +39,7 @@ class ProductColorsTool(AbstractTool):
         label = QtWidgets.QLabel("Colormap: ")
         hbox.addWidget(label)
         self.cm = QtWidgets.QComboBox()
-        self.cm.addItems(list(Plotting.cmaps.keys()))
+        self.cm.addItems(list(ProductPlotting.cmaps.keys()))
         self.cm.setCurrentIndex(0)
         # noinspection PyUnresolvedReferences
         self.cm.currentIndexChanged.connect(self.on_apply_colormap)
@@ -181,7 +181,7 @@ class ProductColorsTool(AbstractTool):
         # noinspection PyUnresolvedReferences
         self.max.textChanged.disconnect()
 
-        self.cm.setCurrentText(Plotting.cmaps.inv[layer.plot.cmap])
+        self.cm.setCurrentText(ProductPlotting.cmaps.inv[layer.plot.cmap])
         self.min.setText("%.3f" % layer.plot.array_min)
         self.max.setText("%.3f" % layer.plot.array_max)
 
@@ -267,14 +267,14 @@ class ProductColorsTool(AbstractTool):
         logger.debug("changed colormap: %s" % cmap_key)
 
         layer = self.main_tab.current_layer()
-        layer.plot.cmap = Plotting.cmaps[cmap_key]
+        layer.plot.cmap = ProductPlotting.cmaps[cmap_key]
         self.main_tab.update_plot_cmap()
 
     def on_reset_colormap(self) -> None:
         layer = self.main_tab.current_layer()
         layer.plot.init_cmap()
         self.main_tab.update_plot_cmap()
-        reset_cmap = Plotting.cmaps.inv[layer.plot.cmap]
+        reset_cmap = ProductPlotting.cmaps.inv[layer.plot.cmap]
         logger.debug("reset colormap: %s" % reset_cmap)
         self.cm.setCurrentText(reset_cmap)
 

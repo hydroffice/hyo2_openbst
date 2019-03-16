@@ -4,21 +4,21 @@ import math
 
 from hyo2.abc.lib.testing import Testing
 from hyo2.openbst.app import app_info  # for GDAL data
-from hyo2.openbst.lib.sources.bag import Layer
-from hyo2.openbst.lib.sources.format import FormatType
-from hyo2.openbst.lib.sources.layer_type import LayerType
+from hyo2.openbst.lib.products.product_layer import ProductLayer
+from hyo2.openbst.lib.products.product_format import ProductFormatType
+from hyo2.openbst.lib.products.product_layer_type import ProductLayerType
 
 
-class TestLibLayer(unittest.TestCase):
+class TestLibProductLayer(unittest.TestCase):
 
     def setUp(self):
         self.testing = Testing(
             root_folder=os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir, os.pardir, os.pardir)))
 
     def test_init(self):
-        layer_type = LayerType.UNKNOWN
-        format_type = FormatType.UNKNOWN
-        layer = Layer(layer_type=layer_type, format_type=format_type)
+        layer_type = ProductLayerType.UNKNOWN
+        format_type = ProductFormatType.UNKNOWN
+        layer = ProductLayer(layer_type=layer_type, format_type=format_type)
         self.assertEqual(layer.layer_type, layer_type)
         self.assertEqual(layer.format_type, format_type)
         self.assertFalse(layer.modified)
@@ -45,5 +45,5 @@ class TestLibLayer(unittest.TestCase):
 
 def suite():
     s = unittest.TestSuite()
-    s.addTests(unittest.TestLoader().loadTestsFromTestCase(TestLibLayer))
+    s.addTests(unittest.TestLoader().loadTestsFromTestCase(TestLibProductLayer))
     return s

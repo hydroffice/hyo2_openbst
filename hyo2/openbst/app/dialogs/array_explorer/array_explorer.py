@@ -6,7 +6,7 @@ import logging
 from PySide2 import QtCore, QtGui, QtWidgets
 
 from hyo2.openbst.app.dialogs.array_explorer.array_data_model import ArrayDataModel
-from hyo2.openbst.lib.sources.layer import Layer
+from hyo2.openbst.lib.products.product_layer import ProductLayer
 
 logger = logging.getLogger(__name__)
 
@@ -14,7 +14,7 @@ logger = logging.getLogger(__name__)
 class ArrayExplorer(QtWidgets.QDialog):
     media = os.path.join(os.path.dirname(__file__), "media")
 
-    def __init__(self, layer: Layer, parent: Optional[QtWidgets.QWidget] = None,
+    def __init__(self, layer: ProductLayer, parent: Optional[QtWidgets.QWidget] = None,
                  with_menu: bool = False, with_info_button: bool = False, with_help_button: bool = False) -> None:
         super().__init__(parent)
 
@@ -73,6 +73,7 @@ class ArrayExplorer(QtWidgets.QDialog):
         lock_icon = QtGui.QIcon()
         lock_icon.addFile(os.path.join(self.media, 'lock.png'), state=QtGui.QIcon.Off)
         lock_icon.addFile(os.path.join(self.media, 'unlock.png'), state=QtGui.QIcon.On)
+        # noinspection PyTypeChecker
         self.lock_action = self.main_tb.addAction(lock_icon, "Lock", self.do_lock)
         self.lock_action.setCheckable(True)
         if self.with_menu:
@@ -81,6 +82,7 @@ class ArrayExplorer(QtWidgets.QDialog):
         # Help
         if self.with_help_button:
             self.main_tb.addSeparator()
+            # noinspection PyTypeChecker
             self.help_action = self.main_tb.addAction(
                 QtGui.QIcon(os.path.join(self.media, 'help.png')), "Help", self.do_help)
             if self.with_menu:
@@ -150,7 +152,7 @@ class ArrayExplorer(QtWidgets.QDialog):
         logger.debug("help")
 
     def do_info(self) -> None:
-        logger.debug("help")
+        logger.debug("info")
 
     def do_change_depth(self, depth):
         # logger.debug("change depth: %d" % depth)

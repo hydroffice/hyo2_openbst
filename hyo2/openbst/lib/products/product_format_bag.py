@@ -4,13 +4,15 @@ import numpy as np
 from h5py import File
 from lxml import etree
 
-from hyo2.openbst.lib.sources.format import Format, FormatType
-from hyo2.openbst.lib.sources.layer import Layer, LayerType
+from hyo2.openbst.lib.products.product_format import ProductFormat
+from hyo2.openbst.lib.products.product_format import ProductFormatType
+from hyo2.openbst.lib.products.product_layer import ProductLayer
+from hyo2.openbst.lib.products.product_layer_type import ProductLayerType
 
 logger = logging.getLogger(__name__)
 
 
-class Bag(Format):
+class ProductFormatBag(ProductFormat):
 
     ns = {
         'bag': 'http://www.opennavsurf.org/schema/bag',
@@ -80,10 +82,10 @@ class Bag(Format):
 
         for layer_type in layer_types:
 
-            layer = Layer(layer_type=layer_type, format_type=FormatType.BAG)
+            layer = ProductLayer(layer_type=layer_type, format_type=ProductFormatType.BAG)
             layer.meta = self.meta
 
-            if layer_type == LayerType.BATHYMETRY:
+            if layer_type == ProductLayerType.BATHYMETRY:
 
                 try:
                     self._elevation = self._bag_root['elevation']
@@ -95,7 +97,7 @@ class Bag(Format):
                 layer.array[layer.array == 1000000.0] = np.nan
                 logger.debug("elevation array: %s" % (layer.array.shape, ))
 
-            elif layer_type == LayerType.UNCERTAINTY:
+            elif layer_type == ProductLayerType.UNCERTAINTY:
 
                 try:
                     self._uncertainty = self._bag_root['uncertainty']
@@ -107,7 +109,7 @@ class Bag(Format):
                 layer.array[layer.array == 1000000.0] = np.nan
                 logger.debug("uncertainty array: %s" % (layer.array.shape, ))
 
-            elif layer_type == LayerType.DESIGNATED:
+            elif layer_type == ProductLayerType.DESIGNATED:
 
                 try:
                     self._tracking_list = self._bag_root['tracking_list']
@@ -318,7 +320,7 @@ class Bag(Format):
 
             layer = data_layers[layer_type]
 
-            if layer_type == LayerType.BATHYMETRY:
+            if layer_type == ProductLayerType.BATHYMETRY:
 
                 try:
                     self._elevation = self._bag_root['elevation']
@@ -350,7 +352,7 @@ class Bag(Format):
                 layer.modified = False
                 continue
 
-            elif layer_type == LayerType.UNCERTAINTY:
+            elif layer_type == ProductLayerType.UNCERTAINTY:
 
                 try:
                     self._uncertainty = self._bag_root['uncertainty']
@@ -382,7 +384,7 @@ class Bag(Format):
                 layer.modified = False
                 continue
 
-            elif layer_type == LayerType.DESIGNATED:
+            elif layer_type == ProductLayerType.DESIGNATED:
 
                 try:
                     self._tracking_list = self._bag_root['tracking_list'][()]

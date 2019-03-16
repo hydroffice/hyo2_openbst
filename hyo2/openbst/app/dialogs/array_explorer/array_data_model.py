@@ -1,16 +1,19 @@
 import logging
-
-from hyo2.openbst.lib.sources.layer import Layer
 from PySide2 import QtCore, QtWidgets
 import numpy as np
-QVariant = lambda value=None: value
+from hyo2.openbst.lib.products.product_layer import ProductLayer
 
 logger = logging.getLogger(__name__)
 
 
+# QVariant = lambda value=None: value
+# noinspection PyPep8Naming
+def QVariant(value=None): return value
+
+
 class ArrayDataModel(QtCore.QAbstractTableModel):
 
-    def __init__(self, layer: Layer, parent: QtWidgets.QWidget):
+    def __init__(self, layer: ProductLayer, parent: QtWidgets.QWidget):
         QtCore.QAbstractTableModel.__init__(self, parent)
         self._layer = layer
         self.array = layer.array
@@ -33,17 +36,19 @@ class ArrayDataModel(QtCore.QAbstractTableModel):
             self.amp = "%.6f"
 
         self.is_integer = False
-        if self.array.dtype in [ bool, np.int, np.int8, np.int16, np.int32, np.int64,
-                                 np.uint, np.uint8, np.uint16, np.uint32, np.uint64, ]:
+        if self.array.dtype in [bool, np.int, np.int8, np.int16, np.int32, np.int64,
+                                np.uint, np.uint8, np.uint16, np.uint32, np.uint64, ]:
             self.is_integer = True
             self.amp = "%d"
 
+    # noinspection PyPep8Naming
     def setEditable(self, value: bool) -> None:
         self.editable = value
 
     def flags(self, index):
         flags = super(ArrayDataModel, self).flags(index)
         if self.editable:
+            # noinspection PyUnresolvedReferences
             flags |= QtCore.Qt.ItemIsEditable
         return flags
 
@@ -55,11 +60,13 @@ class ArrayDataModel(QtCore.QAbstractTableModel):
             return 1
         return self.array.shape[1]
 
+    # noinspection PyPep8Naming
     def signalUpdate(self):
         """This is full update, not efficient"""
         # noinspection PyUnresolvedReferences
         self.layoutChanged.emit()
 
+    # noinspection PyUnresolvedReferences
     def headerData(self, section, orientation, role=QtCore.Qt.DisplayRole):
 
         if role == QtCore.Qt.TextAlignmentRole:
@@ -83,6 +90,7 @@ class ArrayDataModel(QtCore.QAbstractTableModel):
 
         return QVariant()
 
+    # noinspection PyUnresolvedReferences
     def data(self, index, role=QtCore.Qt.DisplayRole):
         if role == QtCore.Qt.TextAlignmentRole:
             return QtCore.Qt.AlignCenter
@@ -102,6 +110,7 @@ class ArrayDataModel(QtCore.QAbstractTableModel):
 
         return QVariant()
 
+    # noinspection PyMethodOverriding
     def setData(self, index, value, role):
         if not index.isValid():
             return False
@@ -130,6 +139,6 @@ class ArrayDataModel(QtCore.QAbstractTableModel):
         self.array[r, c] = user_value
         self._layer.modified = True
         delta = 5
-        self._layer.plot.updated_layer_array(rect_slice=np.s_[r-delta:r+delta, c-delta:c+delta])
+        self._layer.plot.updated_layer_array(rect_slice=np.s_[r - delta:r + delta, c - delta:c + delta])
         self.parent().array_modified()
         return True

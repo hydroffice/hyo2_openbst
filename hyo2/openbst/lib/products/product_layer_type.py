@@ -1,7 +1,7 @@
 from enum import Enum
 
 
-class LayerType(Enum):
+class ProductLayerType(Enum):
     UNKNOWN = 0
     BATHYMETRY = 1
     UNCERTAINTY = 2

@@ -3,21 +3,21 @@ from typing import Optional, TYPE_CHECKING
 import numpy as np
 from matplotlib.colors import Colormap
 
-from hyo2.openbst.lib.plotting import Plotting
-from hyo2.openbst.lib.sources.layer_type import LayerType
+from hyo2.openbst.lib.products.product_plotting import ProductPlotting
+from hyo2.openbst.lib.products.product_layer_type import ProductLayerType
 
 if TYPE_CHECKING:
     # noinspection PyUnresolvedReferences
-    from hyo2.openbst.lib.sources.layer import Layer
+    from hyo2.openbst.lib.products.product_layer import ProductLayer
 
 
-class LayerPlot:
+class ProductLayerPlot:
     default_with_shading: bool = False
     default_shade_exag: float = 1.0
     default_shade_az: float = 315.0
     default_shade_elev: float = 45.0
 
-    def __init__(self, layer: 'Layer'):
+    def __init__(self, layer: 'ProductLayer'):
         self._layer = layer
 
         self._xs = None
@@ -115,17 +115,17 @@ class LayerPlot:
     # ### COLORMAP ###
 
     def init_cmap(self):
-        if self._layer.layer_type == LayerType.BATHYMETRY:
-            self._cmap = Plotting.bathy_cmap
+        if self._layer.layer_type == ProductLayerType.BATHYMETRY:
+            self._cmap = ProductPlotting.bathy_cmap
 
-        elif self._layer.layer_type == LayerType.UNCERTAINTY:
-            self._cmap = Plotting.uncertainty_cmap
+        elif self._layer.layer_type == ProductLayerType.UNCERTAINTY:
+            self._cmap = ProductPlotting.uncertainty_cmap
 
-        elif self._layer.layer_type == LayerType.MOSAIC:
-            self._cmap = Plotting.mosaic_cmap
+        elif self._layer.layer_type == ProductLayerType.MOSAIC:
+            self._cmap = ProductPlotting.mosaic_cmap
 
         else:
-            self._cmap = Plotting.default_cmap
+            self._cmap = ProductPlotting.default_cmap
 
     @property
     def cmap(self) -> Colormap:
@@ -162,7 +162,7 @@ class LayerPlot:
     # ### SHADING ###
 
     def is_shadable(self) -> bool:
-        return self._layer.layer_type == LayerType.BATHYMETRY
+        return self._layer.layer_type == ProductLayerType.BATHYMETRY
 
     @property
     def shade_exag(self) -> float:

@@ -4,13 +4,13 @@ import os
 import gdal
 import numpy as np
 
-from hyo2.openbst.lib.sources.format import Format, FormatType
-from hyo2.openbst.lib.sources.layer import Layer
+from hyo2.openbst.lib.products.product_format import ProductFormat, ProductFormatType
+from hyo2.openbst.lib.products.product_layer import ProductLayer
 
 logger = logging.getLogger(__name__)
 
 
-class ASCIIGrid(Format):
+class ProductFormatASCIIGrid(ProductFormat):
 
     def __init__(self, path: str) -> None:
         super().__init__(path=path)
@@ -38,7 +38,7 @@ class ASCIIGrid(Format):
 
         for layer_type in layer_types:
 
-            layer = Layer(layer_type=layer_type, format_type=FormatType.ASC_GRID)
+            layer = ProductLayer(layer_type=layer_type, format_type=ProductFormatType.ASC_GRID)
 
             try:
                 layer.array = ds.ReadAsArray()
@@ -89,6 +89,7 @@ class ASCIIGrid(Format):
         mem_ds.SetGeoTransform(input_ds.GetGeoTransform())
 
         try:
+            # noinspection PyUnusedLocal
             input_ds = None
         except Exception as e:
             logger.error("while creating in memory data set, %s" % e)

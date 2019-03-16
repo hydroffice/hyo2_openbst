@@ -8,8 +8,9 @@ from hyo2.abc.lib.progress.abstract_progress import AbstractProgress
 from hyo2.abc.lib.progress.cli_progress import CliProgress
 
 from hyo2.openbst.lib import lib_info
-from hyo2.openbst.lib.source import Source, LayerType, FormatType
-from hyo2.openbst.lib.sources.bag import Bag
+from hyo2.openbst.lib.products.product import Product, ProductLayerType
+from hyo2.openbst.lib.products.product_format import ProductFormatType
+from hyo2.openbst.lib.products.product_format_bag import ProductFormatBag
 
 logger = logging.getLogger(__name__)
 
@@ -98,14 +99,14 @@ class Project:
     @classmethod
     def is_vr(cls, path: str) -> bool:
 
-        data_source_types = Source.retrieve_layer_and_format_types(path)
+        data_source_types = Product.retrieve_layer_and_format_types(path)
         if len(data_source_types) == 0:
             return False
 
-        if list(data_source_types.values())[0] != FormatType.BAG:
+        if list(data_source_types.values())[0] != ProductFormatType.BAG:
             return False
 
-        return Bag.is_vr(path=path)
+        return ProductFormatBag.is_vr(path=path)
 
     @property
     def layers_dict(self) -> dict:
@@ -174,12 +175,12 @@ class Project:
         return other_layers
 
     def load_from_source(self, path: str,
-                         hint_type: LayerType = LayerType.UNKNOWN,
+                         hint_type: ProductLayerType = ProductLayerType.UNKNOWN,
                          exclude_types: Optional[list] = None) -> bool:
-        layer_format_types = Source.retrieve_layer_and_format_types(path, hint_type)
+        layer_format_types = Product.retrieve_layer_and_format_types(path, hint_type)
 
         if exclude_types is not None:
-            logging.debug("filtering data types: %s " % (exclude_types, ))
+            logging.debug("filtering data types: %s " % (exclude_types,))
             temp_raster_types = layer_format_types
             layer_format_types = dict()
             for raster_data_type in temp_raster_types.keys():
@@ -191,9 +192,9 @@ class Project:
         self.progress.start(title="Loading", text="Ongoing loading. Please wait!",
                             init_value=10)
 
-        actual_layers = Source.load(input_path=path,
-                                    layer_types=list(layer_format_types.keys()),
-                                    input_format=list(layer_format_types.values())[0])
+        actual_layers = Product.load(input_path=path,
+                                     layer_types=list(layer_format_types.keys()),
+                                     input_format=list(layer_format_types.values())[0])
 
         self.progress.update(value=60)
 
@@ -201,7 +202,7 @@ class Project:
 
         for layer_type in layer_format_types.keys():
 
-            layer_key = Source.make_layer_key(path=path, data_type=layer_type)
+            layer_key = Product.make_layer_key(path=path, data_type=layer_type)
             logger.debug("raster key: %s" % layer_key)
 
             # if already exists, first close existing layer
@@ -249,7 +250,6 @@ class Project:
         layers_key = self.layer_keys_by_basename(basename=layer_basename)
 
         for layer_key in layers_key:
-
             self.close_layer_by_key(layer_key)
 
         return True
@@ -304,8 +304,7 @@ class Project:
             logger.warning("no layers to save")
             return False
 
-        saved = Source.save(output_path=output_path, output_layers=output_layers,
-                            output_format=output_format)
+        saved = Product.save(output_path=output_path, output_layers=output_layers, output_format=output_format)
         if open_folder and saved:
             Helper.explore_folder(os.path.dirname(output_path))
 

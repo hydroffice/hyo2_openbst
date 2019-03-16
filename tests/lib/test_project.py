@@ -6,7 +6,6 @@ import shutil
 from hyo2.abc.lib.testing import Testing
 from hyo2.openbst.app import app_info  # for GDAL data
 from hyo2.openbst.lib.project import Project
-from hyo2.openbst.lib.source import LayerType, FormatType
 
 
 class TestLibProject(unittest.TestCase):

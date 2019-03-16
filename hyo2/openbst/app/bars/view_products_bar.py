@@ -6,7 +6,7 @@ from matplotlib import rc_context
 from hyo2.openbst.app.dialogs.array_explorer.array_explorer import ArrayExplorer
 from hyo2.openbst.app import app_info
 from hyo2.openbst.app.bars.abstract_bar import AbstractBar
-from hyo2.openbst.lib.plotting import Plotting
+from hyo2.openbst.lib.products.product_plotting import ProductPlotting
 
 from PySide2 import QtGui, QtWidgets
 
@@ -96,7 +96,7 @@ class ViewProductsBar(AbstractBar):
 
             n, bins, bin_patches = plt.hist(arr_flatten, bins=100, density=True,
                                             range=(min_range - delta * 5, max_range + delta * 5))
-            plt.setp(bin_patches, 'facecolor', Plotting.blue_color, 'alpha', 0.75)
+            plt.setp(bin_patches, 'facecolor', ProductPlotting.blue_color, 'alpha', 0.75)
 
             plt.axvline(min_range, color='r', linestyle=':', label="min")
             plt.text(min_range + delta, 0.003, "%.2f" % min_range, color='r')

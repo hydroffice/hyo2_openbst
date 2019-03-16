@@ -7,7 +7,7 @@ from PySide2 import QtCore
 logger = logging.getLogger(__name__)
 
 
-class Meta:
+class ProductMeta:
 
     def __init__(self):
         self.settings = QtCore.QSettings()

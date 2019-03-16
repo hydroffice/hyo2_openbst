@@ -17,7 +17,7 @@ from hyo2.openbst.app.tools.product_erase_tool import ProductEraseTool
 from hyo2.openbst.app.tools.product_modify_tool import ProductModifyTool
 from hyo2.openbst.app.tools.product_clone_tool import ProductCloneTool
 from hyo2.openbst.lib.project import Project
-from hyo2.openbst.lib.sources.layer import Layer
+from hyo2.openbst.lib.products.product_layer import ProductLayer
 
 matplotlib.use('Qt5Agg')
 matplotlib.rcParams['axes.formatter.useoffset'] = False
@@ -282,7 +282,7 @@ class MainTab(QtWidgets.QMainWindow):
     def current_layer_key(self) -> str:
         return self.file_products_bar.current_layer_key()
 
-    def current_layer(self) -> Layer:
+    def current_layer(self) -> ProductLayer:
         return self.file_products_bar.current_layer()
 
     def current_layer_array(self) -> np.ndarray:

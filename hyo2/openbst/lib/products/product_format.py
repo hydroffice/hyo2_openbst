@@ -4,12 +4,12 @@ import logging
 
 import gdal
 
-from hyo2.openbst.lib.sources.meta import Meta
+from hyo2.openbst.lib.products.product_meta import ProductMeta
 
 logger = logging.getLogger(__name__)
 
 
-class FormatType(Enum):
+class ProductFormatType(Enum):
 
     UNKNOWN = 0
     BAG = 1
@@ -17,11 +17,11 @@ class FormatType(Enum):
     ASC_GRID = 3
 
 
-class Format(ABC):
+class ProductFormat(ABC):
 
     def __init__(self, path):
         self.path = path
-        self.meta = Meta()
+        self.meta = ProductMeta()
 
     def retrieve_spatial_info_with_gdal(self):
         # logger.debug("retrieving spatial info with GDAL")
@@ -70,10 +70,12 @@ class Format(ABC):
             logger.warning("while using GDAL, %s" % e)
             return False
 
+    # noinspection PyUnusedLocal
     @abstractmethod
     def read_data_types(self, data_types: list) -> dict:
         return dict()
 
+    # noinspection PyUnusedLocal
     @abstractmethod
     def save_data_types(self, data_layers: dict) -> bool:
         return False

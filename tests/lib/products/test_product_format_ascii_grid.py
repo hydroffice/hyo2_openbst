@@ -3,11 +3,11 @@ import unittest
 
 from hyo2.abc.lib.testing import Testing
 from hyo2.openbst.app import app_info  # for GDAL data
-from hyo2.openbst.lib.source import Source
-from hyo2.openbst.lib.sources.ascii_grid import ASCIIGrid
+from hyo2.openbst.lib.products.product import Product
+from hyo2.openbst.lib.products.product_format_ascii_grid import ProductFormatASCIIGrid
 
 
-class TestLibASCIIGrid(unittest.TestCase):
+class TestLibProductFormatASCIIGrid(unittest.TestCase):
 
     def setUp(self):
         self.testing = Testing(
@@ -16,13 +16,13 @@ class TestLibASCIIGrid(unittest.TestCase):
     def test_read_and_save(self):
 
         for input_path in self.testing.input_test_files(ext=".asc"):
-            layer_types = list(Source.retrieve_layer_and_format_types(input_path).keys())
-            fmt = ASCIIGrid(path=input_path)
+            layer_types = list(Product.retrieve_layer_and_format_types(input_path).keys())
+            fmt = ProductFormatASCIIGrid(path=input_path)
             layers = fmt.read_data_types(layer_types=layer_types)
             self.assertGreater(len(layers), 0)
 
 
 def suite():
     s = unittest.TestSuite()
-    s.addTests(unittest.TestLoader().loadTestsFromTestCase(TestLibASCIIGrid))
+    s.addTests(unittest.TestLoader().loadTestsFromTestCase(TestLibProductFormatASCIIGrid))
     return s

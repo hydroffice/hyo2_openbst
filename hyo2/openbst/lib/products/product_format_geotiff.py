@@ -3,13 +3,14 @@ import logging
 import gdal
 import numpy as np
 
-from hyo2.openbst.lib.sources.format import Format, FormatType
-from hyo2.openbst.lib.sources.layer import Layer, LayerType
+from hyo2.openbst.lib.products.product_format import ProductFormat, ProductFormatType
+from hyo2.openbst.lib.products.product_layer import ProductLayer
+from hyo2.openbst.lib.products.product_layer_type import ProductLayerType
 
 logger = logging.getLogger(__name__)
 
 
-class GeoTiff(Format):
+class ProductFormatGeoTiff(ProductFormat):
 
     def __init__(self, path):
         super().__init__(path=path)
@@ -35,11 +36,11 @@ class GeoTiff(Format):
 
         for layer_type in layer_types:
 
-            if layer_type != LayerType.MOSAIC:
+            if layer_type != ProductLayerType.MOSAIC:
                 logger.warning("unsupported layer type: %s" % layer_type)
                 continue
 
-            layer = Layer(layer_type=layer_type, format_type=FormatType.GEOTIFF)
+            layer = ProductLayer(layer_type=layer_type, format_type=ProductFormatType.GEOTIFF)
 
             try:
                 layer.array = self._ds.ReadAsArray()
@@ -77,7 +78,7 @@ class GeoTiff(Format):
 
         for layer_type in data_layers.keys():
 
-            if layer_type != LayerType.MOSAIC:
+            if layer_type != ProductLayerType.MOSAIC:
                 logger.warning("unsupported layer type: %s" % layer_type)
                 continue
 

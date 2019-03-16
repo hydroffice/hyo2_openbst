@@ -1,5 +1,5 @@
 import os
-from hyo2.openbst.lib.plotting import Plotting  # on Linux, this must be imported first
+from hyo2.openbst.lib.products.product_plotting import ProductPlotting  # on Linux, this must be imported first
 from hyo2.abc.app.app_info import AppInfo
 from hyo2.openbst import name
 from hyo2.openbst import __version__
@@ -53,8 +53,8 @@ app_info.plot_rc_context = {
         'grid.alpha': 0.2,
     }
 
-app_info.plot_bathy_cmap = Plotting.default_cmap
-app_info.plot_imagery_cmap = Plotting.default_cmap
+app_info.plot_bathy_cmap = ProductPlotting.default_cmap
+app_info.plot_imagery_cmap = ProductPlotting.default_cmap
 
 # settings
 

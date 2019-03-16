@@ -11,8 +11,8 @@ from matplotlib import image
 
 from hyo2.openbst.app import app_info
 from hyo2.openbst.app.bars.navigation_toolbar import NavToolbar
-from hyo2.openbst.lib.sources.layer import EraseType, FilterType, CloneType
-from hyo2.openbst.lib.plotting import Plotting
+from hyo2.openbst.lib.products.product_layer import ProductLayerEraseType, ProductLayerFilterType, ProductLayerCloneType
+from hyo2.openbst.lib.products.product_plotting import ProductPlotting
 
 logger = logging.getLogger(__name__)
 
@@ -40,7 +40,7 @@ class MainCanvas(QtWidgets.QFrame):
         self.cln_ax = None
         self.mouse_ax = None
         self.mouse_patch = patches.Rectangle(xy=(0, 0), width=100, height=100, fill=False,
-                                             edgecolor=Plotting.magenta_color, linestyle=":", linewidth=1.0)
+                                             edgecolor=ProductPlotting.magenta_color, linestyle=":", linewidth=1.0)
         self.mouse_patch.set_visible(False)
 
         self.layout = QtWidgets.QVBoxLayout()
@@ -177,13 +177,13 @@ class MainCanvas(QtWidgets.QFrame):
 
             erase_str = self.main_tab.product_erase_tool.algo.currentText()
             if erase_str == "Plain":
-                erase_type = EraseType.Plain
+                erase_type = ProductLayerEraseType.Plain
             elif erase_str == "Triangle":
-                erase_type = EraseType.Triangle
+                erase_type = ProductLayerEraseType.Triangle
             elif erase_str == "Bell":
-                erase_type = EraseType.Bell
+                erase_type = ProductLayerEraseType.Bell
             elif erase_str == "Hill":
-                erase_type = EraseType.Hill
+                erase_type = ProductLayerEraseType.Hill
             else:
                 raise RuntimeError("Unknown filter: %s" % erase_str)
 
@@ -201,9 +201,9 @@ class MainCanvas(QtWidgets.QFrame):
 
             filter_str = self.main_tab.product_modify_tool.algo.currentText()
             if filter_str == "Gaussian Filter":
-                filter_type = FilterType.Gaussian
+                filter_type = ProductLayerFilterType.Gaussian
             elif filter_str == "Median Filter":
-                filter_type = FilterType.Median
+                filter_type = ProductLayerFilterType.Median
             else:
                 raise RuntimeError("Unknown filter: %s" % filter_str)
 
@@ -224,21 +224,21 @@ class MainCanvas(QtWidgets.QFrame):
 
             filter_str = self.main_tab.product_clone_tool.algo.currentText()
             if filter_str == "Bell":
-                filter_type = CloneType.Bell
+                filter_type = ProductLayerCloneType.Bell
             elif filter_str == "Hill":
-                filter_type = CloneType.Hill
+                filter_type = ProductLayerCloneType.Hill
             elif filter_str == "Triangle":
-                filter_type = CloneType.Triangle
+                filter_type = ProductLayerCloneType.Triangle
             elif filter_str == "Plain":
-                filter_type = CloneType.Plain
+                filter_type = ProductLayerCloneType.Plain
             elif filter_str == "Averaged":
-                filter_type = CloneType.Averaged
+                filter_type = ProductLayerCloneType.Averaged
             elif filter_str == "Plain Noise":
-                filter_type = CloneType.Noise
+                filter_type = ProductLayerCloneType.Noise
             elif filter_str == "Triangular Noise":
-                filter_type = CloneType.TriangleNoise
+                filter_type = ProductLayerCloneType.TriangleNoise
             elif filter_str == "Bell-shaped Noise":
-                filter_type = CloneType.BellNoise
+                filter_type = ProductLayerCloneType.BellNoise
             else:
                 raise RuntimeError("Unknown filter: %s" % filter_str)
 
@@ -305,13 +305,13 @@ class MainCanvas(QtWidgets.QFrame):
                                                aspect='equal',
                                                origin=origin,
                                                interpolation='none',
-                                               cmap=Plotting.shadow_cmap,
+                                               cmap=ProductPlotting.shadow_cmap,
                                                vmin=0.0, vmax=1.0)
 
             self.cln_ax = self.data_ax.scatter(x=self.cln_x, y=self.cln_y,
-                                               s=24, c=Plotting.magenta_color, marker="*", alpha=0.8)
+                                               s=24, c=ProductPlotting.magenta_color, marker="*", alpha=0.8)
             self.fts_ax = self.data_ax.scatter(x=[], y=[],
-                                               s=24, c=Plotting.orange_color, marker="x", alpha=0.8)
+                                               s=24, c=ProductPlotting.orange_color, marker="x", alpha=0.8)
             self.mouse_ax = self.data_ax.add_patch(self.mouse_patch)
 
             def format_coord(easting, northing):

@@ -4,9 +4,9 @@ import numpy as np
 from PySide2 import QtGui, QtWidgets
 
 from hyo2.abc.lib.helper import Helper
-from hyo2.openbst.lib.sources.layer_type import LayerType
-from hyo2.openbst.lib.sources.format import FormatType
-from hyo2.openbst.lib.sources.layer import Layer
+from hyo2.openbst.lib.products.product_layer_type import ProductLayerType
+from hyo2.openbst.lib.products.product_format import ProductFormatType
+from hyo2.openbst.lib.products.product_layer import ProductLayer
 from hyo2.openbst.app import app_info
 from hyo2.openbst.app.bars.abstract_bar import AbstractBar
 
@@ -85,12 +85,12 @@ class FileProductsBar(AbstractBar):
         self.main_win.menu_file_products.addAction(self.open_output_act)
 
     def on_load_product(self) -> None:
-        logger.debug("User wants to load raster")
+        logger.debug("User wants to load raster/vector")
 
         self.main_win.switch_to_main_tab()
 
         # noinspection PyCallByClass
-        selection, _ = QtWidgets.QFileDialog.getOpenFileName(self, "Add raster",
+        selection, _ = QtWidgets.QFileDialog.getOpenFileName(self, "Add raster/vector",
                                                              self.settings.value(app_info.key_raster_import_folder),
                                                              "Supported formats (*.asc; *.bag; *.tif; *.tiff);;"
                                                              "BAG format (*.bag);;"
@@ -134,13 +134,13 @@ class FileProductsBar(AbstractBar):
         layer = self.prj.layers_dict[layer_key]
         title = "Save raster"
         ext = "All files (*.*)"
-        if layer.format_type == FormatType.BAG:
+        if layer.format_type == ProductFormatType.BAG:
             title = "Save BAG"
             ext = "BAG file (*.bag)"
-        elif layer.format_type == FormatType.GEOTIFF:
+        elif layer.format_type == ProductFormatType.GEOTIFF:
             title = "Save GeoTiff"
             ext = "GeoTiff file (*.tif)"
-        elif layer.format_type == FormatType.ASC_GRID:
+        elif layer.format_type == ProductFormatType.ASC_GRID:
             title = "Save ASCII Grid"
             ext = "ASCII Grid file (*.asc)"
 
@@ -182,7 +182,7 @@ class FileProductsBar(AbstractBar):
     def other_raster_layers_for_current_key(self) -> list:
         return self.prj.other_raster_layers_for_key(layer_key=self.current_layer_key())
 
-    def current_layer(self) -> Layer:
+    def current_layer(self) -> ProductLayer:
         return self.prj.layers_dict[self.current_layer_key()]
 
     def current_layer_array(self) -> np.ndarray:
@@ -200,21 +200,21 @@ class FileProductsBar(AbstractBar):
             return
 
         # we need to ask the user in case of ASCII Grid format
-        hint_type = LayerType.UNKNOWN
+        hint_type = ProductLayerType.UNKNOWN
         if os.path.splitext(path)[-1] in [".asc", ]:
 
             list_types = ["Bathymetry", "Uncertainty", "Mosaic"]
             # noinspection PyCallByClass
             type_str, ok = QtWidgets.QInputDialog.getItem(self, "ASCII Grid input", "Data type:", list_types, 0, False)
             if not ok:
-                return LayerType.UNKNOWN
+                return ProductLayerType.UNKNOWN
 
             if type_str == "Bathymetry":
-                hint_type = LayerType.BATHYMETRY
+                hint_type = ProductLayerType.BATHYMETRY
             elif type_str == "Uncertainty":
-                hint_type = LayerType.UNCERTAINTY
+                hint_type = ProductLayerType.UNCERTAINTY
             elif type_str == "Mosaic":
-                hint_type = LayerType.MOSAIC
+                hint_type = ProductLayerType.MOSAIC
 
         # store if the project had layers before adding
         had_layers = self.prj.has_layers()

@@ -19,7 +19,7 @@ def make_shadow_cmap() -> colors.ListedColormap:
     return colors.ListedColormap(shadow_colors)
 
 
-class Plotting:
+class ProductPlotting:
 
     default_cmap = cm.get_cmap("viridis")
 

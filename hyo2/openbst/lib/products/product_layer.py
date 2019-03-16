@@ -10,27 +10,27 @@ import numpy as np
 from scipy import ndimage
 from PySide2 import QtCore
 
-from hyo2.openbst.lib.sources.meta import Meta
-from hyo2.openbst.lib.sources.format import FormatType
-from hyo2.openbst.lib.sources.layer_plot import LayerPlot
-from hyo2.openbst.lib.sources.layer_type import LayerType
+from hyo2.openbst.lib.products.product_meta import ProductMeta
+from hyo2.openbst.lib.products.product_format import ProductFormatType
+from hyo2.openbst.lib.products.product_layer_plot import ProductLayerPlot
+from hyo2.openbst.lib.products.product_layer_type import ProductLayerType
 
 logger = logging.getLogger(__name__)
 
 
-class EraseType(Enum):
+class ProductLayerEraseType(Enum):
     Plain = 1
     Bell = 2
     Triangle = 3
     Hill = 4
 
 
-class FilterType(Enum):
+class ProductLayerFilterType(Enum):
     Gaussian = 1
     Median = 2
 
 
-class CloneType(Enum):
+class ProductLayerCloneType(Enum):
     Plain = 1
     Averaged = 2
     Bell = 3
@@ -41,10 +41,10 @@ class CloneType(Enum):
     TriangleNoise = 8
 
 
-class Layer:
+class ProductLayer:
 
-    def __init__(self, layer_type: LayerType, format_type: FormatType):
-        self.meta = Meta()
+    def __init__(self, layer_type: ProductLayerType, format_type: ProductFormatType):
+        self.meta = ProductMeta()
         self.settings = QtCore.QSettings()
 
         self._layer_type = layer_type
@@ -61,14 +61,14 @@ class Layer:
         self._undo_arrays = deque()
         self._undo_features = deque()
 
-        self.plot = LayerPlot(layer=self)
+        self.plot = ProductLayerPlot(layer=self)
 
     @property
-    def layer_type(self) -> LayerType:
+    def layer_type(self) -> ProductLayerType:
         return self._layer_type
 
     @property
-    def format_type(self) -> FormatType:
+    def format_type(self) -> ProductFormatType:
         return self._format_type
 
     @property
@@ -80,22 +80,22 @@ class Layer:
         self._modified_after_last_save = value
 
     def is_bathymetry(self) -> bool:
-        return self._layer_type == LayerType.BATHYMETRY
+        return self._layer_type == ProductLayerType.BATHYMETRY
 
     def is_uncertainty(self) -> bool:
-        return self._layer_type == LayerType.UNCERTAINTY
+        return self._layer_type == ProductLayerType.UNCERTAINTY
 
     def is_designated_soundings(self) -> bool:
-        return self._layer_type == LayerType.DESIGNATED
+        return self._layer_type == ProductLayerType.DESIGNATED
 
     def is_mosaic(self) -> bool:
-        return self._layer_type == LayerType.MOSAIC
+        return self._layer_type == ProductLayerType.MOSAIC
 
     def is_raster(self) -> bool:
-        return self._layer_type in [LayerType.BATHYMETRY, LayerType.UNCERTAINTY, LayerType.MOSAIC]
+        return self._layer_type in [ProductLayerType.BATHYMETRY, ProductLayerType.UNCERTAINTY, ProductLayerType.MOSAIC]
 
     def is_vector(self) -> bool:
-        return self._layer_type in [LayerType.DESIGNATED, ]
+        return self._layer_type in [ProductLayerType.DESIGNATED, ]
 
     @property
     def array(self) -> Optional[np.ndarray]:
@@ -249,7 +249,8 @@ class Layer:
         return True
 
     def erase(self, pnt_x, pnt_y, sz: int = 0, use_radius: bool = False,
-              erase_type: EraseType = EraseType.Plain, other_layers: Optional[list] = None) -> None:
+              erase_type: ProductLayerEraseType = ProductLayerEraseType.Plain,
+              other_layers: Optional[list] = None) -> None:
         logger.debug("erase -> (%d, %d), size: %d, use radius: %s" % (pnt_x, pnt_y, sz, use_radius))
 
         pnt_c, pnt_r = self.xy2cr(x=pnt_x, y=pnt_y)
@@ -286,13 +287,13 @@ class Layer:
                     elif (c < 0) or (c >= self.array.shape[1]):
                         continue
 
-                    if erase_type == EraseType.Plain:
+                    if erase_type == ProductLayerEraseType.Plain:
 
                         self.array[r, c] = np.nan
                         for other_layer in other_layers:
                             other_layer.array[r, c] = np.nan
 
-                    elif erase_type == EraseType.Triangle:
+                    elif erase_type == ProductLayerEraseType.Triangle:
 
                         sq = abs(dc) * abs(dc) + abs(dr) * abs(dr)
                         dist = math.sqrt(sq)
@@ -303,7 +304,7 @@ class Layer:
                             for other_layer in other_layers:
                                 other_layer.array[r, c] = np.nan
 
-                    elif erase_type == EraseType.Bell:
+                    elif erase_type == ProductLayerEraseType.Bell:
 
                         sq = abs(dc) * abs(dc) + abs(dr) * abs(dr)
                         o_fct = sq / span_sq
@@ -313,7 +314,7 @@ class Layer:
                             for other_layer in other_layers:
                                 other_layer.array[r, c] = np.nan
 
-                    elif erase_type == EraseType.Hill:
+                    elif erase_type == ProductLayerEraseType.Hill:
 
                         sq = abs(dc) * abs(dc) + abs(dr) * abs(dr)
                         o_fct = 1 - sq / span_sq
@@ -335,7 +336,7 @@ class Layer:
         self.plot.updated_layer_array()
 
     def modify(self, pnt_x, pnt_y, sz: int = 0, use_radius: bool = False, whole: bool = False,
-               filter_type=FilterType.Gaussian, random_noise: bool = False) -> None:
+               filter_type=ProductLayerFilterType.Gaussian, random_noise: bool = False) -> None:
         logger.debug("modify -> (%d, %d), size: %d, use radius: %s, random noise: %s"
                      % (pnt_x, pnt_y, sz, use_radius, random_noise))
 
@@ -348,7 +349,7 @@ class Layer:
         span = sz - 1
         span_sq = span * span
 
-        if filter_type in [FilterType.Gaussian, FilterType.Median]:
+        if filter_type in [ProductLayerFilterType.Gaussian, ProductLayerFilterType.Median]:
 
             if whole:
                 self._modify_whole(filter_type=filter_type,
@@ -364,13 +365,13 @@ class Layer:
         self._modified_after_last_save = True
         self.plot.updated_layer_array()
 
-    def _modify_whole(self, filter_type: FilterType, random_noise: bool) -> None:
+    def _modify_whole(self, filter_type: ProductLayerFilterType, random_noise: bool) -> None:
         logger.debug("filter to whole bathy raster")
 
         loc_array = self.array[:]
         # logger.debug("loc array:\n%s" % loc_array)
 
-        if filter_type == FilterType.Gaussian:
+        if filter_type == ProductLayerFilterType.Gaussian:
             # A filter which ignores NaNs is obtained by:
             # - Applying a standard filter to two auxiliary arrays V and W, and
             # - Taking the ratio of the two.
@@ -381,7 +382,7 @@ class Layer:
             w[np.isnan(loc_array)] = 0
             ww = ndimage.gaussian_filter(w, sigma=4.0)
             loc_array = vv / ww
-        elif filter_type == FilterType.Median:
+        elif filter_type == ProductLayerFilterType.Median:
             v = loc_array.copy()
             loc_array = ndimage.median_filter(v, footprint=3)
         else:
@@ -393,7 +394,7 @@ class Layer:
         if random_noise:
             logger.warning("not implemented")
 
-    def _modify_point(self, pnt_r, pnt_c, filter_type: FilterType,
+    def _modify_point(self, pnt_r, pnt_c, filter_type: ProductLayerFilterType,
                       span: int, span_sq: int, use_radius: bool, random_noise: bool) -> None:
         logger.debug("filter to picked point")
 
@@ -429,7 +430,7 @@ class Layer:
         loc_array[flags] = np.nan
         # logger.debug("medianed array:\n%s" % loc_array)
 
-        if filter_type == FilterType.Gaussian:
+        if filter_type == ProductLayerFilterType.Gaussian:
             # A Gaussian filter which ignores NaNs is obtained by:
             # - Applying a standard Gaussian filter to two auxiliary arrays V and W, and
             # - Taking the ratio of the two.
@@ -440,7 +441,7 @@ class Layer:
             w[np.isnan(loc_array)] = 0
             ww = ndimage.gaussian_filter(w, sigma=3.0)
             loc_array = vv / ww
-        elif filter_type == FilterType.Median:
+        elif filter_type == ProductLayerFilterType.Median:
             v = loc_array.copy()
             # noinspection PyBroadException
             try:
@@ -470,7 +471,7 @@ class Layer:
                     self.array[r, c] += ((np.random.random_sample() * 1.6 - 0.8) * loc_std)
 
     def clone(self, pnt_x, pnt_y, clone_x, clone_y, sz: int = 0, use_radius: bool = False,
-              filter_type: CloneType = CloneType.Plain) -> None:
+              filter_type: ProductLayerCloneType = ProductLayerCloneType.Plain) -> None:
         logger.debug("clone -> (%d, %d)>>(%d, %d), size: %d, use radius: %s, filter: %s"
                      % (clone_x, clone_y, pnt_x, pnt_y, sz, use_radius, filter_type))
 
@@ -491,7 +492,8 @@ class Layer:
         i_sum = 0.0
         i_valid = 0
         i_avg = 0.0
-        if filter_type in [CloneType.Noise, CloneType.BellNoise, CloneType.TriangleNoise]:
+        if filter_type in [ProductLayerCloneType.Noise, ProductLayerCloneType.BellNoise,
+                           ProductLayerCloneType.TriangleNoise]:
             for dc in range(-span, span + 1):
 
                 for dr in range(-span, span + 1):
@@ -542,38 +544,38 @@ class Layer:
                 elif (o_c < 0) or (o_c >= self.array.shape[1]):
                     continue
 
-                if filter_type == CloneType.Bell:
+                if filter_type == ProductLayerCloneType.Bell:
                     sq = abs(dc) * abs(dc) + abs(dr) * abs(dr)
                     o_fct = sq / span_sq
                     i_fct = 1. - o_fct
                     self.array[o_r, o_c] = self.array[i_r, i_c] * i_fct + self.array[o_r, o_c] * o_fct
 
-                elif filter_type == CloneType.Hill:
+                elif filter_type == ProductLayerCloneType.Hill:
                     sq = abs(dc) * abs(dc) + abs(dr) * abs(dr)
                     i_fct = sq / span_sq
                     o_fct = 1. - i_fct
                     self.array[o_r, o_c] = self.array[i_r, i_c] * i_fct + self.array[o_r, o_c] * o_fct
 
-                elif filter_type == CloneType.Triangle:
+                elif filter_type == ProductLayerCloneType.Triangle:
                     sq = abs(dc) * abs(dc) + abs(dr) * abs(dr)
                     dist = math.sqrt(sq)
                     o_fct = dist / span
                     i_fct = 1. - o_fct
                     self.array[o_r, o_c] = self.array[i_r, i_c] * i_fct + self.array[o_r, o_c] * o_fct
 
-                elif filter_type == CloneType.Averaged:
+                elif filter_type == ProductLayerCloneType.Averaged:
                     self.array[o_r, o_c] = (self.array[i_r, i_c] + self.array[o_r, o_c]) / 2.0
 
-                elif filter_type == CloneType.Noise:
+                elif filter_type == ProductLayerCloneType.Noise:
                     self.array[o_r, o_c] += self.array[i_r, i_c] - i_avg
 
-                elif filter_type == CloneType.BellNoise:
+                elif filter_type == ProductLayerCloneType.BellNoise:
                     sq = abs(dc) * abs(dc) + abs(dr) * abs(dr)
                     o_fct = sq / span_sq
                     i_fct = 1. - o_fct
                     self.array[o_r, o_c] += (self.array[i_r, i_c] - i_avg) * i_fct
 
-                elif filter_type == CloneType.TriangleNoise:
+                elif filter_type == ProductLayerCloneType.TriangleNoise:
                     sq = abs(dc) * abs(dc) + abs(dr) * abs(dr)
                     dist = math.sqrt(sq)
                     o_fct = dist / span
