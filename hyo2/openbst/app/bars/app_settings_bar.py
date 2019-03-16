@@ -12,8 +12,8 @@ logger = logging.getLogger(__name__)
 
 class AppSettingsBar(AbstractBar):
 
-    def __init__(self, main_win, processing_tab, canvas, prj):
-        super().__init__(processing_tab=processing_tab, main_win=main_win, canvas=canvas, prj=prj)
+    def __init__(self, main_win, main_tab, canvas, prj):
+        super().__init__(main_tab=main_tab, main_win=main_win, canvas=canvas, prj=prj)
         self.setWindowTitle("App Settings")
 
         tip = 'Show settings'

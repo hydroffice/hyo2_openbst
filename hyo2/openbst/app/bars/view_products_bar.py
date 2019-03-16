@@ -15,8 +15,8 @@ logger = logging.getLogger(__name__)
 
 class ViewProductsBar(AbstractBar):
 
-    def __init__(self, main_win, processing_tab, canvas, prj):
-        super().__init__(processing_tab=processing_tab, main_win=main_win, canvas=canvas, prj=prj)
+    def __init__(self, main_win, main_tab, canvas, prj):
+        super().__init__(main_tab=main_tab, main_win=main_win, canvas=canvas, prj=prj)
         self.setWindowTitle("View Raster/Vector")
 
         # info
@@ -59,7 +59,7 @@ class ViewProductsBar(AbstractBar):
         self.main_win.menu_view_products.addAction(self.histo_act)
 
     def on_info_raster(self) -> None:
-        layer_key = self.processing_tab.current_layer_key()
+        layer_key = self.main_tab.current_layer_key()
         logger.debug("User wants to retrieve info from %s" % layer_key)
 
         msg = "Layer Key: %s\n\n%s" % (layer_key, self.prj.layers_dict[layer_key].info_str())
@@ -68,14 +68,14 @@ class ViewProductsBar(AbstractBar):
 
     def on_data_spreadsheet(self) -> None:
         logger.debug("User wants to view raster data on a spreadsheet")
-        d = ArrayExplorer(layer=self.processing_tab.current_layer(), parent=self,
+        d = ArrayExplorer(layer=self.main_tab.current_layer(), parent=self,
                           with_menu=False, with_info_button=False, with_help_button=False)
         _ = d.exec_()
 
     def on_histo_raster(self) -> None:
         logger.debug("User wants to plot raster histogram")
 
-        array = self.processing_tab.current_layer_array()
+        array = self.main_tab.current_layer_array()
 
         min_range = np.nanmin(array)
         max_range = np.nanmax(array)

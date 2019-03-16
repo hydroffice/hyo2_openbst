@@ -23,7 +23,9 @@ class Plotting:
 
     default_cmap = cm.get_cmap("viridis")
 
-    bathy_cmap = colors.LinearSegmentedColormap.from_list("ocean",
+    bathy_cmap = cm.get_cmap("gist_rainbow").reversed()
+
+    ocean_cmap = colors.LinearSegmentedColormap.from_list("ocean",
                                                           ["#63006c", "#2b4ef4", "#2f73ff", "#4b8af4", "#bee2bf"],
                                                           gamma=0.5)
     cm.register_cmap(cmap=bathy_cmap)
@@ -36,7 +38,13 @@ class Plotting:
     blue_color = '#1C75C3'
 
     cmaps = bidict({
-            "ocean": bathy_cmap,
+            "rainbow": cm.get_cmap("rainbow"),
+            "gist_earth": cm.get_cmap("gist_earth"),
+            "gist_ncar": cm.get_cmap("gist_ncar"),
+            "gist_rainbow": cm.get_cmap("gist_rainbow"),
+            "gist_rainbow_reversed": bathy_cmap,
+            "terrain": cm.get_cmap("terrain"),
+            "ocean": ocean_cmap,
             "RdYlGn": uncertainty_cmap,
             "gray": mosaic_cmap,
             "viridis": default_cmap,

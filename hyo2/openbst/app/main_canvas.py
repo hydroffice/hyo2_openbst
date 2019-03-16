@@ -107,15 +107,15 @@ class MainCanvas(QtWidgets.QFrame):
 
         visible = False
         radius = 0
-        if self.main_tab.erase_tool.isVisible():
+        if self.main_tab.product_erase_tool.isVisible():
             visible = True
-            radius = self.main_tab.erase_tool.size.value()
-        elif self.main_tab.modify_tool.isVisible():
+            radius = self.main_tab.product_erase_tool.size.value()
+        elif self.main_tab.product_modify_tool.isVisible():
             visible = True
-            radius = self.main_tab.modify_tool.size.value()
-        elif self.main_tab.clone_tool.isVisible():
+            radius = self.main_tab.product_modify_tool.size.value()
+        elif self.main_tab.product_clone_tool.isVisible():
             visible = True
-            radius = self.main_tab.clone_tool.size.value()
+            radius = self.main_tab.product_clone_tool.size.value()
 
         if visible:
             # logger.debug("visible")
@@ -173,9 +173,9 @@ class MainCanvas(QtWidgets.QFrame):
         last_y = event.mouseevent.ydata
         logger.debug("ground coords -> x: %.3f, y: %.3f" % (last_x, last_y))  # click location
 
-        if self.main_tab.erase_tool.isVisible():
+        if self.main_tab.product_erase_tool.isVisible():
 
-            erase_str = self.main_tab.erase_tool.algo.currentText()
+            erase_str = self.main_tab.product_erase_tool.algo.currentText()
             if erase_str == "Plain":
                 erase_type = EraseType.Plain
             elif erase_str == "Triangle":
@@ -188,18 +188,18 @@ class MainCanvas(QtWidgets.QFrame):
                 raise RuntimeError("Unknown filter: %s" % erase_str)
 
             other_layers = None
-            if self.main_tab.erase_tool.all_layers.isChecked():
+            if self.main_tab.product_erase_tool.all_layers.isChecked():
                 other_layers = self.other_raster_layers_for_current_key()
 
             self.main_tab.current_layer().erase(pnt_x=last_x, pnt_y=last_y,
-                                                sz=self.main_tab.erase_tool.size.value(),
-                                                use_radius=self.main_tab.erase_tool.radius.isChecked(),
+                                                sz=self.main_tab.product_erase_tool.size.value(),
+                                                use_radius=self.main_tab.product_erase_tool.radius.isChecked(),
                                                 erase_type=erase_type,
                                                 other_layers=other_layers)
 
-        elif self.main_tab.modify_tool.isVisible():
+        elif self.main_tab.product_modify_tool.isVisible():
 
-            filter_str = self.main_tab.modify_tool.algo.currentText()
+            filter_str = self.main_tab.product_modify_tool.algo.currentText()
             if filter_str == "Gaussian Filter":
                 filter_type = FilterType.Gaussian
             elif filter_str == "Median Filter":
@@ -208,13 +208,13 @@ class MainCanvas(QtWidgets.QFrame):
                 raise RuntimeError("Unknown filter: %s" % filter_str)
 
             self.main_tab.current_layer().modify(pnt_x=last_x, pnt_y=last_y,
-                                                 sz=self.main_tab.modify_tool.size.value(),
-                                                 use_radius=self.main_tab.modify_tool.radius.isChecked(),
-                                                 whole=self.main_tab.modify_tool.whole.isChecked(),
+                                                 sz=self.main_tab.product_modify_tool.size.value(),
+                                                 use_radius=self.main_tab.product_modify_tool.radius.isChecked(),
+                                                 whole=self.main_tab.product_modify_tool.whole.isChecked(),
                                                  filter_type=filter_type,
-                                                 random_noise=self.main_tab.modify_tool.noise.isChecked())
+                                                 random_noise=self.main_tab.product_modify_tool.noise.isChecked())
 
-        elif self.main_tab.clone_tool.isVisible():
+        elif self.main_tab.product_clone_tool.isVisible():
 
             if len(self.cln_x) == 0:
                 msg = "First middle click on the area to be used\n as a reference for the cloning."
@@ -222,7 +222,7 @@ class MainCanvas(QtWidgets.QFrame):
                 QtWidgets.QMessageBox.information(self, "Cloning Info", msg, QtWidgets.QMessageBox.Ok)
                 return
 
-            filter_str = self.main_tab.clone_tool.algo.currentText()
+            filter_str = self.main_tab.product_clone_tool.algo.currentText()
             if filter_str == "Bell":
                 filter_type = CloneType.Bell
             elif filter_str == "Hill":
@@ -244,8 +244,8 @@ class MainCanvas(QtWidgets.QFrame):
 
             self.main_tab.current_layer().clone(pnt_x=last_x, pnt_y=last_y,
                                                 clone_x=self.cln_x[0], clone_y=self.cln_y[0],
-                                                sz=self.main_tab.clone_tool.size.value(),
-                                                use_radius=self.main_tab.clone_tool.radius.isChecked(),
+                                                sz=self.main_tab.product_clone_tool.size.value(),
+                                                use_radius=self.main_tab.product_clone_tool.radius.isChecked(),
                                                 filter_type=filter_type)
 
         else:  # nothing to do

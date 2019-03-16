@@ -15,8 +15,8 @@ logger = logging.getLogger(__name__)
 
 class FileProductsBar(AbstractBar):
 
-    def __init__(self, main_win, processing_tab, canvas, prj):
-        super().__init__(processing_tab=processing_tab, main_win=main_win, canvas=canvas, prj=prj)
+    def __init__(self, main_win, main_tab, canvas, prj):
+        super().__init__(main_tab=main_tab, main_win=main_win, canvas=canvas, prj=prj)
         self.setWindowTitle("File Raster/Vector")
 
         self.setMinimumWidth(480)
@@ -110,7 +110,7 @@ class FileProductsBar(AbstractBar):
         layer_key = self.current_layer_key()
         logger.debug("combo index: [%d] %s" % (index, layer_key))
         layer = self.current_layer()
-        self.processing_tab.change_layer(layer)
+        self.main_tab.change_layer(layer)
 
     def on_unload_raster(self):
         logger.debug("User wants to unload raster")
@@ -119,8 +119,8 @@ class FileProductsBar(AbstractBar):
 
         # if there are not layers, we triggered raster_unloaded; otherwise, now we trigger the visualization
         if len(self.prj.layers_list) == 0:
-            self.processing_tab.raster_unloaded()
-            self.processing_tab.on_empty_draw()
+            self.main_tab.raster_unloaded()
+            self.main_tab.on_empty_draw()
             self.canvas.resize_event()
         else:
             self.layers_combo.setCurrentIndex(0)
@@ -228,7 +228,7 @@ class FileProductsBar(AbstractBar):
             return
 
         if not had_layers:
-            self.processing_tab.on_first_draw()
+            self.main_tab.on_first_draw()
 
         self.update_layers_combo()
         self.layers_combo.setCurrentIndex(0)

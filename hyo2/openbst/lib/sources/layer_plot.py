@@ -230,7 +230,6 @@ class LayerPlot:
         self._shaded[rect_slice] = (rect_shaded + 1) / 2
 
     def reset_shading_settings(self):
-        self._with_shading = self.default_with_shading
         self._shade_exag = self.default_shade_exag
         self._shade_az = self.default_shade_az
         self._shade_elev = self.default_shade_elev

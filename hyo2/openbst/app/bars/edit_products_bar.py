@@ -11,8 +11,8 @@ logger = logging.getLogger(__name__)
 
 class EditProductsBar(AbstractBar):
 
-    def __init__(self, main_win, processing_tab, canvas, prj):
-        super().__init__(processing_tab=processing_tab, main_win=main_win, canvas=canvas, prj=prj)
+    def __init__(self, main_win, main_tab, canvas, prj):
+        super().__init__(main_tab=main_tab, main_win=main_win, canvas=canvas, prj=prj)
         self.setWindowTitle("Edit Raster/Vector")
 
         # colormap
@@ -104,69 +104,69 @@ class EditProductsBar(AbstractBar):
 
     def on_colors_tool(self):
         if self.colors_act.isChecked():
-            self.processing_tab.open_colors_tool()
+            self.main_tab.open_colors_tool()
 
             self.shift_act.setChecked(False)
             self.erase_act.setChecked(False)
             self.modify_act.setChecked(False)
             self.clone_act.setChecked(False)
         else:
-            self.processing_tab.close_colors_tool()
+            self.main_tab.close_colors_tool()
 
     def on_shift_tool(self):
         if self.shift_act.isChecked():
-            self.processing_tab.open_shift_tool()
+            self.main_tab.open_shift_tool()
 
             self.colors_act.setChecked(False)
             self.erase_act.setChecked(False)
             self.modify_act.setChecked(False)
             self.clone_act.setChecked(False)
         else:
-            self.processing_tab.close_shift_tool()
+            self.main_tab.close_shift_tool()
 
     def on_erase_tool(self):
         if self.erase_act.isChecked():
-            self.processing_tab.open_erase_tool()
+            self.main_tab.open_erase_tool()
 
             self.colors_act.setChecked(False)
             self.shift_act.setChecked(False)
             self.modify_act.setChecked(False)
             self.clone_act.setChecked(False)
         else:
-            self.processing_tab.close_erase_tool()
+            self.main_tab.close_erase_tool()
 
     def on_modify_tool(self):
         if self.modify_act.isChecked():
-            self.processing_tab.open_modify_tool()
+            self.main_tab.open_modify_tool()
 
             self.colors_act.setChecked(False)
             self.shift_act.setChecked(False)
             self.erase_act.setChecked(False)
             self.clone_act.setChecked(False)
         else:
-            self.processing_tab.close_modify_tool()
+            self.main_tab.close_modify_tool()
 
     def on_clone_tool(self):
         if self.clone_act.isChecked():
-            self.processing_tab.open_clone_tool()
+            self.main_tab.open_clone_tool()
 
             self.colors_act.setChecked(False)
             self.shift_act.setChecked(False)
             self.modify_act.setChecked(False)
             self.erase_act.setChecked(False)
         else:
-            self.processing_tab.close_clone_tool()
+            self.main_tab.close_clone_tool()
 
     def on_undo(self):
         logger.debug("User wants to undo the latest change")
 
-        layer = self.processing_tab.current_layer()
+        layer = self.main_tab.current_layer()
         if layer.is_raster():
             layer.undo_array()
         if layer.is_vector():
             layer.undo_features()
 
-        self.processing_tab.update_plot_data()
+        self.main_tab.update_plot_data()
 
     def activate_undo(self):
         self.undo_act.setEnabled(True)

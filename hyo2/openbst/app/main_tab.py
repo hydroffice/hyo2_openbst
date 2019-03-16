@@ -46,36 +46,36 @@ class MainTab(QtWidgets.QMainWindow):
         self.setCentralWidget(self.canvas)
 
         # ### FILE PRODUCTS BAR ###
-        self.file_products_bar = FileProductsBar(main_win=self.main_win, processing_tab=self,
+        self.file_products_bar = FileProductsBar(main_win=self.main_win, main_tab=self,
                                                  canvas=self.canvas, prj=self.prj)
         self.addToolBar(self.file_products_bar)
 
         # ### VIEW PRODUCTS TOOLBAR ###
-        self.view_products_bar = ViewProductsBar(main_win=self.main_win, processing_tab=self,
+        self.view_products_bar = ViewProductsBar(main_win=self.main_win, main_tab=self,
                                                  canvas=self.canvas, prj=self.prj)
         self.addToolBar(self.view_products_bar)
 
         # ### EDIT PRODUCTS TOOLBAR ###
-        self.edit_products_bar = EditProductsBar(main_win=self.main_win, processing_tab=self,
+        self.edit_products_bar = EditProductsBar(main_win=self.main_win, main_tab=self,
                                                  canvas=self.canvas, prj=self.prj)
         self.addToolBar(self.edit_products_bar)
 
         # ### APP SETTINGS BAR ###
-        self.app_settings_bar = AppSettingsBar(main_win=self.main_win, processing_tab=self,
+        self.app_settings_bar = AppSettingsBar(main_win=self.main_win, main_tab=self,
                                                canvas=self.canvas, prj=self.prj)
         self.addToolBar(self.app_settings_bar)
 
         # ### TOOLS ###
-        self.colors_tool = ProductColorsTool(main_win=self.main_win, main_tab=self,
-                                             main_canvas=self.canvas, prj=self.prj)
-        self.shift_tool = ProductShiftTool(main_win=self.main_win, main_tab=self,
-                                           main_canvas=self.canvas, prj=self.prj)
-        self.erase_tool = ProductEraseTool(main_win=self.main_win, main_tab=self,
-                                           main_canvas=self.canvas, prj=self.prj)
-        self.modify_tool = ProductModifyTool(main_win=self.main_win, main_tab=self,
-                                             main_canvas=self.canvas, prj=self.prj)
-        self.clone_tool = ProductCloneTool(main_win=self.main_win, main_tab=self,
-                                           main_canvas=self.canvas, prj=self.prj)
+        self.product_colors_tool = ProductColorsTool(main_win=self.main_win, main_tab=self,
+                                                     main_canvas=self.canvas, prj=self.prj)
+        self.product_shift_tool = ProductShiftTool(main_win=self.main_win, main_tab=self,
+                                                   main_canvas=self.canvas, prj=self.prj)
+        self.product_erase_tool = ProductEraseTool(main_win=self.main_win, main_tab=self,
+                                                   main_canvas=self.canvas, prj=self.prj)
+        self.product_modify_tool = ProductModifyTool(main_win=self.main_win, main_tab=self,
+                                                     main_canvas=self.canvas, prj=self.prj)
+        self.product_clone_tool = ProductCloneTool(main_win=self.main_win, main_tab=self,
+                                                   main_canvas=self.canvas, prj=self.prj)
 
         self.on_empty_draw()
 
@@ -195,10 +195,10 @@ class MainTab(QtWidgets.QMainWindow):
         self.close_erase_tool()
         self.close_modify_tool()
         self.close_clone_tool()
-        self.colors_tool.show()
+        self.product_colors_tool.show()
 
     def close_colors_tool(self):
-        self.colors_tool.hide()
+        self.product_colors_tool.hide()
 
     # shift
 
@@ -207,10 +207,10 @@ class MainTab(QtWidgets.QMainWindow):
         self.close_erase_tool()
         self.close_modify_tool()
         self.close_clone_tool()
-        self.shift_tool.show()
+        self.product_shift_tool.show()
 
     def close_shift_tool(self):
-        self.shift_tool.hide()
+        self.product_shift_tool.hide()
 
     # erase
 
@@ -219,10 +219,10 @@ class MainTab(QtWidgets.QMainWindow):
         self.close_shift_tool()
         self.close_modify_tool()
         self.close_clone_tool()
-        self.erase_tool.show()
+        self.product_erase_tool.show()
 
     def close_erase_tool(self):
-        self.erase_tool.hide()
+        self.product_erase_tool.hide()
 
     # modify
 
@@ -231,10 +231,10 @@ class MainTab(QtWidgets.QMainWindow):
         self.close_shift_tool()
         self.close_erase_tool()
         self.close_clone_tool()
-        self.modify_tool.show()
+        self.product_modify_tool.show()
 
     def close_modify_tool(self):
-        self.modify_tool.hide()
+        self.product_modify_tool.hide()
 
     # clone
 
@@ -243,10 +243,10 @@ class MainTab(QtWidgets.QMainWindow):
         self.close_shift_tool()
         self.close_erase_tool()
         self.close_modify_tool()
-        self.clone_tool.show()
+        self.product_clone_tool.show()
 
     def close_clone_tool(self):
-        self.clone_tool.hide()
+        self.product_clone_tool.hide()
 
     # undo
 
