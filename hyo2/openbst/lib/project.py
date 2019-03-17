@@ -8,8 +8,15 @@ from hyo2.abc.lib.progress.abstract_progress import AbstractProgress
 from hyo2.abc.lib.progress.cli_progress import CliProgress
 
 from hyo2.openbst.lib import lib_info
-from hyo2.openbst.lib.products.product import Product, ProductLayerType
-from hyo2.openbst.lib.products.product_format import ProductFormatType
+
+from hyo2.openbst.lib.raws.raw import Raw
+from hyo2.openbst.lib.raws.raw_layer import RawLayer
+from hyo2.openbst.lib.raws.raw_layer_type import RawLayerType
+from hyo2.openbst.lib.raws.raw_format_type import RawFormatType
+
+from hyo2.openbst.lib.products.product import Product
+from hyo2.openbst.lib.products.product_layer_type import ProductLayerType
+from hyo2.openbst.lib.products.product_format_type import ProductFormatType
 from hyo2.openbst.lib.products.product_format_bag import ProductFormatBag
 
 logger = logging.getLogger(__name__)
@@ -61,6 +68,16 @@ class Project:
     def open_output_folder(self):
         Helper.explore_folder(self.output_folder)
 
+    # ### EXPORT FOLDER ###
+
+    @property
+    def export_folder(self) -> str:
+        export_folder = os.path.join(self.output_folder, "export")
+        if not os.path.exists(export_folder):
+            os.makedirs(export_folder)
+
+        return export_folder
+
     # ### RAW FOLDER ###
 
     @property
@@ -88,19 +105,40 @@ class Project:
 
         logger.debug("cleared: %s" % self.raw_folder)
 
-    # ### EXPORT FOLDER ###
-
-    @property
-    def export_folder(self) -> str:
-        export_folder = os.path.join(self.output_folder, "export")
-        if not os.path.exists(export_folder):
-            os.makedirs(export_folder)
-
-        return export_folder
-
     # ### RAW SOURCES ###
 
-    
+    def add_raw_source(self, path: str) -> bool:
+
+        self.progress.start(title="Reading", text="Ongoing reading. Please wait!",
+                            init_value=10)
+
+        if not os.path.exists(path=path):
+            logger.warning("The source does not exist: %s" % path)
+            return False
+
+        layer_format_types = Raw.retrieve_layer_and_format_types(path)
+        if len(layer_format_types) == 0:
+            logger.warning("Unknown or invalid source: %s" % path)
+            return False
+
+        self.progress.update(value=60)
+
+        progress_quantum = 40 / (len(layer_format_types) + 1)
+
+        for layer_type in layer_format_types.keys():
+
+            layer_key = Raw.make_layer_key(path=path, data_type=layer_type)
+            logger.debug("raw key: %s" % layer_key)
+
+            # actually add the layer to the dicts and to the list
+            self._raw_paths_dict[layer_key] = RawLayer()
+            self._raw_list.append(layer_key)
+            self._raw_dict[layer_key] = path
+
+            self.progress.add(quantum=progress_quantum)
+
+        self.progress.end()
+        return True
 
     # ### PRODUCT LAYERS ###
 

@@ -3,7 +3,7 @@ import os
 
 from bidict import bidict
 
-from hyo2.openbst.lib.products.product_format import ProductFormatType
+from hyo2.openbst.lib.products.product_format_type import ProductFormatType
 from hyo2.openbst.lib.products.product_layer_type import ProductLayerType
 from hyo2.openbst.lib.products.product_format_bag import ProductFormatBag
 from hyo2.openbst.lib.products.product_format_geotiff import ProductFormatGeoTiff

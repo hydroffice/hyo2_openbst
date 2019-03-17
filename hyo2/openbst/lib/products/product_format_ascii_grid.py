@@ -4,7 +4,8 @@ import os
 import gdal
 import numpy as np
 
-from hyo2.openbst.lib.products.product_format import ProductFormat, ProductFormatType
+from hyo2.openbst.lib.products.product_format import ProductFormat
+from hyo2.openbst.lib.products.product_format_type import ProductFormatType
 from hyo2.openbst.lib.products.product_layer import ProductLayer
 
 logger = logging.getLogger(__name__)

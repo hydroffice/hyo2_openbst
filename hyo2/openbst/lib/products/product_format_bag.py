@@ -5,7 +5,7 @@ from h5py import File
 from lxml import etree
 
 from hyo2.openbst.lib.products.product_format import ProductFormat
-from hyo2.openbst.lib.products.product_format import ProductFormatType
+from hyo2.openbst.lib.products.product_format_type import ProductFormatType
 from hyo2.openbst.lib.products.product_layer import ProductLayer
 from hyo2.openbst.lib.products.product_layer_type import ProductLayerType
 
