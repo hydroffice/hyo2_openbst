@@ -49,6 +49,8 @@ class Setup:
             self._setup.outputs_folder = self._default_outputs_folder()
             self._setup.current_project = os.path.join(self._setup.projects_folder, "default.openbst")
 
+            self._setup.sync()
+
         else:
             if self.setup_version > lib_info.lib_version:
                 raise RuntimeError("Setup has a future version: %s" % self.setup_version)

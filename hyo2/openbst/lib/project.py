@@ -26,7 +26,7 @@ logger = logging.getLogger(__name__)
 
 class Project:
 
-    def __init__(self, prj_path: Optional[str] = None,
+    def __init__(self, prj_path: str = None,
                  progress: AbstractProgress = CliProgress(use_logger=True)):
 
         self._prj_ext = ".openbst"
@@ -71,6 +71,8 @@ class Project:
 
             self._info.project_version = lib_info.lib_version
             self._info.project_creation = date2num(datetime.utcnow(), self._time.units, self._time.calendar)
+
+            self._info.sync()
 
         else:
             if self.project_version > lib_info.lib_version:

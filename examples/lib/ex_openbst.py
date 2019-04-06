@@ -8,7 +8,7 @@ logging.basicConfig(level=logging.DEBUG, format="%(levelname)-9s %(name)s.%(func
 logger = logging.getLogger(__name__)
 
 load_alls = False
-load_kmalls = True
+load_kmalls = False
 load_bags = False
 
 testing = Testing(root_folder=os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir, os.pardir)))
