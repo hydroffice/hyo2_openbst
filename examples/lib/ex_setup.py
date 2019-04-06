@@ -9,6 +9,8 @@ logger = logging.getLogger(__name__)
 
 testing = Testing(root_folder=os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir, os.pardir)))
 
-setup = Setup(setup_name="test", root_folder=testing.output_data_folder())
+setup_names = Setup.list_setup_names(root_folder=testing.output_data_folder())
+logger.debug("setup names: %s" % (setup_names, ))
 
+setup = Setup(setup_name="test", root_folder=testing.output_data_folder())
 logger.debug("\n%s" % setup)

@@ -60,6 +60,16 @@ class Setup:
         setup_path = os.path.join(setups_folder, setup_name + ".setup")
         return setup_path
 
+    @classmethod
+    def list_setup_names(cls, root_folder) -> list:
+        file_list = list()
+        for root, _, files in os.walk(cls.make_setups_folder(root_folder=root_folder)):
+
+            for f in files:
+                if f.endswith(".setup"):
+                    file_list.append(f.replace(".setup", ""))
+        return file_list
+
     @property
     def setup_name(self) -> str:
         return self._setup_name
