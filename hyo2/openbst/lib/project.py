@@ -1,6 +1,7 @@
+from datetime import datetime
+import hashlib
 import logging
 import os
-from datetime import datetime
 from typing import Optional
 from netCDF4 import Dataset, date2num, num2date
 import numpy as np
@@ -40,15 +41,11 @@ class Project:
 
         self._info = None
         self._time = None
+        self._raws = None
+        self._raws_name = "raws"
+        self._products = None
+        self._products_name = "products"
         self._make_netcdf()
-
-    #     self._raw_paths_dict = dict()
-    #     self._raw_dict = dict()
-    #     self._raw_list = list()
-    #
-    #     self._product_layer_paths_dict = dict()
-    #     self._product_layers_dict = dict()
-    #     self._product_layers_list = list()
 
     def _make_netcdf(self):
         if os.path.exists(self._prj_path):
@@ -72,12 +69,17 @@ class Project:
             self._info.project_version = lib_info.lib_version
             self._info.project_creation = date2num(datetime.utcnow(), self._time.units, self._time.calendar)
 
+            self._raws = self._info.createGroup(self._raws_name)
+            self._products = self._info.createGroup(self._products_name)
+
             self._info.sync()
 
         else:
             if self.project_version > lib_info.lib_version:
                 raise RuntimeError("Project has a future version: %s" % self.project_version)
             self._time = self._info.variables["time"]
+            self._raws = self._info.groups[self._raws_name]
+            self._products = self._info.groups[self._products_name]
 
         logger.debug("open in '%s' mode: [%s] %s"
                      % (open_mode, self.project_version, self.project_info_path))
@@ -110,80 +112,104 @@ class Project:
     def project_creation(self) -> datetime:
         return num2date(self._info.project_creation, units=self._time.units, calendar=self._time.calendar)
 
-    # # ### EXPORT FOLDER ###
-    #
-    # @property
-    # def export_folder(self) -> str:
-    #     export_folder = os.path.join(self.output_folder, "export")
-    #     if not os.path.exists(export_folder):
-    #         os.makedirs(export_folder)
-    #
-    #     return export_folder
-    #
-    # # ### RAW FOLDER ###
-    #
-    # @property
-    # def raw_folder(self):
-    #     temp_folder = os.path.join(self.output_folder, "raw")
-    #     if not os.path.exists(temp_folder):
-    #         os.makedirs(temp_folder)
-    #
-    #     return temp_folder
-    #
-    # def is_raw_folder_empty(self) -> bool:
-    #     return len(os.listdir(self.raw_folder)) == 0
-    #
-    # def clear_raw_folder(self) -> None:
-    #
-    #     if self.is_raw_folder_empty():
-    #         return
-    #
-    #     try:
-    #         shutil.rmtree(self.raw_folder)
-    #
-    #     except PermissionError as e:
-    #         logger.info("unable to clean the raw folder: %s" % e)
-    #         return
-    #
-    #     logger.debug("cleared: %s" % self.raw_folder)
-    #
-    # # ### RAW SOURCES ###
-    #
-    # def add_raw_source(self, path: str) -> bool:
-    #
-    #     self.progress.start(title="Reading", text="Ongoing reading. Please wait!",
-    #                         init_value=10)
-    #
-    #     if not os.path.exists(path=path):
-    #         logger.warning("The source does not exist: %s" % path)
-    #         return False
-    #
-    #     layer_format_types = Raw.retrieve_layer_and_format_types(path)
-    #     if len(layer_format_types) == 0:
-    #         logger.warning("Unknown or invalid source: %s" % path)
-    #         return False
-    #
-    #     self.progress.update(value=60)
-    #
-    #     progress_quantum = 40 / (len(layer_format_types) + 1)
-    #
-    #     for layer_type in layer_format_types.keys():
-    #
-    #         layer_key = Raw.make_layer_key(path=path, data_type=layer_type)
-    #         logger.debug("raw key: %s" % layer_key)
-    #
-    #         # actually add the layer to the dicts and to the list
-    #         self._raw_paths_dict[layer_key] = RawLayer()
-    #         self._raw_list.append(layer_key)
-    #         self._raw_dict[layer_key] = path
-    #
-    #         self.progress.add(quantum=progress_quantum)
-    #
-    #     self.progress.end()
-    #     return True
-    #
-    # # ### PRODUCT LAYERS ###
-    #
+    @classmethod
+    def hash_string(cls, input_str: str) -> str:
+        return hashlib.sha256(input_str.encode('utf-8')).hexdigest()
+
+    # ### RAWS ###
+
+    def valid_raws(self) -> list:
+        valid_raws = list()
+        for raw_key, raw in self._raws.variables.items():
+            if raw.deleted == 0:
+                valid_raws.append(raw_key)
+        return valid_raws
+
+    def add_raw(self, path: str) -> bool:
+        self.progress.start(title="Reading", text="Ongoing reading. Please wait!",
+                            init_value=10)
+
+        path = os.path.normpath(path)
+        if not os.path.exists(path=path):
+            logger.warning("The source does not exist: %s" % path)
+            return False
+
+        path_hash = self.hash_string(path)
+        if path_hash in self._raws.variables.keys():
+            logger.info("File already present: %s" % path)
+            return False
+
+        path_var = self._raws.createVariable(path_hash, 'u1')
+        path_var.path = path
+        path_var.deleted = 0
+
+        logger.debug("added: %s" % path)
+
+        self.progress.end()
+        return True
+
+    def remove_raw(self, path: str) -> bool:
+        self.progress.start(title="Deleting", text="Ongoing deleting. Please wait!",
+                            init_value=10)
+
+        path_hash = self.hash_string(path)
+        if path_hash not in self._raws.variables.keys():
+            logger.info("File already removed: %s" % path)
+            return False
+
+        self._raws[path_hash].deleted = 1
+        logger.debug("removed: %s" % path)
+
+        self.progress.end()
+        return True
+
+    # ### PRODUCTS ###
+
+    def valid_products(self) -> list:
+        valid_products = list()
+        for product_key, product in self._products.variables.items():
+            if product.deleted == 0:
+                valid_products.append(product_key)
+        return valid_products
+
+    def add_product(self, path: str) -> bool:
+        self.progress.start(title="Reading", text="Ongoing reading. Please wait!",
+                            init_value=10)
+
+        path = os.path.normpath(path)
+        if not os.path.exists(path=path):
+            logger.warning("The source does not exist: %s" % path)
+            return False
+
+        path_hash = self.hash_string(path)
+        if path_hash in self._products.variables.keys():
+            logger.info("File already present: %s" % path)
+            return False
+
+        path_var = self._products.createVariable(path_hash, 'u1')
+        path_var.path = path
+        path_var.deleted = 0
+
+        logger.debug("added: %s" % path)
+
+        self.progress.end()
+        return True
+
+    def remove_product(self, path: str) -> bool:
+        self.progress.start(title="Deleting", text="Ongoing deleting. Please wait!",
+                            init_value=10)
+
+        path_hash = self.hash_string(path)
+        if path_hash not in self._products.variables.keys():
+            logger.info("File already removed: %s" % path)
+            return False
+
+        self._products[path_hash].deleted = 1
+        logger.debug("removed: %s" % path)
+
+        self.progress.end()
+        return True
+
     # @classmethod
     # def is_product_vr(cls, path: str) -> bool:
     #
@@ -405,4 +431,6 @@ class Project:
         msg += "  <project version: %s>\n" % self.project_version
         msg += "  <project creation: %s>\n" % self.project_creation
         msg += "  <info path: %s>\n" % self.project_info_path
+        msg += "  <valid raws: %d>\n" % len(self.valid_raws())
+        msg += "  <valid products: %d>\n" % len(self.valid_products())
         return msg

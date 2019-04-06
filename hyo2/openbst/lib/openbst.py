@@ -45,7 +45,7 @@ class OpenBST:
     # ### project ###
 
     @property
-    def project(self) -> Project:
+    def prj(self) -> Project:
         return self._prj
 
     # ### OTHER ###
@@ -54,7 +54,7 @@ class OpenBST:
         msg = "<%s>\n" % self.__class__.__name__
 
         msg += "  <root folder: %s>\n" % self.root_folder()
-        msg += "  <setup: %s>\n" % self._setup.setup_path
-        msg += "  <project: %s>\n" % self._prj.project_info_path
+        msg += "  <setup: %s>\n" % self.setup.setup_path
+        msg += "  <project: %s>\n" % self.prj.project_info_path
 
         return msg
