@@ -1,7 +1,9 @@
 import logging
 import os
+from datetime import datetime
 from typing import Optional
-from netCDF4 import Dataset
+from netCDF4 import Dataset, date2num, num2date
+import numpy as np
 
 from hyo2.abc.lib.helper import Helper
 from hyo2.openbst.lib import lib_info
@@ -20,26 +22,40 @@ class Setup:
         self._setup_path = self.make_setup_path(setups_folder=self._setups_folder,
                                                 setup_name=setup_name)
         self._setup = None
+        self._time = None
         self._make_netcdf()
 
-    def _make_netcdf(self):
-        open_mode = "w"
+    def _make_netcdf(self) -> None:
         if os.path.exists(self._setup_path):
             open_mode = "a"
+        else:
+            open_mode = "w"
 
         self._setup = Dataset(filename=self._setup_path, mode=open_mode)
-        logger.debug("open in '%s' mode: [%s] %s" % (open_mode, self._setup.data_model, self._setup_path))
 
         if open_mode == "w":
-            self._setup.version = lib_info.lib_version
+
+            self._setup.Conventions = 'CF-1.6'
+
+            # Create time coordinate
+            tdim = self._setup.createDimension('time', None)
+            self._time = self._setup.createVariable('time', np.float64, (tdim.name,))
+            self._time.units = 'milliseconds since 1970-01-01T00:00:00'
+            self._time.calendar = 'gregorian'
+
+            self._setup.setup_version = lib_info.lib_version
+            self._setup.setup_creation = date2num(datetime.utcnow(), self._time.units, self._time.calendar)
             self._setup.projects_folder = self._default_projects_folder()
             self._setup.outputs_folder = self._default_outputs_folder()
+            self._setup.current_project = os.path.join(self._setup.projects_folder, "default.openbst")
 
         else:
-            if self._setup.version > lib_info.lib_version:
+            if self.setup_version > lib_info.lib_version:
                 raise RuntimeError("Setup has a future version: %s" % self.setup_version)
+            self._time = self._setup.variables["time"]
 
-        logger.debug("setup version: %s" % self._setup.version)
+        logger.debug("open in '%s' mode: [%s] %s"
+                     % (open_mode, self.setup_version, self.setup_path))
 
     @classmethod
     def make_setup_name(cls, setup_name: str) -> str:
@@ -64,7 +80,6 @@ class Setup:
     def list_setup_names(cls, root_folder) -> list:
         file_list = list()
         for root, _, files in os.walk(cls.make_setups_folder(root_folder=root_folder)):
-
             for f in files:
                 if f.endswith(".setup"):
                     file_list.append(f.replace(".setup", ""))
@@ -78,16 +93,20 @@ class Setup:
     def setups_folder(self) -> str:
         return self._setups_folder
 
+    def open_setups_folder(self) -> None:
+        Helper.explore_folder(self._setups_folder)
+
     @property
     def setup_path(self) -> str:
         return self._setup_path
 
     @property
     def setup_version(self) -> str:
-        return self._setup.version
+        return self._setup.setup_version
 
-    def open_setups_folder(self) -> None:
-        Helper.explore_folder(self._setups_folder)
+    @property
+    def setup_creation(self) -> datetime:
+        return num2date(self._setup.setup_creation, units=self._time.units, calendar=self._time.calendar)
 
     # ### PROJECTS FOLDER ###
 
@@ -110,6 +129,25 @@ class Setup:
 
     def open_projects_folder(self) -> None:
         Helper.explore_folder(self.projects_folder)
+
+    # ### CURRENT PROJECT ###
+
+    @property
+    def current_project(self) -> str:
+        return self._setup.current_project
+
+    @current_project.setter
+    def current_project(self, current_project: str) -> None:
+        if not os.path.exists(current_project):
+            raise RuntimeError("the passed project file does not exist: %s"
+                               % current_project)
+        if not current_project.endswith(".openbst"):
+            raise RuntimeError("the passed project file has invalid extension: %s"
+                               % current_project)
+        self._setup.current_project = current_project
+
+    def open_current_project(self) -> None:
+        Helper.explore_folder(os.path.dirname(self.current_project))
 
     # ### OUTPUTS FOLDER ###
 
@@ -137,8 +175,10 @@ class Setup:
 
     def __repr__(self) -> str:
         msg = "<%s>\n" % self.__class__.__name__
-        msg += "  <path: %s>\n" % self.setup_path
-        msg += "  <version: %s>\n" % self.setup_version
+        msg += "  <setup version: %s>\n" % self.setup_version
+        msg += "  <setup creation: %s>\n" % self.setup_creation
+        msg += "  <setup path: %s>\n" % self.setup_path
         msg += "  <projects folder: %s>\n" % self.projects_folder
         msg += "  <outputs folder: %s>\n" % self.outputs_folder
+        msg += "  <current project path: %s>\n" % self.current_project
         return msg

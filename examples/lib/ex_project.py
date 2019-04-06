@@ -13,7 +13,9 @@ load_bags = False
 
 testing = Testing(root_folder=os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir, os.pardir)))
 
-prj = Project(project_name="test", default_root_folder=testing.output_data_folder())
+prj_path = os.path.join(testing.output_data_folder(), "project.openbst")
+
+prj = Project(prj_path=prj_path)
 
 # if load_alls:
 #     for input_path in testing.download_test_files(ext=".all"):
@@ -27,4 +29,4 @@ prj = Project(project_name="test", default_root_folder=testing.output_data_folde
 #     for input_path in testing.download_test_files(ext=".bag"):
 #         prj.load_product_from_source(input_path)
 
-# logger.debug("\n%s" % prj)
+logger.debug("\n%s" % prj)

@@ -1,7 +1,9 @@
 import logging
 import os
-import shutil
+from datetime import datetime
 from typing import Optional
+from netCDF4 import Dataset, date2num, num2date
+import numpy as np
 
 from hyo2.abc.lib.helper import Helper
 from hyo2.abc.lib.progress.abstract_progress import AbstractProgress
@@ -24,14 +26,21 @@ logger = logging.getLogger(__name__)
 
 class Project:
 
-    def __init__(self,
-                 project_name: Optional[str] = None,
+    def __init__(self, prj_path: Optional[str] = None,
                  progress: AbstractProgress = CliProgress(use_logger=True)):
 
-        self._project_name = self.make_project_name(project_name)
-        self._project_path = self.make_project_name(project_name)
+        self._prj_ext = ".openbst"
+        self._prj_path = None
+        self._prj_name = None
+        self._info_ext = ".info"
+        self._info_path = None
+        self.project_path = prj_path
 
         self.progress = progress
+
+        self._info = None
+        self._time = None
+        self._make_netcdf()
 
     #     self._raw_paths_dict = dict()
     #     self._raw_dict = dict()
@@ -41,18 +50,63 @@ class Project:
     #     self._product_layers_dict = dict()
     #     self._product_layers_list = list()
 
+    def _make_netcdf(self):
+        if os.path.exists(self._prj_path):
+            open_mode = "a"
+        else:
+            open_mode = "w"
+            os.makedirs(self._prj_path)
+
+        self._info = Dataset(filename=self._info_path, mode=open_mode)
+
+        if open_mode == "w":
+
+            self._info.Conventions = 'CF-1.6'
+
+            # Create time coordinate
+            tdim = self._info.createDimension('time', None)
+            self._time = self._info.createVariable('time', np.float64, (tdim.name,))
+            self._time.units = 'milliseconds since 1970-01-01T00:00:00'
+            self._time.calendar = 'gregorian'
+
+            self._info.project_version = lib_info.lib_version
+            self._info.project_creation = date2num(datetime.utcnow(), self._time.units, self._time.calendar)
+
+        else:
+            if self.project_version > lib_info.lib_version:
+                raise RuntimeError("Project has a future version: %s" % self.project_version)
+            self._time = self._info.variables["time"]
+
+        logger.debug("open in '%s' mode: [%s] %s"
+                     % (open_mode, self.project_version, self.project_info_path))
+
     # ### PROJECT NAME ###
 
-    @classmethod
-    def make_project_name(cls, project_name: str) -> str:
-        if project_name is None:
-            return "default"
-        project_name = project_name.replace(" ", "_")
-        return project_name
+    @property
+    def project_path(self):
+        return self._prj_path
+
+    @project_path.setter
+    def project_path(self, project_path: str) -> None:
+        self._prj_path = os.path.normpath(project_path)
+        self._prj_name = os.path.basename(project_path).replace(self._prj_ext, "").replace(" ", "_")
+        self._info_path = os.path.normpath(os.path.join(self._prj_path, self._prj_name + self._info_ext))
 
     @property
     def project_name(self):
-        return self._project_name
+        return self._prj_name
+
+    @property
+    def project_info_path(self):
+        return self._info_path
+
+    @property
+    def project_version(self) -> str:
+        return self._info.project_version
+
+    @property
+    def project_creation(self) -> datetime:
+        return num2date(self._info.project_creation, units=self._time.units, calendar=self._time.calendar)
 
     # # ### EXPORT FOLDER ###
     #
@@ -340,16 +394,13 @@ class Project:
     #         Helper.explore_folder(os.path.dirname(output_path))
     #
     #     return True
-    #
-    # # ### OTHER ###
-    #
-    # def __repr__(self):
-    #     msg = "<%s>\n" % self.__class__.__name__
-    #
-    #     msg += "  <output folder: %s>\n" % self.output_folder
-    #     msg += "  <raw folder: %s>\n" % self.raw_folder
-    #     msg += "  <export folder: %s>\n" % self.export_folder
-    #     msg += "  <raws: %s>\n" % len(self._raw_paths_dict)
-    #     msg += "  <product layers: %s>\n" % len(self._product_layer_paths_dict)
-    #
-    #     return msg
+
+    # ### OTHER ###
+
+    def __repr__(self):
+        msg = "<%s>\n" % self.__class__.__name__
+        msg += "  <project name: %s>\n" % self.project_name
+        msg += "  <project version: %s>\n" % self.project_version
+        msg += "  <project creation: %s>\n" % self.project_creation
+        msg += "  <info path: %s>\n" % self.project_info_path
+        return msg

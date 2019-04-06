@@ -1,7 +1,6 @@
-import logging
 import os
 import unittest
-import shutil
+
 
 from hyo2.abc.lib.testing import Testing
 from hyo2.openbst.app import app_info  # for GDAL data
@@ -44,6 +43,10 @@ class TestLibSetup(unittest.TestCase):
     def test_outputs_folder(self):
         setup = Setup(setup_name=self.setup_name, root_folder=self.root_folder)
         self.assertTrue(os.path.exists(setup.outputs_folder))
+
+    def test_current_project(self):
+        setup = Setup(setup_name=self.setup_name, root_folder=self.root_folder)
+        self.assertGreater(len(setup.current_project), 0)
 
 
 def suite():

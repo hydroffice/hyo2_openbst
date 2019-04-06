@@ -8,6 +8,7 @@ from hyo2.abc.lib.progress.cli_progress import CliProgress
 
 from hyo2.openbst.lib import lib_info
 from hyo2.openbst.lib.setup import Setup
+from hyo2.openbst.lib.project import Project
 
 logger = logging.getLogger(__name__)
 
@@ -18,9 +19,10 @@ class OpenBST:
                  setup_name: Optional[str] = None,
                  progress: AbstractProgress = CliProgress(use_logger=True)) -> None:
 
-        self._setup = Setup(setup_name=setup_name, root_folder=self.root_folder())
-
         self.progress = progress
+
+        self._setup = Setup(setup_name=setup_name, root_folder=self.root_folder())
+        self._prj = Project(prj_path=self._setup.current_project, progress=self.progress)
 
     # ### ROOT FOLDER ###
 
@@ -40,12 +42,19 @@ class OpenBST:
     def setup(self) -> Setup:
         return self._setup
 
+    # ### project ###
+
+    @property
+    def project(self) -> Project:
+        return self._prj
+
     # ### OTHER ###
 
     def __repr__(self):
         msg = "<%s>\n" % self.__class__.__name__
 
         msg += "  <root folder: %s>\n" % self.root_folder()
-        msg += "  <setup: %s>\n" % (self._setup is not None)
+        msg += "  <setup: %s>\n" % self._setup.setup_path
+        msg += "  <project: %s>\n" % self._prj.project_info_path
 
         return msg
