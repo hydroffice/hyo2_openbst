@@ -1,6 +1,5 @@
 import logging
 import os
-import os.path
 import shutil
 from hyo2.abc.lib.ftp import Ftp
 
