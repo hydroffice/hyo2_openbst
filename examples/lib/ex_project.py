@@ -7,7 +7,7 @@ from hyo2.openbst.lib.project import Project
 logging.basicConfig(level=logging.DEBUG, format="%(levelname)-9s %(name)s.%(funcName)s:%(lineno)d > %(message)s")
 logger = logging.getLogger(__name__)
 
-load_alls = True
+load_alls = False
 load_kmalls = False
 load_bags = True
 
@@ -33,9 +33,9 @@ if load_bags:
     for input_path in testing.download_test_files(ext=".bag"):
         prj.add_product(input_path)
 
-    for input_path in testing.download_test_files(ext=".bag"):
-        prj.remove_product(input_path)
-        break
+    for idx, input_path in enumerate(testing.download_test_files(ext=".bag")):
+        if idx == 1:
+            prj.remove_product(input_path)
 
 logger.debug("valid raws: %s" % (prj.valid_raws()))
 

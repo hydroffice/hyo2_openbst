@@ -115,16 +115,6 @@ class ProductFormatBag(ProductFormat):
         var._CoordinateTransformType = "Projection"
         var._CoordinateAxisTypes = "GeoX GeoY"
 
-        var.longitude_of_central_meridian = -69.0  # double
-        var.false_easting = 500000.0  # double
-        var.false_northing = 0.0  # double
-        var.latitude_of_projection_origin = 0.0  # double
-        var.scale_factor_at_central_meridian = 0.9996  # double
-        var.long_name = "CRS definition"
-        var.longitude_of_prime_meridian = 0.0  # double
-        var.semi_major_axis = 6378137.0  # double
-        var.inverse_flattening = 298.2572235629972  # double
-
         # create bathymetry
         var = self.nc.createVariable('bathymetry', 'f4', ('y', 'x'),
                                      zlib=False, least_significant_digit=3, fill_value=np.nan)
@@ -134,22 +124,18 @@ class ProductFormatBag(ProductFormat):
         array[array == 1000000.0] = np.nan
         var[:, :] = array
 
-        try:
-            self._uncertainty = self._bag_root['uncertainty']
-            var = self.nc.createVariable('uncertainty', 'f4', ('y', 'x'),
-                                         zlib=False, least_significant_digit=3, fill_value=np.nan)
-            var.long_name = "Uncertainty"
-            var.grid_mapping = "crs"
-            array = self._uncertainty[()]
-            array[array == 1000000.0] = np.nan
-            var[:, :] = array
-        except Exception as e:
-            logger.error("while reading 'BAG_root/uncertainty', %s" % e)
+        # try:
+        #     self._uncertainty = self._bag_root['uncertainty']
+        #     var = self.nc.createVariable('uncertainty', 'f4', ('y', 'x'),
+        #                                  zlib=False, least_significant_digit=3, fill_value=np.nan)
+        #     var.long_name = "Uncertainty"
+        #     var.grid_mapping = "crs"
+        #     array = self._uncertainty[()]
+        #     array[array == 1000000.0] = np.nan
+        #     var[:, :] = array
+        # except Exception as e:
+        #     logger.error("while reading 'BAG_root/uncertainty', %s" % e)
 
-        #         layer.array = self._uncertainty[()]
-        #         layer.array[layer.array == 1000000.0] = np.nan
-        #         logger.debug("uncertainty array: %s" % (layer.array.shape, ))
-        #
         #     elif layer_type == ProductLayerType.DESIGNATED:
         #
         #         try:
