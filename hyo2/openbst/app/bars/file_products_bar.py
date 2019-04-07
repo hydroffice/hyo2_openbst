@@ -5,7 +5,7 @@ from PySide2 import QtGui, QtWidgets
 
 from hyo2.abc.lib.helper import Helper
 from hyo2.openbst.lib.products.product_layer_type import ProductLayerType
-from hyo2.openbst.lib.products.product_format_type import ProductFormatType
+from hyo2.openbst.lib.products.formats.product_format_type import ProductFormatType
 from hyo2.openbst.lib.products.product_layer import ProductLayer
 from hyo2.openbst.app import app_info
 from hyo2.openbst.app.bars.abstract_bar import AbstractBar

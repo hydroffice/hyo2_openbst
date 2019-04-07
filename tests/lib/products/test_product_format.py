@@ -2,9 +2,8 @@ import os
 import unittest
 
 from hyo2.abc.lib.testing import Testing
-from hyo2.openbst.app import app_info  # for GDAL data
-from hyo2.openbst.lib.products.product_format import ProductFormat
-from hyo2.openbst.lib.products.product_format_type import ProductFormatType
+from hyo2.openbst.lib.products.formats.product_format import ProductFormat
+from hyo2.openbst.lib.products.formats.product_format_type import ProductFormatType
 
 
 class FakeFormat(ProductFormat):

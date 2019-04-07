@@ -2,9 +2,8 @@ import os
 import unittest
 
 from hyo2.abc.lib.testing import Testing
-from hyo2.openbst.app import app_info  # for GDAL data
 from hyo2.openbst.lib.products.product import Product
-from hyo2.openbst.lib.products.product_format_bag import ProductFormatBag
+from hyo2.openbst.lib.products.formats.product_format_bag import ProductFormatBag
 
 
 class TestLibProductFormatBag(unittest.TestCase):

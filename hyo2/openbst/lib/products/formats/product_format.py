@@ -2,6 +2,7 @@ from abc import ABC, abstractmethod
 import logging
 
 import gdal
+from netCDF4 import Dataset
 
 from hyo2.openbst.lib.products.product_meta import ProductMeta
 
@@ -10,8 +11,9 @@ logger = logging.getLogger(__name__)
 
 class ProductFormat(ABC):
 
-    def __init__(self, path):
+    def __init__(self, path: str, nc: Dataset):
         self.path = path
+        self.nc = nc
         self.meta = ProductMeta()
 
     def retrieve_spatial_info_with_gdal(self):
@@ -61,12 +63,11 @@ class ProductFormat(ABC):
             logger.warning("while using GDAL, %s" % e)
             return False
 
-    # noinspection PyUnusedLocal
     @abstractmethod
-    def read_data_types(self, data_types: list) -> dict:
-        return dict()
+    def convert(self) -> int:
+        return 0
 
     # noinspection PyUnusedLocal
     @abstractmethod
-    def save_data_types(self, data_layers: dict) -> bool:
-        return False
+    def export(self) -> int:
+        return 0

@@ -2,25 +2,15 @@ from datetime import datetime
 import hashlib
 import logging
 import os
-from typing import Optional
 from netCDF4 import Dataset, date2num, num2date
 import numpy as np
 
-from hyo2.abc.lib.helper import Helper
 from hyo2.abc.lib.progress.abstract_progress import AbstractProgress
 from hyo2.abc.lib.progress.cli_progress import CliProgress
 
 from hyo2.openbst.lib import lib_info
 
-from hyo2.openbst.lib.raws.raw import Raw
-from hyo2.openbst.lib.raws.raw_layer import RawLayer
-from hyo2.openbst.lib.raws.raw_layer_type import RawLayerType
-from hyo2.openbst.lib.raws.raw_format_type import RawFormatType
-
 from hyo2.openbst.lib.products.product import Product
-from hyo2.openbst.lib.products.product_layer_type import ProductLayerType
-from hyo2.openbst.lib.products.product_format_type import ProductFormatType
-from hyo2.openbst.lib.products.product_format_bag import ProductFormatBag
 
 logger = logging.getLogger(__name__)
 
@@ -48,11 +38,13 @@ class Project:
         self._make_netcdf()
 
     def _make_netcdf(self):
-        if os.path.exists(self._prj_path):
+        if not os.path.exists(self._prj_path):
+            os.makedirs(self._prj_path)
+
+        if os.path.exists(self._info_path):
             open_mode = "a"
         else:
             open_mode = "w"
-            os.makedirs(self._prj_path)
 
         self._info = Dataset(filename=self._info_path, mode=open_mode)
 
@@ -132,18 +124,20 @@ class Project:
         path = os.path.normpath(path)
         if not os.path.exists(path=path):
             logger.warning("The source does not exist: %s" % path)
+            self.progress.end()
             return False
 
         path_hash = self.hash_string(path)
         if path_hash in self._raws.variables.keys():
-            logger.info("File already present: %s" % path)
-            return False
-
-        path_var = self._raws.createVariable(path_hash, 'u1')
-        path_var.path = path
-        path_var.deleted = 0
-
-        logger.debug("added: %s" % path)
+            self._raws.variables[path_hash].source_path = path
+            if self._raws.variables[path_hash].deleted == 1:
+                self._raws.variables[path_hash].deleted = 0
+                logger.info("Raw entry was deleted: %s" % path)
+        else:
+            path_var = self._raws.createVariable(path_hash, 'u1')
+            path_var.source_path = path
+            path_var.deleted = 0
+            logger.debug("Raw entry was added: %s" % path)
 
         self.progress.end()
         return True
@@ -159,6 +153,8 @@ class Project:
 
         self._raws[path_hash].deleted = 1
         logger.debug("removed: %s" % path)
+
+        self.progress.update(40)
 
         self.progress.end()
         return True
@@ -179,18 +175,24 @@ class Project:
         path = os.path.normpath(path)
         if not os.path.exists(path=path):
             logger.warning("The source does not exist: %s" % path)
+            self.progress.end()
             return False
 
         path_hash = self.hash_string(path)
         if path_hash in self._products.variables.keys():
-            logger.info("File already present: %s" % path)
-            return False
+            self._products.variables[path_hash].source_path = path
+            if self._products.variables[path_hash].deleted == 1:
+                self._products.variables[path_hash].deleted = 0
+                logger.info("Product entry was deleted: %s" % path)
+        else:
+            path_var = self._products.createVariable(path_hash, 'u1')
+            path_var.source_path = path
+            path_var.deleted = 0
+            logger.debug("Product entry added: %s" % path)
 
-        path_var = self._products.createVariable(path_hash, 'u1')
-        path_var.path = path
-        path_var.deleted = 0
-
-        logger.debug("added: %s" % path)
+        product = Product(project_folder=self.project_path, product_name=path_hash,
+                          source_path=path)
+        product.close()
 
         self.progress.end()
         return True
@@ -205,8 +207,12 @@ class Project:
             return False
 
         self._products[path_hash].deleted = 1
-        logger.debug("removed: %s" % path)
+        logger.debug("Product entry removed: %s" % path)
 
+        self.progress.update(40)
+        product_path = Product.make_product_path(project_folder=self.project_path,
+                                                 product_name=path_hash)
+        os.remove(product_path)
         self.progress.end()
         return True
 
@@ -431,6 +437,12 @@ class Project:
         msg += "  <project version: %s>\n" % self.project_version
         msg += "  <project creation: %s>\n" % self.project_creation
         msg += "  <info path: %s>\n" % self.project_info_path
-        msg += "  <valid raws: %d>\n" % len(self.valid_raws())
-        msg += "  <valid products: %d>\n" % len(self.valid_products())
+        msg += "  <raws: %d>\n" % len(self._raws.variables)
+        for raw_key, raw in self._raws.variables.items():
+            msg += "    <%s[D%s]: %s>\n" \
+                   % (raw_key, raw.deleted, raw.source_path)
+        msg += "  <products: %d>\n" % len(self._products.variables)
+        for product_key, product in self._products.variables.items():
+            msg += "    <%s[D%s]: %s>\n" \
+                   % (product_key, product.deleted, product.source_path)
         return msg

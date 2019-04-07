@@ -11,7 +11,7 @@ from scipy import ndimage
 from PySide2 import QtCore
 
 from hyo2.openbst.lib.products.product_meta import ProductMeta
-from hyo2.openbst.lib.products.product_format_type import ProductFormatType
+from hyo2.openbst.lib.products.formats.product_format_type import ProductFormatType
 from hyo2.openbst.lib.products.product_layer_plot import ProductLayerPlot
 from hyo2.openbst.lib.products.product_layer_type import ProductLayerType
 

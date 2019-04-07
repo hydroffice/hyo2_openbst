@@ -1,6 +1,6 @@
 import logging
 
-from hyo2.openbst.lib.products.product_format_type import ProductFormatType
+from hyo2.openbst.lib.products.formats.product_format_type import ProductFormatType
 from hyo2.openbst.lib.products.product_layer_type import ProductLayerType
 
 logger = logging.getLogger(__name__)
