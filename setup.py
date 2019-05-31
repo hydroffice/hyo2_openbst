@@ -57,6 +57,7 @@ setup(
     ],
     install_requires=[
         "hyo2.abc",
+        "scipy",
         "netCDF4",
         "h5py",
         "lxml",
