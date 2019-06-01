@@ -5,7 +5,7 @@ logger = logging.getLogger(__name__)
 
 class PlotParams:
 
-    def __init__(self, db_min=-60.0, db_max=20.0):
+    def __init__(self, db_min=-80.0, db_max=20.0):
         self.db_min = db_min
         self.db_max = db_max
         self.db_range = self.db_max - self.db_min

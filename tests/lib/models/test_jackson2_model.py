@@ -42,7 +42,7 @@ class TestLibModelsJackson2(unittest.TestCase):
         plotter = ModelPlotter(mdl=m)
         plotter.plot()
 
-    def compare(self, use_300k: bool=False):
+    def compare(self, use_300k: bool = False):
         root_folder = os.path.abspath(
             os.path.join(os.path.dirname(__file__), os.pardir, os.pardir, os.pardir, os.pardir))
         testing = Testing(root_folder=root_folder)

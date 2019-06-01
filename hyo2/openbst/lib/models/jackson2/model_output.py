@@ -7,6 +7,7 @@ class ModelOutput:
 
     def __init__(self):
         self.theta_g = None
+        self.theta_i = None
         self.ss_tot = None
         self.ss_rough = None
         self.ss_vol = None

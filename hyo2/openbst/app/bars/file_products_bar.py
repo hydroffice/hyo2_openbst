@@ -87,7 +87,7 @@ class FileProductsBar(AbstractBar):
     def on_load_product(self) -> None:
         logger.debug("User wants to load raster/vector")
 
-        self.main_win.switch_to_main_tab()
+        self.main_win.switch_to_arch_tab()
 
         # noinspection PyCallByClass
         selection, _ = QtWidgets.QFileDialog.getOpenFileName(self, "Add raster/vector",
@@ -228,7 +228,7 @@ class FileProductsBar(AbstractBar):
             return
 
         if not had_layers:
-            self.main_tab.on_first_draw()
+            self.main_tab.on_draw()
 
         self.update_layers_combo()
         self.layers_combo.setCurrentIndex(0)

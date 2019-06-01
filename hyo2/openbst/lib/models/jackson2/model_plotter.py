@@ -16,7 +16,6 @@ logger = logging.getLogger(__name__)
 
 
 class ModelPlotter:
-
     font_size = 7
     rc_context = {
         'font.family': 'sans-serif',
@@ -91,7 +90,7 @@ class ModelPlotter:
                          label="Ref - Roughness-only SS")
 
             plt.plot(self._mdl.out.theta_g, self._mdl.out.ss_vol, color=self.color_vol, linestyle=':',
-                     label="Ref - Roughness-only SS")
+                     label="Ref - Volume-only SS")
             if (out_compare.theta_g is not None) and (out_compare.ss_vol is not None):
                 plt.plot(out_compare.theta_g, out_compare.ss_vol, color=self.color_comp, linestyle=':',
                          label="Ref - Volume-only SS")
