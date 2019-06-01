@@ -13,6 +13,7 @@ from hyo2.abc.app.tabs.info.info_tab import InfoTab
 from hyo2.openbst.lib import lib_info
 from hyo2.openbst.app.arch import app_info
 from hyo2.openbst.app.arch.arch_tab import ArchTab
+from hyo2.openbst.app.arch.arch_tab_compare import ArchTabCompare
 from hyo2.openbst.app.arch.arch_tab_3d import ArchTab3D
 
 logger = logging.getLogger(__name__)
@@ -71,10 +72,17 @@ class ArchWindow(QtWidgets.QMainWindow):
                                                 QtGui.QIcon(os.path.join(app_info.app_media_path, "tab_arch.png")),
                                                 "")
         self.tabs.setTabToolTip(self.tab_arch_idx, "Arch")
+        # - Arch Compare
+        self.tab_compare = ArchTabCompare(main_win=self)
+        # noinspection PyArgumentList
+        self.tab_compare_idx = self.tabs.insertTab(1, self.tab_compare,
+                                                   QtGui.QIcon(os.path.join(app_info.app_media_path,
+                                                                            "tab_arch_compare.png")), "")
+        self.tabs.setTabToolTip(self.tab_compare_idx, "Arch Compare")
         # - Arch 3D
         self.tab_arch3d = ArchTab3D(main_win=self)
         # noinspection PyArgumentList
-        self.tab_arch3d_idx = self.tabs.insertTab(1, self.tab_arch3d,
+        self.tab_arch3d_idx = self.tabs.insertTab(2, self.tab_arch3d,
                                                   QtGui.QIcon(os.path.join(app_info.app_media_path, "tab_arch_3d.png")),
                                                   "")
         self.tabs.setTabToolTip(self.tab_arch3d_idx, "Arch 3D")
@@ -90,7 +98,7 @@ class ArchWindow(QtWidgets.QMainWindow):
                                     with_unh_link=True,
                                     with_license=True)
             # noinspection PyArgumentList
-            self.tab_info_idx = self.tabs.insertTab(2, self.tab_info,
+            self.tab_info_idx = self.tabs.insertTab(3, self.tab_info,
                                                     QtGui.QIcon(os.path.join(app_info.app_media_path, "tab_info.png")),
                                                     "")
             self.tabs.setTabToolTip(self.tab_info_idx, "Info")
@@ -208,6 +216,10 @@ class ArchWindow(QtWidgets.QMainWindow):
     def switch_to_arch_tab(self) -> None:
         if self.tabs.currentIndex() != self.tab_arch_idx:
             self.tabs.setCurrentIndex(self.tab_arch_idx)
+
+    def switch_to_compare_tab(self) -> None:
+        if self.tabs.currentIndex() != self.tab_compare_idx:
+            self.tabs.setCurrentIndex(self.tab_compare_idx)
 
     def switch_to_arch3d_tab(self) -> None:
         if self.tabs.currentIndex() != self.tab_arch3d_idx:

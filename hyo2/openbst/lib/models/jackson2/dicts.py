@@ -27,6 +27,7 @@ def make_test_params_dict():
         if sediment == TestSediments.ROUGH_ROCK:
 
             test_dicts[sediment].name = 'Rough Rock'
+            test_dicts[sediment].color = '#00CED1'
 
             test_dicts[sediment].a_rho = 2.5
 
@@ -50,6 +51,7 @@ def make_test_params_dict():
         elif sediment == TestSediments.ROCK:
 
             test_dicts[sediment].name = 'Rock'
+            test_dicts[sediment].color = '#696969'
 
             test_dicts[sediment].a_rho = 2.5
 
@@ -73,6 +75,7 @@ def make_test_params_dict():
         elif sediment == TestSediments.COBBLE:
 
             test_dicts[sediment].name = 'Cobble'
+            test_dicts[sediment].color = '#008B8B'
 
             test_dicts[sediment].a_rho = 2.5
 
@@ -96,6 +99,7 @@ def make_test_params_dict():
         elif sediment == TestSediments.SANDY_GRAVEL:
 
             test_dicts[sediment].name = 'Sandy Gravel'
+            test_dicts[sediment].color = '#BDB76B'
 
             test_dicts[sediment].a_rho = 2.492
 
@@ -119,6 +123,7 @@ def make_test_params_dict():
         elif sediment == TestSediments.COARSE_SAND:
 
             test_dicts[sediment].name = 'Coarse Sand'
+            test_dicts[sediment].color = '#FF8C00'
 
             test_dicts[sediment].a_rho = 2.231
 
@@ -142,6 +147,7 @@ def make_test_params_dict():
         elif sediment == TestSediments.MEDIUM_SAND:
 
             test_dicts[sediment].name = 'Medium Sand'
+            test_dicts[sediment].color = '#FFD700'
 
             test_dicts[sediment].a_rho = 1.845
 
@@ -165,6 +171,7 @@ def make_test_params_dict():
         elif sediment == TestSediments.FINE_SAND:
 
             test_dicts[sediment].name = 'Fine Sand'
+            test_dicts[sediment].color = '#FFA07A'
 
             test_dicts[sediment].a_rho = 1.451
 
@@ -188,6 +195,7 @@ def make_test_params_dict():
         elif sediment == TestSediments.SILT:
 
             test_dicts[sediment].name = 'Silt'
+            test_dicts[sediment].color = '#7FFF00'
 
             test_dicts[sediment].a_rho = 1.149
 

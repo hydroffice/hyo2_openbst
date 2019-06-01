@@ -27,7 +27,7 @@ class ArchTab(QtWidgets.QMainWindow):
     color_rough = '#1f8e44'
     color_vol = '#8c0c54'
     color_loss = '#f99a25'
-    color_grid = '#cccccc'
+    color_grid = '#dddddd'
     color_comp = '#CC0000'
 
     def __init__(self, main_win, plot_params: Optional[PlotParams] = None):
@@ -160,11 +160,14 @@ class ArchTab(QtWidgets.QMainWindow):
     def on_draw(self):
         logger.debug("redraw")
 
-        self.jm2.mdl_params.f = self.freq_slider.value() * 1000
-        self.jm2.sed_params = test_params[self.seds[self.seds_list.currentText()]]
+        cur_sed = self.seds_list.currentText()
+        cur_freq_khz = self.freq_slider.value()
+
+        self.jm2.mdl_params.f = cur_freq_khz * 1000
+        self.jm2.use_test_sed_params(self.seds[cur_sed])
         self.jm2.run()
 
-        self.freq_label.setText("Frequency [%.1f kHz]" % (self.jm2.mdl_params.f / 1000))
+        self.freq_label.setText("Frequency [%.1f kHz]" % (cur_freq_khz, ))
 
         self.up_ax.clear()
         self.down_ax.clear()
@@ -172,7 +175,7 @@ class ArchTab(QtWidgets.QMainWindow):
         with rc_context(app_info.plot_rc_context):
 
             self.f.suptitle("APL-UW Elastic Scattering Model v.2017 - %s - %.1f kHz"
-                            % (self.jm2.sed_params.name, (self.jm2.mdl_params.f / 1000)))
+                            % (cur_sed, cur_freq_khz))
 
             self.up_ax.plot(self.jm2.out.theta_i, self.jm2.out.ss_tot, color=self.color_tot, linestyle='-',
                             label="Total SS")
@@ -198,6 +201,29 @@ class ArchTab(QtWidgets.QMainWindow):
             self.down_ax.set_ylabel('Reflection Loss [dB]')
 
             self.c.draw()
+
+    def redraw(self):
+        """Redraw the canvases, update the locators"""
+
+        with rc_context(app_info.plot_rc_context):
+            for a in self.c.figure.get_axes():
+
+                xaxis = getattr(a, 'xaxis', None)
+                yaxis = getattr(a, 'yaxis', None)
+                locators = []
+
+                if xaxis is not None:
+                    locators.append(xaxis.get_major_locator())
+                    locators.append(xaxis.get_minor_locator())
+
+                if yaxis is not None:
+                    locators.append(yaxis.get_major_locator())
+                    locators.append(yaxis.get_minor_locator())
+
+                for loc in locators:
+                    loc.refresh()
+
+            self.c.draw_idle()
 
     # ### ICON SIZE ###
 

@@ -74,7 +74,9 @@ class Model:
         self.phi_s = 180.0
 
         self.out.theta_g = np.arange(1.0, 90.0 + 1.0, 1.0)  # + 1.0 to include 90.0 def
-        self.out.theta_i = np.arange(90.0, 0.0, -1.0)  # + 1.0 to include 90.0 def
+        # logger.debug("theta g: %s" % (self.out.theta_g, ))
+        self.out.theta_i = np.arange(89.0, -1.0, -1.0)  # + 1.0 to include 90.0 def
+        # logger.debug("theta i: %s" % (self.out.theta_i,))
 
         self.out.ss_tot = np.zeros_like(self.out.theta_g)
         self.out.ss_rough = np.zeros_like(self.out.theta_g)
