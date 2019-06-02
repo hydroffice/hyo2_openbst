@@ -35,6 +35,7 @@ class TestLibModelsJackson2(unittest.TestCase):
         m.use_test_sed_params(TestSediments.COARSE_SAND)
         m.run()
 
+    @unittest.skipIf(Helper.is_linux(), "Skip Linux")
     def test_plotter(self):
         m = Model()
         m.use_default_mdl_params()
