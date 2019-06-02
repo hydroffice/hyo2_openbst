@@ -1,90 +1,94 @@
 from datetime import datetime
 import hashlib
 import logging
-import os
 from pathlib import Path
 from netCDF4 import Dataset, date2num, num2date
 import numpy as np
 
-from hyo2.abc.lib.progress.abstract_progress import AbstractProgress
-from hyo2.abc.lib.progress.cli_progress import CliProgress
-
 from hyo2.openbst.lib import lib_info
-
-from hyo2.openbst.lib.products.product import Product
-from hyo2.openbst.lib.project_info import ProjectInfo
+from hyo2.openbst.lib.nc_helper import NetCDFHelper
 
 logger = logging.getLogger(__name__)
 
 
-class Project:
+class ProjectInfo:
 
-    def __init__(self, prj_path: Path,
-                 progress: AbstractProgress = CliProgress(use_logger=True)):
-
-        self._ext = ".openbst"
-        # check extension for passed project path
-        if prj_path.suffix != self._ext:
-            raise RuntimeError("invalid project extension: %s" % prj_path)
-        prj_path.mkdir(parents=True, exist_ok=True)
-        self._path = prj_path
-
-        self.progress = progress
-
-        self._i = ProjectInfo(prj_path=self._path)
+    def __init__(self, prj_path: Path) -> None:
+        self._path = prj_path.joinpath("info.nc")
+        self._i = None
+        self._raws_name = "raws"
+        self._products_name = "products"
+        self._nc()
 
     @property
     def path(self) -> Path:
         return self._path
 
     @property
-    def info(self) -> ProjectInfo:
-        return self._i
+    def name(self) -> str:
+        return self._path.name
 
-    # def _make_netcdf(self):
-    #     if not os.path.exists(self._prj_path):
-    #         os.makedirs(self._prj_path)
-    #
-    #     if os.path.exists(self._info_path):
-    #         open_mode = "a"
-    #     else:
-    #         open_mode = "w"
-    #
-    #     self._info = Dataset(filename=self._info_path, mode=open_mode)
-    #
-    #     if open_mode == "w":
-    #
-    #         self._info.Conventions = 'CF-1.6'
-    #
-    #         # Create time coordinate
-    #         tdim = self._info.createDimension('time', None)
-    #         self._time = self._info.createVariable('time', np.float64, (tdim.name,))
-    #         self._time.units = 'milliseconds since 1970-01-01T00:00:00'
-    #         self._time.calendar = 'gregorian'
-    #
-    #         self._info.project_version = lib_info.lib_version
-    #         self._info.project_creation = date2num(datetime.utcnow(), self._time.units, self._time.calendar)
-    #
-    #         self._raws = self._info.createGroup(self._raws_name)
-    #         self._products = self._info.createGroup(self._products_name)
-    #
-    #         self._info.sync()
-    #
-    #     else:
-    #         if self.project_version > lib_info.lib_version:
-    #             raise RuntimeError("Project has a future version: %s" % self.project_version)
-    #         self._time = self._info.variables["time"]
-    #         self._raws = self._info.groups[self._raws_name]
-    #         self._products = self._info.groups[self._products_name]
-    #
-    #     logger.debug("open in '%s' mode: [%s] %s"
-    #                  % (open_mode, self.project_version, self.project_info_path))
-    #
-    # # ### PROJECT NAME ###
-    # @classmethod
-    # def hash_string(cls, input_str: str) -> str:
-    #     return hashlib.sha256(input_str.encode('utf-8')).hexdigest()
-    #
+    @property
+    def project_path(self) -> Path:
+        return self._path.parent
+
+    @property
+    def conventions(self) -> str:
+        return self._i.Conventions
+
+    @property
+    def time_units(self) -> str:
+        return self._i.variables["time"].units
+
+    @property
+    def time_calendar(self) -> str:
+        return self._i.variables["time"].calendar
+
+    @property
+    def version(self) -> str:
+        return self._i.version
+
+    @property
+    def created(self) -> datetime:
+        return num2date(self._i.created, units=self.time_units, calendar=self.time_calendar)
+
+    @property
+    def modified(self):
+        return num2date(self._i.modified, units=self.time_units, calendar=self.time_calendar)
+
+    @property
+    def raws(self):
+        return self._i.groups[self._raws_name].variables
+
+    @property
+    def products(self):
+        return self._i.groups[self._products_name].variables
+
+    def _nc(self) -> None:
+        if self._path.exists():
+            open_mode = "a"
+        else:
+            open_mode = "w"
+        self._i = Dataset(filename=self._path, mode=open_mode)
+
+        NetCDFHelper.init(ds=self._i)
+        # logger.debug("conventions: %s" % self.conventions)
+        # logger.debug("time: %s [%s]" % (self.time_units, self.time_calendar))
+        # logger.debug("version: %s" % self.version)
+        # logger.debug("created: %s" % self.created)
+        # logger.debug("modified: %s" % self.modified)
+
+        NetCDFHelper.groups(ds=self._i, names=[self._raws_name, self._products_name])
+
+        logger.info("open in '%s' mode: [v.%s] %s" % (open_mode, self.version, self.path))
+
+    def updated(self):
+        NetCDFHelper.update_modified(self._i)
+
+    @classmethod
+    def hash_string(cls, input_str: str) -> str:
+        return hashlib.sha256(input_str.encode('utf-8')).hexdigest()
+
     # # ### RAWS ###
     #
     # def valid_raws(self) -> list:
@@ -405,21 +409,24 @@ class Project:
     # #         Helper.explore_folder(os.path.dirname(output_path))
     # #
     # #     return True
-    #
-    # # ### OTHER ###
-    #
-    # def __repr__(self):
-    #     msg = "<%s>\n" % self.__class__.__name__
-    #     msg += "  <project name: %s>\n" % self.project_name
-    #     msg += "  <project version: %s>\n" % self.project_version
-    #     msg += "  <project creation: %s>\n" % self.project_creation
-    #     msg += "  <info path: %s>\n" % self.project_info_path
-    #     msg += "  <raws: %d>\n" % len(self._raws.variables)
-    #     for raw_key, raw in self._raws.variables.items():
-    #         msg += "    <%s[D%s]: %s>\n" \
-    #                % (raw_key, raw.deleted, raw.source_path)
-    #     msg += "  <products: %d>\n" % len(self._products.variables)
-    #     for product_key, product in self._products.variables.items():
-    #         msg += "    <%s[D%s]: %s>\n" \
-    #                % (product_key, product.deleted, product.source_path)
-    #     return msg
+
+    # ### OTHER ###
+
+    def __repr__(self):
+        msg = "<%s>\n" % self.__class__.__name__
+        msg += "  <name: %s>\n" % self.name
+        msg += "  <project path: %s>\n" % self.project_path
+        msg += "  <conventions: %s>\n" % self.conventions
+        msg += "  <time: %s [%s]>\n" % (self.time_units, self.time_calendar)
+        msg += "  <version: %s>\n" % self.version
+        msg += "  <created: %s>\n" % self.created
+        msg += "  <modified: %s>\n" % self.modified
+        msg += "  <raws: %d>\n" % len(self.raws)
+        for raw_key, raw in self.raws.items():
+            msg += "    <%s[D%s]: %s>\n" \
+                   % (raw_key, raw.deleted, raw.source_path)
+        msg += "  <products: %d>\n" % len(self.products)
+        for product_key, product in self.products.items():
+            msg += "    <%s[D%s]: %s>\n" \
+                   % (product_key, product.deleted, product.source_path)
+        return msg

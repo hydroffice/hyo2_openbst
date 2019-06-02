@@ -1,5 +1,6 @@
 import logging
 import os
+from pathlib import Path
 from typing import Optional
 
 from hyo2.abc.lib.helper import Helper
@@ -22,7 +23,7 @@ class OpenBST:
         self.progress = progress
 
         self._setup = Setup(setup_name=setup_name, root_folder=self.root_folder())
-        self._prj = Project(prj_path=self._setup.current_project, progress=self.progress)
+        self._prj = Project(prj_path=Path(self._setup.current_project), progress=self.progress)
 
     # ### ROOT FOLDER ###
 
@@ -55,6 +56,6 @@ class OpenBST:
 
         msg += "  <root folder: %s>\n" % self.root_folder()
         msg += "  <setup: %s>\n" % self.setup.setup_path
-        msg += "  <project: %s>\n" % self.prj.project_info_path
+        msg += "  <project: %s>\n" % self.prj.path
 
         return msg
