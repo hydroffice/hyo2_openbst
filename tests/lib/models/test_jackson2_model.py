@@ -4,6 +4,7 @@ import unittest
 import numpy as np
 
 from hyo2.abc.lib.testing import Testing
+from hyo2.abc.lib.helper import Helper
 from hyo2.openbst.lib.models.jackson2.model import Model
 from hyo2.openbst.lib.models.jackson2.model_output import ModelOutput
 from hyo2.openbst.lib.models.jackson2.model_plotter import ModelPlotter
@@ -88,11 +89,13 @@ class TestLibModelsJackson2(unittest.TestCase):
                     mat_out.ref_loss = scipy.io.loadmat(mat_file)['refloss'].flatten()
                     self.assertTrue(np.isclose(mat_out.ref_loss, mdl.out.ref_loss).all())
 
+    @unittest.skipIf(Helper.is_linux(), "Skip Linux")
     def test_compare_20k(self):
         self.compare(use_300k=False)
 
-    # def test_compare_300k(self):
-    #     self.compare(use_300k=True)
+    @unittest.skipIf(Helper.is_linux(), "Skip Linux")
+    def test_compare_300k(self):
+        self.compare(use_300k=True)
 
 
 def suite():
