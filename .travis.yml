@@ -1,4 +1,5 @@
 language: cpp  # Travis-CI does not currently support Python and Mac OS X
+sudo: required
 
 matrix:
   include:

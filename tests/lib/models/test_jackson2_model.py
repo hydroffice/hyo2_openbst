@@ -91,8 +91,8 @@ class TestLibModelsJackson2(unittest.TestCase):
     def test_compare_20k(self):
         self.compare(use_300k=False)
 
-    def test_compare_300k(self):
-        self.compare(use_300k=True)
+    # def test_compare_300k(self):
+    #     self.compare(use_300k=True)
 
 
 def suite():
