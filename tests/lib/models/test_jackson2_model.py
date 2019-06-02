@@ -44,7 +44,7 @@ class TestLibModelsJackson2(unittest.TestCase):
 
     def compare(self, use_300k: bool = False):
         root_folder = os.path.abspath(
-            os.path.join(os.path.dirname(__file__), os.pardir, os.pardir, os.pardir, os.pardir))
+            os.path.join(os.path.dirname(__file__), os.pardir, os.pardir, os.pardir))
         testing = Testing(root_folder=root_folder)
         input_folder = testing.input_data_folder()
         jackson2_folder = os.path.join(input_folder, "jackson2")
