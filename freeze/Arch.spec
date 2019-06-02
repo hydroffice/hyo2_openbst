@@ -23,7 +23,7 @@ from PyInstaller.compat import is_darwin, is_win
 
 from hyo2.openbst import __version__ as openbst_version
 
-is_beta = True
+is_beta = False
 if is_beta:
     beta = ".b%s" % datetime.now().strftime("%Y%m%d%H%M%S")
 else:
@@ -108,13 +108,13 @@ shiboken2_data2 = collect_folder_data(input_data_folder=share_folder, relative_o
 abc_data = collect_pkg_data('hyo2.abc')
 openbst_data = collect_pkg_data('hyo2.openbst')
 
-icon_file = os.path.join('freeze', 'OpenBST.ico')
+icon_file = os.path.join('freeze', 'Arch.ico')
 if is_darwin:
-    icon_file = os.path.join('freeze', 'OpenBST.icns')
+    icon_file = os.path.join('freeze', 'Arch.icns')
 
-a = Analysis(['OpenBST.py'],
+a = Analysis(['Arch.py'],
              pathex=[],
-             hiddenimports=["PIL", ],
+             hiddenimports=["PIL", "PySide2.QtPrintSupport", ],
              excludes=["IPython", "PyQt4", "PyQt5", "pandas", "scipy", "sphinx", "sphinx_rtd_theme",
                        "OpenGL_accelerate", "FixTk", "tcl", "tk", "_tkinter", "tkinter", "Tkinter",
                        "wx"],
@@ -125,7 +125,7 @@ pyz = PYZ(a.pure)
 exe = EXE(pyz,
           a.scripts,
           exclude_binaries=True,
-          name='OpenBST.%s%s' % (openbst_version, beta),
+          name='Arch.%s%s' % (openbst_version, beta),
           debug=False,
           strip=None,
           upx=True,
@@ -143,4 +143,4 @@ coll = COLLECT(exe,
                openbst_data,
                strip=None,
                upx=True,
-               name='OpenBST.%s%s' % (openbst_version, beta))
+               name='Arch.%s%s' % (openbst_version, beta))
