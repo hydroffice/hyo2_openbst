@@ -27,7 +27,7 @@ class TestLibSetup(unittest.TestCase):
 
     def test_list_setup_names(self):
         setup_names = Setup.list_setup_names(root_folder=self.root_folder)
-        self.assertGreater(len(setup_names), 0)
+        self.assertGreaterEqual(len(setup_names), 0)
 
     def test_setup_name(self):
         setup = Setup(name=self.setup_name, root_folder=self.root_folder)

@@ -2,7 +2,7 @@ import logging
 import sys
 import traceback
 
-from PySide2 import QtCore, QtWidgets
+from PySide2 import QtCore, QtGui, QtWidgets
 
 from hyo2.abc.lib.logging import set_logging
 from hyo2.abc.app.app_style import AppStyle
@@ -29,6 +29,9 @@ QtCore.qInstallMessageHandler(qt_custom_handler)
 
 
 def main():
+
+    # noinspection PyUnresolvedReferences,PyArgumentList
+    QtGui.QGuiApplication.setAttribute(QtCore.Qt.AA_EnableHighDpiScaling)
 
     sys.argv.append("--disable-web-security")  # temporary fix for CORS warning (QTBUG-70228)
     app = QtWidgets.QApplication(sys.argv)

@@ -16,7 +16,7 @@ from hyo2.openbst.app.tools.product_colors_tool import ProductColorsTool
 from hyo2.openbst.app.tools.product_erase_tool import ProductEraseTool
 from hyo2.openbst.app.tools.product_modify_tool import ProductModifyTool
 from hyo2.openbst.app.tools.product_clone_tool import ProductCloneTool
-from hyo2.openbst.lib.project import Project
+from hyo2.openbst.lib.openbst import OpenBST
 from hyo2.openbst.lib.products.product_layer import ProductLayer
 
 matplotlib.use('Qt5Agg')
@@ -32,7 +32,7 @@ class MainTab(QtWidgets.QMainWindow):
         self.settings = QtCore.QSettings()
 
         self.main_win = main_win
-        self.prj = Project(progress=QtProgress(self))
+        self.prj = OpenBST(progress=QtProgress(self))
         self.tab_idx = -1
         self.progress = QtProgress(parent=self)
 

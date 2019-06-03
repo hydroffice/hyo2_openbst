@@ -2,7 +2,7 @@ import logging
 import sys
 import traceback
 
-from PySide2 import QtCore, QtWidgets
+from PySide2 import QtGui, QtWidgets, QtCore
 
 from hyo2.abc.app.app_style import AppStyle
 from hyo2.openbst import name as app_name
@@ -24,6 +24,8 @@ logger = logging.getLogger(__name__)
 
 # noinspection PyUnresolvedReferences
 def qt_custom_handler(error_type: QtCore.QtMsgType, error_context: QtCore.QMessageLogContext, message: str):
+    if "Cannot read property 'id' of null" in message:
+        return
     logger.info("Qt error: %s [%s] -> %s"
                 % (error_type, error_context, message))
 
@@ -35,6 +37,9 @@ QtCore.qInstallMessageHandler(qt_custom_handler)
 
 
 def main():
+
+    # noinspection PyUnresolvedReferences,PyArgumentList
+    QtGui.QGuiApplication.setAttribute(QtCore.Qt.AA_EnableHighDpiScaling)
 
     sys.argv.append("--disable-web-security")  # temporary fix for CORS warning (QTBUG-70228)
     app = QtWidgets.QApplication(sys.argv)

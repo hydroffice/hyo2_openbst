@@ -16,8 +16,7 @@ logger = logging.getLogger(__name__)
 
 class OpenBST:
 
-    def __init__(self,
-                 setup_name: Optional[str] = None,
+    def __init__(self, setup_name: str = "default",
                  progress: AbstractProgress = CliProgress(use_logger=True)) -> None:
 
         self.progress = progress
