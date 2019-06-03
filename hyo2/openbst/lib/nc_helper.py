@@ -1,8 +1,7 @@
 from datetime import datetime
 import hashlib
 import logging
-from pathlib import Path
-from netCDF4 import Dataset, date2num, num2date
+from netCDF4 import Dataset, date2num
 import numpy as np
 
 from hyo2.openbst.lib import lib_info
@@ -81,3 +80,7 @@ class NetCDFHelper:
         ds.sync()
 
         return True
+
+    @classmethod
+    def hash_string(cls, input_str: str) -> str:
+        return hashlib.sha256(input_str.encode('utf-8')).hexdigest()

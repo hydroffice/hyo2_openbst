@@ -41,63 +41,12 @@ class Project:
     def info(self) -> ProjectInfo:
         return self._i
 
-    # def _make_netcdf(self):
-    #     if not os.path.exists(self._prj_path):
-    #         os.makedirs(self._prj_path)
-    #
-    #     if os.path.exists(self._info_path):
-    #         open_mode = "a"
-    #     else:
-    #         open_mode = "w"
-    #
-    #     self._info = Dataset(filename=self._info_path, mode=open_mode)
-    #
-    #     if open_mode == "w":
-    #
-    #         self._info.Conventions = 'CF-1.6'
-    #
-    #         # Create time coordinate
-    #         tdim = self._info.createDimension('time', None)
-    #         self._time = self._info.createVariable('time', np.float64, (tdim.name,))
-    #         self._time.units = 'milliseconds since 1970-01-01T00:00:00'
-    #         self._time.calendar = 'gregorian'
-    #
-    #         self._info.project_version = lib_info.lib_version
-    #         self._info.project_creation = date2num(datetime.utcnow(), self._time.units, self._time.calendar)
-    #
-    #         self._raws = self._info.createGroup(self._raws_name)
-    #         self._products = self._info.createGroup(self._products_name)
-    #
-    #         self._info.sync()
-    #
-    #     else:
-    #         if self.project_version > lib_info.lib_version:
-    #             raise RuntimeError("Project has a future version: %s" % self.project_version)
-    #         self._time = self._info.variables["time"]
-    #         self._raws = self._info.groups[self._raws_name]
-    #         self._products = self._info.groups[self._products_name]
-    #
-    #     logger.debug("open in '%s' mode: [%s] %s"
-    #                  % (open_mode, self.project_version, self.project_info_path))
-    #
-    # # ### PROJECT NAME ###
-    # @classmethod
-    # def hash_string(cls, input_str: str) -> str:
-    #     return hashlib.sha256(input_str.encode('utf-8')).hexdigest()
-    #
-    # # ### RAWS ###
-    #
-    # def valid_raws(self) -> list:
-    #     valid_raws = list()
-    #     for raw_key, raw in self._raws.variables.items():
-    #         if raw.deleted == 0:
-    #             valid_raws.append(raw_key)
-    #     return valid_raws
-    #
-    # def add_raw(self, path: str) -> bool:
-    #     self.progress.start(title="Reading", text="Ongoing reading. Please wait!",
-    #                         init_value=10)
-    #
+    # ### RAWS ###
+
+    def add_raw(self, path: Path) -> bool:
+        self.progress.start(title="Reading", text="Ongoing reading. Please wait!",
+                            init_value=10)
+
     #     path = os.path.normpath(path)
     #     if not os.path.exists(path=path):
     #         logger.warning("The source does not exist: %s" % path)
@@ -115,14 +64,14 @@ class Project:
     #         path_var.source_path = path
     #         path_var.deleted = 0
     #         logger.debug("Raw entry was added: %s" % path)
-    #
-    #     self.progress.end()
-    #     return True
-    #
-    # def remove_raw(self, path: str) -> bool:
-    #     self.progress.start(title="Deleting", text="Ongoing deleting. Please wait!",
-    #                         init_value=10)
-    #
+
+        self.progress.end()
+        return True
+
+    def remove_raw(self, path: Path) -> bool:
+        self.progress.start(title="Deleting", text="Ongoing deleting. Please wait!",
+                            init_value=10)
+
     #     path_hash = self.hash_string(path)
     #     if path_hash not in self._raws.variables.keys():
     #         logger.info("File already removed: %s" % path)
@@ -132,23 +81,16 @@ class Project:
     #     logger.debug("removed: %s" % path)
     #
     #     self.progress.update(40)
-    #
-    #     self.progress.end()
-    #     return True
-    #
-    # # ### PRODUCTS ###
-    #
-    # def valid_products(self) -> list:
-    #     valid_products = list()
-    #     for product_key, product in self._products.variables.items():
-    #         if product.deleted == 0:
-    #             valid_products.append(product_key)
-    #     return valid_products
-    #
-    # def add_product(self, path: str) -> bool:
-    #     self.progress.start(title="Reading", text="Ongoing reading. Please wait!",
-    #                         init_value=10)
-    #
+
+        self.progress.end()
+        return True
+
+    # ### PRODUCTS ###
+
+    def add_product(self, path: Path) -> bool:
+        self.progress.start(title="Reading", text="Ongoing reading. Please wait!",
+                            init_value=10)
+
     #     path = os.path.normpath(path)
     #     if not os.path.exists(path=path):
     #         logger.warning("The source does not exist: %s" % path)
@@ -170,14 +112,14 @@ class Project:
     #     product = Product(project_folder=self.project_path, product_name=path_hash,
     #                       source_path=path)
     #     product.close()
-    #
-    #     self.progress.end()
-    #     return True
-    #
-    # def remove_product(self, path: str) -> bool:
-    #     self.progress.start(title="Deleting", text="Ongoing deleting. Please wait!",
-    #                         init_value=10)
-    #
+
+        self.progress.end()
+        return True
+
+    def remove_product(self, path: Path) -> bool:
+        self.progress.start(title="Deleting", text="Ongoing deleting. Please wait!",
+                            init_value=10)
+
     #     path_hash = self.hash_string(path)
     #     if path_hash not in self._products.variables.keys():
     #         logger.info("File already removed: %s" % path)
@@ -190,9 +132,10 @@ class Project:
     #     product_path = Product.make_product_path(project_folder=self.project_path,
     #                                              product_name=path_hash)
     #     os.remove(product_path)
-    #     self.progress.end()
-    #     return True
-    #
+
+        self.progress.end()
+        return True
+
     # # @classmethod
     # # def is_product_vr(cls, path: str) -> bool:
     # #
@@ -405,21 +348,21 @@ class Project:
     # #         Helper.explore_folder(os.path.dirname(output_path))
     # #
     # #     return True
-    #
-    # # ### OTHER ###
-    #
-    # def __repr__(self):
-    #     msg = "<%s>\n" % self.__class__.__name__
-    #     msg += "  <project name: %s>\n" % self.project_name
-    #     msg += "  <project version: %s>\n" % self.project_version
-    #     msg += "  <project creation: %s>\n" % self.project_creation
-    #     msg += "  <info path: %s>\n" % self.project_info_path
-    #     msg += "  <raws: %d>\n" % len(self._raws.variables)
-    #     for raw_key, raw in self._raws.variables.items():
-    #         msg += "    <%s[D%s]: %s>\n" \
-    #                % (raw_key, raw.deleted, raw.source_path)
-    #     msg += "  <products: %d>\n" % len(self._products.variables)
-    #     for product_key, product in self._products.variables.items():
-    #         msg += "    <%s[D%s]: %s>\n" \
-    #                % (product_key, product.deleted, product.source_path)
-    #     return msg
+
+    # ### OTHER ###
+
+    def __repr__(self):
+        msg = "<%s>\n" % self.__class__.__name__
+        msg += "  <name: %s>\n" % self.info.name
+        # msg += "  <project version: %s>\n" % self.project_version
+        # msg += "  <project creation: %s>\n" % self.project_creation
+        # msg += "  <info path: %s>\n" % self.project_info_path
+        # msg += "  <raws: %d>\n" % len(self._raws.variables)
+        # for raw_key, raw in self._raws.variables.items():
+        #     msg += "    <%s[D%s]: %s>\n" \
+        #            % (raw_key, raw.deleted, raw.source_path)
+        # msg += "  <products: %d>\n" % len(self._products.variables)
+        # for product_key, product in self._products.variables.items():
+        #     msg += "    <%s[D%s]: %s>\n" \
+        #            % (product_key, product.deleted, product.source_path)
+        return msg
