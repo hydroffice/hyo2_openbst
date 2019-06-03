@@ -19,15 +19,18 @@ logger = logging.getLogger(__name__)
 
 class Project:
 
+    ext = ".openbst"
+
     def __init__(self, prj_path: Path,
                  progress: AbstractProgress = CliProgress(use_logger=True)):
 
-        self._ext = ".openbst"
         # check extension for passed project path
-        if prj_path.suffix != self._ext:
+        if prj_path.suffix != self.ext:
             raise RuntimeError("invalid project extension: %s" % prj_path)
         prj_path.mkdir(parents=True, exist_ok=True)
         self._path = prj_path
+        _ = self.raws_folder
+        _ = self.products_folder
 
         self.progress = progress
 
@@ -36,6 +39,18 @@ class Project:
     @property
     def path(self) -> Path:
         return self._path
+
+    @property
+    def raws_folder(self) -> Path:
+        path = self._path.joinpath("raws")
+        path.mkdir(parents=True, exist_ok=True)
+        return path
+
+    @property
+    def products_folder(self) -> Path:
+        path = self._path.joinpath("products")
+        path.mkdir(parents=True, exist_ok=True)
+        return path
 
     @property
     def info(self) -> ProjectInfo:
@@ -47,23 +62,11 @@ class Project:
         self.progress.start(title="Reading", text="Ongoing reading. Please wait!",
                             init_value=10)
 
-    #     path = os.path.normpath(path)
-    #     if not os.path.exists(path=path):
-    #         logger.warning("The source does not exist: %s" % path)
-    #         self.progress.end()
-    #         return False
-    #
-    #     path_hash = self.hash_string(path)
-    #     if path_hash in self._raws.variables.keys():
-    #         self._raws.variables[path_hash].source_path = path
-    #         if self._raws.variables[path_hash].deleted == 1:
-    #             self._raws.variables[path_hash].deleted = 0
-    #             logger.info("Raw entry was deleted: %s" % path)
-    #     else:
-    #         path_var = self._raws.createVariable(path_hash, 'u1')
-    #         path_var.source_path = path
-    #         path_var.deleted = 0
-    #         logger.debug("Raw entry was added: %s" % path)
+        added = self._i.add_raw(path=path)
+        if not added:
+            self.progress.end()
+
+        self.progress.update(20)
 
         self.progress.end()
         return True
@@ -72,15 +75,10 @@ class Project:
         self.progress.start(title="Deleting", text="Ongoing deleting. Please wait!",
                             init_value=10)
 
-    #     path_hash = self.hash_string(path)
-    #     if path_hash not in self._raws.variables.keys():
-    #         logger.info("File already removed: %s" % path)
-    #         return False
-    #
-    #     self._raws[path_hash].deleted = 1
-    #     logger.debug("removed: %s" % path)
-    #
-    #     self.progress.update(40)
+        removed = self._i.remove_raw(path=path)
+        if not removed:
+            self.progress.end()
+        self.progress.update(20)
 
         self.progress.end()
         return True
@@ -91,27 +89,14 @@ class Project:
         self.progress.start(title="Reading", text="Ongoing reading. Please wait!",
                             init_value=10)
 
-    #     path = os.path.normpath(path)
-    #     if not os.path.exists(path=path):
-    #         logger.warning("The source does not exist: %s" % path)
-    #         self.progress.end()
-    #         return False
-    #
-    #     path_hash = self.hash_string(path)
-    #     if path_hash in self._products.variables.keys():
-    #         self._products.variables[path_hash].source_path = path
-    #         if self._products.variables[path_hash].deleted == 1:
-    #             self._products.variables[path_hash].deleted = 0
-    #             logger.info("Product entry was deleted: %s" % path)
-    #     else:
-    #         path_var = self._products.createVariable(path_hash, 'u1')
-    #         path_var.source_path = path
-    #         path_var.deleted = 0
-    #         logger.debug("Product entry added: %s" % path)
-    #
-    #     product = Product(project_folder=self.project_path, product_name=path_hash,
-    #                       source_path=path)
-    #     product.close()
+        added = self._i.add_product(path=path)
+        if not added:
+            self.progress.end()
+
+        self.progress.update(20)
+
+        product = Product(project_folder=self.path, source_path=path)
+        # product.close()
 
         self.progress.end()
         return True
@@ -120,18 +105,10 @@ class Project:
         self.progress.start(title="Deleting", text="Ongoing deleting. Please wait!",
                             init_value=10)
 
-    #     path_hash = self.hash_string(path)
-    #     if path_hash not in self._products.variables.keys():
-    #         logger.info("File already removed: %s" % path)
-    #         return False
-    #
-    #     self._products[path_hash].deleted = 1
-    #     logger.debug("Product entry removed: %s" % path)
-    #
-    #     self.progress.update(40)
-    #     product_path = Product.make_product_path(project_folder=self.project_path,
-    #                                              product_name=path_hash)
-    #     os.remove(product_path)
+        removed = self._i.remove_product(path=path)
+        if not removed:
+            self.progress.end()
+        self.progress.update(20)
 
         self.progress.end()
         return True
@@ -354,15 +331,7 @@ class Project:
     def __repr__(self):
         msg = "<%s>\n" % self.__class__.__name__
         msg += "  <name: %s>\n" % self.info.name
-        # msg += "  <project version: %s>\n" % self.project_version
-        # msg += "  <project creation: %s>\n" % self.project_creation
-        # msg += "  <info path: %s>\n" % self.project_info_path
-        # msg += "  <raws: %d>\n" % len(self._raws.variables)
-        # for raw_key, raw in self._raws.variables.items():
-        #     msg += "    <%s[D%s]: %s>\n" \
-        #            % (raw_key, raw.deleted, raw.source_path)
-        # msg += "  <products: %d>\n" % len(self._products.variables)
-        # for product_key, product in self._products.variables.items():
-        #     msg += "    <%s[D%s]: %s>\n" \
-        #            % (product_key, product.deleted, product.source_path)
+        msg += "  <path: %s>\n" % self.path
+        msg += "  <raws: %d>\n" % len(self._i.valid_raws)
+        msg += "  <products: %d>\n" % len(self._i.valid_products)
         return msg

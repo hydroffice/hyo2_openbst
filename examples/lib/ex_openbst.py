@@ -1,30 +1,32 @@
 import logging
-import os
+from pathlib import Path
 
-from hyo2.abc.lib.testing import Testing
+from hyo2.abc.lib.logging import set_logging
+from hyo2.abc.lib.testing_paths import TestingPaths
 from hyo2.openbst.lib.openbst import OpenBST
 
-logging.basicConfig(level=logging.DEBUG, format="%(levelname)-9s %(name)s.%(funcName)s:%(lineno)d > %(message)s")
+set_logging(ns_list=["hyo2.openbst", ])
 logger = logging.getLogger(__name__)
 
-load_alls = False
-load_kmalls = False
-load_bags = False
+load_alls = True
+load_kmalls = True
+load_bags = True
 
-testing = Testing(root_folder=os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir, os.pardir)))
+testing = TestingPaths(root_folder=Path(__file__).parent.parent.parent.resolve())
 
-prj = OpenBST(setup_name="test")
+bst = OpenBST(setup_name="test")
+# prj.open_root_folder()
 
-# if load_alls:
-#     for input_path in testing.download_test_files(ext=".all"):
-#         prj.add_raw_source(input_path)
-#
-# if load_kmalls:
-#     for input_path in testing.download_test_files(ext=".kmall"):
-#         prj.add_raw_source(input_path)
-#
-# if load_bags:
-#     for input_path in testing.download_test_files(ext=".bag"):
-#         prj.load_product_from_source(input_path)
+if load_alls:
+    for input_path in testing.download_test_files(ext=".all"):
+        bst.prj.add_raw(input_path)
 
-logger.debug("\n%s" % prj)
+if load_kmalls:
+    for input_path in testing.download_test_files(ext=".kmall"):
+        bst.prj.add_raw(input_path)
+
+if load_bags:
+    for input_path in testing.download_test_files(ext=".bag"):
+        bst.prj.add_product(input_path)
+
+logger.debug("\n%s" % bst)

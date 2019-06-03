@@ -22,20 +22,23 @@ class OpenBST:
 
         self.progress = progress
 
-        self._setup = Setup(setup_name=setup_name, root_folder=self.root_folder())
-        self._prj = Project(prj_path=Path(self._setup.current_project), progress=self.progress)
+        self._setup = Setup(name=setup_name, root_folder=self.root_folder())
+        self._cur_projs = self._setup.root_folder.joinpath("projects")
+        self._cur_projs.mkdir(parents=True, exist_ok=True)
+        cur_proj_path = self._cur_projs.joinpath(self._setup.current_project + Project.ext)
+        self._prj = Project(prj_path=cur_proj_path, progress=self.progress)
 
     # ### ROOT FOLDER ###
 
     @classmethod
-    def root_folder(cls) -> str:
-        root_folder = Helper(lib_info=lib_info).package_folder()
-        if not os.path.exists(root_folder):
-            os.makedirs(root_folder)
+    def root_folder(cls) -> Path:
+        root_folder = Path(Helper(lib_info=lib_info).package_folder())
+        if not root_folder.exists():
+            root_folder.mkdir(parents=True, exist_ok=True)
         return root_folder
 
     def open_root_folder(self) -> None:
-        Helper.explore_folder(self.root_folder())
+        Helper.explore_folder(str(self.root_folder()))
 
     # ### SETUP ###
 
@@ -55,7 +58,7 @@ class OpenBST:
         msg = "<%s>\n" % self.__class__.__name__
 
         msg += "  <root folder: %s>\n" % self.root_folder()
-        msg += "  <setup: %s>\n" % self.setup.setup_path
+        msg += "  <setup: %s>\n" % self.setup.path
         msg += "  <project: %s>\n" % self.prj.path
 
         return msg

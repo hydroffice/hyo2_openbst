@@ -12,7 +12,7 @@ class ProjectInfo:
 
     def __init__(self, prj_path: Path) -> None:
         self._path = prj_path.joinpath("info.nc")
-        self._i = None
+        self._ds = None
         self._raws_name = "raws"
         self._products_name = "products"
         self._nc()
@@ -31,31 +31,31 @@ class ProjectInfo:
 
     @property
     def conventions(self) -> str:
-        return self._i.Conventions
+        return self._ds.Conventions
 
     @property
     def time_units(self) -> str:
-        return self._i.variables["time"].units
+        return self._ds.variables["time"].units
 
     @property
     def time_calendar(self) -> str:
-        return self._i.variables["time"].calendar
+        return self._ds.variables["time"].calendar
 
     @property
     def version(self) -> str:
-        return self._i.version
+        return self._ds.version
 
     @property
     def created(self) -> datetime:
-        return num2date(self._i.created, units=self.time_units, calendar=self.time_calendar)
+        return num2date(self._ds.created, units=self.time_units, calendar=self.time_calendar)
 
     @property
     def modified(self):
-        return num2date(self._i.modified, units=self.time_units, calendar=self.time_calendar)
+        return num2date(self._ds.modified, units=self.time_units, calendar=self.time_calendar)
 
     @property
     def raws_group(self) -> Group:
-        return self._i.groups[self._raws_name]
+        return self._ds.groups[self._raws_name]
 
     @property
     def raws(self):
@@ -71,7 +71,7 @@ class ProjectInfo:
 
     @property
     def products_group(self) -> Group:
-        return self._i.groups[self._products_name]
+        return self._ds.groups[self._products_name]
 
     @property
     def products(self):
@@ -90,28 +90,28 @@ class ProjectInfo:
             open_mode = "a"
         else:
             open_mode = "w"
-        self._i = Dataset(filename=self._path, mode=open_mode)
+        self._ds = Dataset(filename=self._path, mode=open_mode)
 
-        NetCDFHelper.init(ds=self._i)
+        NetCDFHelper.init(ds=self._ds)
         # logger.debug("conventions: %s" % self.conventions)
         # logger.debug("time: %s [%s]" % (self.time_units, self.time_calendar))
         # logger.debug("version: %s" % self.version)
         # logger.debug("created: %s" % self.created)
         # logger.debug("modified: %s" % self.modified)
 
-        NetCDFHelper.groups(ds=self._i, names=[self._raws_name, self._products_name])
+        NetCDFHelper.groups(ds=self._ds, names=[self._raws_name, self._products_name])
 
         logger.info("open in '%s' mode: [v.%s] %s" % (open_mode, self.version, self.path))
 
     def updated(self):
-        NetCDFHelper.update_modified(self._i)
+        NetCDFHelper.update_modified(self._ds)
 
     # # ### RAWS ###
 
     def add_raw(self, path: Path) -> bool:
         path = path.resolve()
         if not path.exists():
-            logger.warning("The source does not exist: %s" % path)
+            logger.warning("does not exist: %s" % path)
             return False
 
         path_hash = NetCDFHelper.hash_string(str(path))
@@ -119,26 +119,29 @@ class ProjectInfo:
             try:
                 if self.raws[path_hash].deleted == 1:
                     self.raws[path_hash].deleted = 0
-                    logger.info("Raw entry was deleted: %s" % path)
+                    logger.info("previously deleted: %s" % path)
             except AttributeError:
                 self.raws[path_hash].deleted = 0
         else:
             path_var = self.raws_group.createVariable(path_hash, 'u1')
             path_var.source_path = str(path)
             path_var.deleted = 0
-            logger.debug("Raw entry was added: %s" % path)
+            logger.debug("added: %s" % path)
 
+        self._ds.sync()
         return True
 
     def remove_raw(self, path: Path) -> bool:
 
         path_hash = NetCDFHelper.hash_string(str(path))
         if path_hash not in self.raws.keys():
-            logger.info("File already removed: %s" % path)
+            logger.info("absent: %s" % path)
             return False
 
         self.raws[path_hash].deleted = 1
         logger.debug("removed: %s" % path)
+
+        self._ds.sync()
         return True
 
     # # ### PRODUCTS ###
@@ -146,7 +149,7 @@ class ProjectInfo:
     def add_product(self, path: Path) -> bool:
         path = path.resolve()
         if not path.exists():
-            logger.warning("The product does not exist: %s" % path)
+            logger.warning("does not exist: %s" % path)
             return False
 
         path_hash = NetCDFHelper.hash_string(str(path))
@@ -154,26 +157,29 @@ class ProjectInfo:
             try:
                 if self.products[path_hash].deleted == 1:
                     self.products[path_hash].deleted = 0
-                    logger.info("Product entry was deleted: %s" % path)
+                    logger.info("previously deleted: %s" % path)
             except AttributeError:
                 self.products[path_hash].deleted = 0
         else:
             path_var = self.products_group.createVariable(path_hash, 'u1')
             path_var.source_path = str(path)
             path_var.deleted = 0
-            logger.debug("Raw entry was added: %s" % path)
+            logger.debug("added: %s" % path)
 
+        self._ds.sync()
         return True
 
     def remove_product(self, path: Path) -> bool:
 
         path_hash = NetCDFHelper.hash_string(str(path))
         if path_hash not in self.products.keys():
-            logger.info("File already removed: %s" % path)
+            logger.info("absent: %s" % path)
             return False
 
         self.products[path_hash].deleted = 1
         logger.debug("removed: %s" % path)
+
+        self._ds.sync()
         return True
 
     # ### OTHER ###

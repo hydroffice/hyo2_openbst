@@ -1,7 +1,5 @@
 from datetime import datetime
-import os
 from pathlib import Path
-import shutil
 import unittest
 
 from hyo2.abc.lib.testing_paths import TestingPaths
