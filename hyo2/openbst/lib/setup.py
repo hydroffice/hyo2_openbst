@@ -114,7 +114,7 @@ class Setup:
 
     # ### OTHER ###
 
-    def info(self) -> str:
+    def info_str(self) -> str:
         txt = str()
         txt += "  <name: %s>\n" % self.name
         txt += "  <setups folder: %s>\n" % self._setups_folder
@@ -126,5 +126,5 @@ class Setup:
 
     def __repr__(self) -> str:
         msg = "<%s>\n" % self.__class__.__name__
-        msg += self.info()
+        msg += self.info_str()
         return msg

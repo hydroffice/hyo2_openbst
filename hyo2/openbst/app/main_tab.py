@@ -7,6 +7,7 @@ import matplotlib
 
 from hyo2.abc.app.qt_progress import QtProgress
 from hyo2.openbst.app.main_canvas import MainCanvas
+from hyo2.openbst.app.bars.file_project_bar import FileProjectBar
 from hyo2.openbst.app.bars.file_products_bar import FileProductsBar
 from hyo2.openbst.app.bars.view_products_bar import ViewProductsBar
 from hyo2.openbst.app.bars.edit_products_bar import EditProductsBar
@@ -44,6 +45,12 @@ class MainTab(QtWidgets.QMainWindow):
         # ### CANVAS ###
         self.canvas = MainCanvas(main_win=self.main_win, main_tab=self, lib=self.lib)
         self.setCentralWidget(self.canvas)
+
+        # ### FILE PROJECT BAR ###
+        self.file_project_bar = FileProjectBar(main_win=self.main_win, main_tab=self,
+                                               canvas=self.canvas, lib=self.lib)
+        # noinspection PyArgumentList
+        self.addToolBar(self.file_project_bar)
 
         # ### FILE PRODUCTS BAR ###
         self.file_products_bar = FileProductsBar(main_win=self.main_win, main_tab=self,

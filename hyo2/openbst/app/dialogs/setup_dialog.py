@@ -117,7 +117,7 @@ class SetupDialog(QtWidgets.QDialog):
         vbox_lib.addLayout(hbox)
         self.setup_viewer = QtWidgets.QTextEdit()
         self.setup_viewer.setReadOnly(True)
-        self.setup_viewer.setText(self.lib.setup.info())
+        self.setup_viewer.setText(self.lib.setup.info_str())
         self.setup_viewer.setLineWrapMode(QtWidgets.QTextEdit.NoWrap)
         hbox.addWidget(self.setup_viewer)
 

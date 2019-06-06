@@ -31,6 +31,10 @@ class Project:
         self._i = ProjectInfo(prj_path=self._path)
 
     @property
+    def name(self) -> str:
+        return self._path.stem
+
+    @property
     def path(self) -> Path:
         return self._path
 
@@ -336,10 +340,15 @@ class Project:
 
     # ### OTHER ###
 
-    def __repr__(self):
+    def info_str(self):
+        txt = str()
+        txt += "  <name: %s>\n" % self.name
+        txt += "  <path: %s>\n" % self.path
+        txt += "  <raws: %d>\n" % len(self._i.valid_raws)
+        txt += "  <products: %d>\n" % len(self._i.valid_products)
+        return txt
+
+    def __repr__(self) -> str:
         msg = "<%s>\n" % self.__class__.__name__
-        msg += "  <name: %s>\n" % self.info.name
-        msg += "  <path: %s>\n" % self.path
-        msg += "  <raws: %d>\n" % len(self._i.valid_raws)
-        msg += "  <products: %d>\n" % len(self._i.valid_products)
+        msg += self.info_str()
         return msg

@@ -47,6 +47,7 @@ class MainWindow(QtWidgets.QMainWindow):
         # create menu
         self.menu_root = self.menuBar()
         self.menu_file = self.menu_root.addMenu("File")
+        self.menu_file_project = self.menu_file.addMenu("Project")
         self.menu_file_raw = self.menu_file.addMenu("Raw Data")
         self.menu_file_products = self.menu_file.addMenu("Raster/Vector")
         self.menu_view = self.menu_root.addMenu("View")

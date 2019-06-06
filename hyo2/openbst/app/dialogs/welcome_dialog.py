@@ -61,7 +61,9 @@ class WelcomeDialog(QtWidgets.QDialog):
         <br>
         For additional information, visit <a href=\"https://www.hydroffice.org/openbst/\">this link</a>.
         <br>
-        """)
+        v.%s
+        <br>
+        """ % app_info.app_version)
         # noinspection PyUnresolvedReferences
         text0.setAlignment(QtCore.Qt.AlignCenter)
 
