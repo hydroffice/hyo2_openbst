@@ -1,5 +1,4 @@
 import logging
-import os
 from pathlib import Path
 from typing import Optional
 
@@ -21,10 +20,8 @@ class OpenBST:
 
         self.progress = progress
 
-        self._setup = Setup(name=setup_name, root_folder=self.root_folder())
-        self._cur_projs = self._setup.root_folder.joinpath("projects")
-        self._cur_projs.mkdir(parents=True, exist_ok=True)
-        cur_proj_path = self._cur_projs.joinpath(self._setup.current_project + Project.ext)
+        self._setup = Setup(name=setup_name, setups_folder=self.setups_folder())
+        cur_proj_path = self.projects_folder().joinpath(self._setup.current_project + Project.ext)
         self._prj = Project(prj_path=cur_proj_path, progress=self.progress)
 
     # ### ROOT FOLDER ###
@@ -39,13 +36,36 @@ class OpenBST:
     def open_root_folder(self) -> None:
         Helper.explore_folder(str(self.root_folder()))
 
-    # ### SETUP ###
+    # ### SETUPS ###
+
+    @classmethod
+    def setups_folder(cls) -> Path:
+        folder = cls.root_folder().joinpath("setups")
+        if not folder.exists():
+            folder.mkdir(parents=True, exist_ok=True)
+        return folder
+
+    @property
+    def setups_list(self) -> list:
+        """This list may be used in a future to change the current setup"""
+        return [path.stem for path in self.setups_folder().glob("*%s" % Setup.ext)]
 
     @property
     def setup(self) -> Setup:
         return self._setup
 
     # ### project ###
+
+    @classmethod
+    def projects_folder(cls) -> Path:
+        folder = cls.root_folder().joinpath("projects")
+        if not folder.exists():
+            folder.mkdir(parents=True, exist_ok=True)
+        return folder
+
+    @property
+    def projects_list(self) -> list:
+        return [path.stem for path in self.projects_folder().iterdir() if path.suffix == Project.ext]
 
     @property
     def prj(self) -> Project:
@@ -57,7 +77,9 @@ class OpenBST:
         msg = "<%s>\n" % self.__class__.__name__
 
         msg += "  <root folder: %s>\n" % self.root_folder()
-        msg += "  <setup: %s>\n" % self.setup.path
-        msg += "  <project: %s>\n" % self.prj.path
+        msg += "  <setups: %d>\n" % len(self.setups_list)
+        msg += "  <projects: %d>\n" % len(self.projects_list)
+        msg += "  <current setup: %s>\n" % self.setup.path
+        msg += "  <current project: %s>\n" % self.prj.path
 
         return msg

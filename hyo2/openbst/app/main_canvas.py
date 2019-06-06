@@ -19,11 +19,11 @@ logger = logging.getLogger(__name__)
 
 class MainCanvas(QtWidgets.QFrame):
 
-    def __init__(self, main_win, main_tab, prj):
+    def __init__(self, main_win, main_tab, lib):
         super().__init__(parent=main_tab)
         self.main_win = main_win
         self.main_tab = main_tab
-        self.prj = prj
+        self.lib = lib
         self.settings = QtCore.QSettings()
 
         # empty arrays
@@ -96,7 +96,7 @@ class MainCanvas(QtWidgets.QFrame):
 
     def on_mouse_move(self, event):
         """Manage mouse move event"""
-        has_layers = self.prj.has_product_layers()
+        has_layers = self.lib.prj.has_layers()
         # logger.debug("moved mouse: %s [has layers: %s]" % (event.button, has_layers))
         if not has_layers:
             return
@@ -134,7 +134,7 @@ class MainCanvas(QtWidgets.QFrame):
 
     def on_mouse_press(self, event):
         """Manage mouse press event"""
-        has_layers = self.prj.has_product_layers()
+        has_layers = self.lib.has_product_layers()
         logger.debug("pressed mouse: %s [has layers: %s]" % (event.button, has_layers))
         if not has_layers:
             return
@@ -255,14 +255,14 @@ class MainCanvas(QtWidgets.QFrame):
 
     def on_enter_axes(self, event: QtGui.QMouseEvent) -> None:
 
-        if self.prj.has_product_layers():
+        if self.lib.prj.has_layers():
             logger.debug("entering axes")
             self.mouse_patch.set_visible(True)
             event.canvas.draw_idle()
 
     def on_leave_axes(self, event: QtGui.QMouseEvent) -> None:
 
-        if self.prj.has_product_layers():
+        if self.lib.prj.has_layers():
             logger.debug("leaving axes")
             self.mouse_patch.set_visible(False)
             event.canvas.draw_idle()
@@ -316,7 +316,7 @@ class MainCanvas(QtWidgets.QFrame):
 
             def format_coord(easting, northing):
 
-                if self.prj.has_product_layers():
+                if self.lib.has_product_layers():
 
                     layer = self.main_tab.file_products_bar.current_layer()
 

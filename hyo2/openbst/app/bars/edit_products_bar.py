@@ -11,8 +11,8 @@ logger = logging.getLogger(__name__)
 
 class EditProductsBar(AbstractBar):
 
-    def __init__(self, main_win, main_tab, canvas, prj):
-        super().__init__(main_tab=main_tab, main_win=main_win, canvas=canvas, prj=prj)
+    def __init__(self, main_win, main_tab, canvas, lib):
+        super().__init__(main_tab=main_tab, main_win=main_win, canvas=canvas, lib=lib)
         self.setWindowTitle("Edit Raster/Vector")
 
         # colormap

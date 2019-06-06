@@ -32,7 +32,7 @@ class MainTab(QtWidgets.QMainWindow):
         self.settings = QtCore.QSettings()
 
         self.main_win = main_win
-        self.prj = OpenBST(progress=QtProgress(self))
+        self.lib = OpenBST(progress=QtProgress(self))
         self.tab_idx = -1
         self.progress = QtProgress(parent=self)
 
@@ -42,40 +42,44 @@ class MainTab(QtWidgets.QMainWindow):
         self.setContentsMargins(0, 0, 0, 0)
 
         # ### CANVAS ###
-        self.canvas = MainCanvas(main_win=self.main_win, main_tab=self, prj=self.prj)
+        self.canvas = MainCanvas(main_win=self.main_win, main_tab=self, lib=self.lib)
         self.setCentralWidget(self.canvas)
 
         # ### FILE PRODUCTS BAR ###
         self.file_products_bar = FileProductsBar(main_win=self.main_win, main_tab=self,
-                                                 canvas=self.canvas, prj=self.prj)
+                                                 canvas=self.canvas, lib=self.lib)
+        # noinspection PyArgumentList
         self.addToolBar(self.file_products_bar)
 
         # ### VIEW PRODUCTS TOOLBAR ###
         self.view_products_bar = ViewProductsBar(main_win=self.main_win, main_tab=self,
-                                                 canvas=self.canvas, prj=self.prj)
+                                                 canvas=self.canvas, lib=self.lib)
+        # noinspection PyArgumentList
         self.addToolBar(self.view_products_bar)
 
         # ### EDIT PRODUCTS TOOLBAR ###
         self.edit_products_bar = EditProductsBar(main_win=self.main_win, main_tab=self,
-                                                 canvas=self.canvas, prj=self.prj)
+                                                 canvas=self.canvas, lib=self.lib)
+        # noinspection PyArgumentList
         self.addToolBar(self.edit_products_bar)
 
         # ### APP SETTINGS BAR ###
         self.app_settings_bar = AppSettingsBar(main_win=self.main_win, main_tab=self,
-                                               canvas=self.canvas, prj=self.prj)
+                                               canvas=self.canvas, lib=self.lib)
+        # noinspection PyArgumentList
         self.addToolBar(self.app_settings_bar)
 
         # ### TOOLS ###
         self.product_colors_tool = ProductColorsTool(main_win=self.main_win, main_tab=self,
-                                                     main_canvas=self.canvas, prj=self.prj)
+                                                     main_canvas=self.canvas, lib=self.lib)
         self.product_shift_tool = ProductShiftTool(main_win=self.main_win, main_tab=self,
-                                                   main_canvas=self.canvas, prj=self.prj)
+                                                   main_canvas=self.canvas, lib=self.lib)
         self.product_erase_tool = ProductEraseTool(main_win=self.main_win, main_tab=self,
-                                                   main_canvas=self.canvas, prj=self.prj)
+                                                   main_canvas=self.canvas, lib=self.lib)
         self.product_modify_tool = ProductModifyTool(main_win=self.main_win, main_tab=self,
-                                                     main_canvas=self.canvas, prj=self.prj)
+                                                     main_canvas=self.canvas, lib=self.lib)
         self.product_clone_tool = ProductCloneTool(main_win=self.main_win, main_tab=self,
-                                                   main_canvas=self.canvas, prj=self.prj)
+                                                   main_canvas=self.canvas, lib=self.lib)
 
         self.on_empty_draw()
 
@@ -118,7 +122,7 @@ class MainTab(QtWidgets.QMainWindow):
                 if os.path.isdir(dropped_path):
                     msg = 'Drag-and-drop is not currently possible with a folder!\n\n' \
                           'Dropped path: %s\n' % dropped_path
-                    # noinspection PyCallByClass
+                    # noinspection PyCallByClass,PyArgumentList
                     QtWidgets.QMessageBox.critical(self, "Drag-and-drop Error", msg, QtWidgets.QMessageBox.Ok)
                     return
 
@@ -132,7 +136,7 @@ class MainTab(QtWidgets.QMainWindow):
                           '- ASCII Grid: .asc + .prj -> user prompted for type selection\n\n' \
                           'Dropped path:\n' \
                           '%s' % dropped_path
-                    # noinspection PyCallByClass
+                    # noinspection PyCallByClass,PyArgumentList
                     QtWidgets.QMessageBox.critical(self, "Input Error", msg, QtWidgets.QMessageBox.Ok)
 
         else:

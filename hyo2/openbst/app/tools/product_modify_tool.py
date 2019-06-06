@@ -12,18 +12,18 @@ if TYPE_CHECKING:
     from hyo2.openbst.app.main_window import MainWindow
     from hyo2.openbst.app.main_tab import MainTab
     from hyo2.openbst.app.main_canvas import MainCanvas
-    from hyo2.openbst.lib.project import Project
+    from hyo2.openbst.lib.openbst import OpenBST
 
 logger = logging.getLogger(__name__)
 
 
 class ProductModifyTool(AbstractTool):
 
-    def __init__(self, main_win: 'MainWindow', main_tab: 'MainTab', main_canvas: 'MainCanvas', prj: 'Project') -> None:
-        super().__init__(main_win=main_win, main_tab=main_tab, main_canvas=main_canvas, prj=prj)
+    def __init__(self, main_win: 'MainWindow', main_tab: 'MainTab', main_canvas: 'MainCanvas', lib: 'OpenBST') -> None:
+        super().__init__(main_win=main_win, main_tab=main_tab, main_canvas=main_canvas, lib=lib)
 
         self.setWindowTitle("Modify Tool")
-        self.resize(320, 160)
+        self.resize(QtCore.QSize(320, 160))
 
         self.modify_algos = [
             "Gaussian Filter",

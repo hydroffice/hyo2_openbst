@@ -1,16 +1,10 @@
-from datetime import datetime
-import hashlib
 import logging
-import os
 from pathlib import Path
-from netCDF4 import Dataset, date2num, num2date
-import numpy as np
 
 from hyo2.abc.lib.progress.abstract_progress import AbstractProgress
 from hyo2.abc.lib.progress.cli_progress import CliProgress
-
+# noinspection PyUnresolvedReferences
 from hyo2.openbst.lib import lib_info
-
 from hyo2.openbst.lib.products.product import Product
 from hyo2.openbst.lib.project_info import ProjectInfo
 
@@ -325,6 +319,20 @@ class Project:
     # #         Helper.explore_folder(os.path.dirname(output_path))
     # #
     # #     return True
+
+    # ### LAYERS ###
+
+    # TODO
+    def has_layers(self) -> bool:
+        return False
+
+    # TODO
+    def has_modified_layers(self) -> bool:
+        return False
+
+    # TODO
+    def close_layers(self) -> None:
+        return None
 
     # ### OTHER ###
 

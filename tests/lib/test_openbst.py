@@ -2,6 +2,7 @@ from pathlib import Path
 import unittest
 
 from hyo2.abc.lib.testing_paths import TestingPaths
+# noinspection PyUnresolvedReferences
 from hyo2.openbst.app import app_info  # for GDAL data
 from hyo2.openbst.lib.setup import Setup
 from hyo2.openbst.lib.openbst import OpenBST
@@ -16,7 +17,7 @@ class TestLibOpenBST(unittest.TestCase):
 
         # remove existing test setup
         setup_path = Setup.make_setup_path(setup_name=cls.setup_name,
-                                           setups_folder=Setup.make_setups_folder(root_folder=OpenBST.root_folder()))
+                                           setups_folder=OpenBST.setups_folder())
         if setup_path.exists():
             setup_path.unlink()
 

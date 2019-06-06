@@ -35,8 +35,8 @@ class MainWindow(QtWidgets.QMainWindow):
         self.setWindowIcon(QtGui.QIcon(app_info.app_icon_path))
 
         # set the size
-        self.setMinimumSize(600, 400)
-        self.resize(1200, 800)
+        self.setMinimumSize(QtCore.QSize(600, 400))
+        self.resize(QtCore.QSize(1200, 800))
         self.setContentsMargins(0, 0, 0, 0)
 
         # set status bar
@@ -71,6 +71,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.set_tabs_icon_size(int(self.settings.value("tabs/icon_size", app_info.app_tabs_icon_size)))
         # - Processing
         self.tab_main = MainTab(main_win=self)
+        # noinspection PyArgumentList
         self.tab_main_idx = self.tabs.insertTab(0, self.tab_main,
                                                 QtGui.QIcon(os.path.join(app_info.app_media_path, "tab_main.png")), "")
         self.tabs.setTabToolTip(self.tab_main_idx, "Main")
@@ -84,6 +85,7 @@ class MainWindow(QtWidgets.QMainWindow):
                                 with_noaa_link=True,
                                 with_unh_link=True,
                                 with_license=True)
+        # noinspection PyArgumentList
         self.tab_info_idx = self.tabs.insertTab(1, self.tab_info,
                                                 QtGui.QIcon(os.path.join(app_info.app_media_path, "tab_info.png")), "")
         self.tabs.setTabToolTip(self.tab_info_idx, "Info")
@@ -108,6 +110,7 @@ class MainWindow(QtWidgets.QMainWindow):
         timer = QtCore.QTimer(self)
         # noinspection PyUnresolvedReferences
         timer.timeout.connect(self.update_status)
+        # noinspection PyArgumentList
         timer.start(300000)  # each 5 minutes
         self.update_status()
 
@@ -298,7 +301,7 @@ class MainWindow(QtWidgets.QMainWindow):
         """ actions to be done before close the app """
 
         reply = QtWidgets.QMessageBox.Yes
-        if self.ask_quit and self.tab_main.prj.has_modified_product_layers():
+        if self.ask_quit and self.tab_main.lib.prj.has_modified_layers():
             reply = self.do_you_really_want(text="quit\nwithout saving your last changes")
 
         if reply == QtWidgets.QMessageBox.Yes:
@@ -309,7 +312,7 @@ class MainWindow(QtWidgets.QMainWindow):
             self.settings.setValue("main_window/state", self.saveState())
             self.settings.setValue("main_window/geometry", self.saveGeometry())
 
-            self.tab_main.prj.close_product_layers()
+            self.tab_main.lib.prj.close_layers()
 
             event.accept()
             super().closeEvent(event)

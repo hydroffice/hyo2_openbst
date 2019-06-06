@@ -3,7 +3,7 @@ import os
 
 from hyo2.openbst.app import app_info
 from hyo2.openbst.app.bars.abstract_bar import AbstractBar
-from hyo2.openbst.app.dialogs.settings_dialog import SettingsDialog
+from hyo2.openbst.app.dialogs.setup_dialog import SetupDialog
 
 from PySide2 import QtGui, QtWidgets
 
@@ -12,8 +12,8 @@ logger = logging.getLogger(__name__)
 
 class AppSettingsBar(AbstractBar):
 
-    def __init__(self, main_win, main_tab, canvas, prj):
-        super().__init__(main_tab=main_tab, main_win=main_win, canvas=canvas, prj=prj)
+    def __init__(self, main_win, main_tab, canvas, lib):
+        super().__init__(main_tab=main_tab, main_win=main_win, canvas=canvas, lib=lib)
         self.setWindowTitle("App Settings")
 
         tip = 'Show settings'
@@ -27,5 +27,5 @@ class AppSettingsBar(AbstractBar):
 
     def on_show_settings(self):
         logger.debug("show settings")
-        settings_dialog = SettingsDialog(parent=self)
+        settings_dialog = SetupDialog(parent=self, lib=self.lib)
         settings_dialog.exec_()

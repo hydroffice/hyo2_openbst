@@ -4,7 +4,6 @@ from hyo2.abc.app.app_info import AppInfo
 from hyo2.openbst import name
 from hyo2.openbst import __version__
 
-
 app_info = AppInfo()
 
 app_info.app_name = name
@@ -38,20 +37,20 @@ app_info.app_button_height = 24
 
 app_info.plot_font_size = 10
 app_info.plot_rc_context = {
-        'font.family': 'sans-serif',
-        'font.sans-serif': ['Tahoma', 'Bitstream Vera Sans', 'Lucida Grande', 'Verdana'],
-        'font.size': app_info.plot_font_size,
-        'figure.titlesize': app_info.plot_font_size + 1,
-        'axes.labelsize': app_info.plot_font_size,
-        'legend.fontsize': app_info.plot_font_size,
-        'xtick.labelsize': app_info.plot_font_size - 1,
-        'ytick.labelsize': app_info.plot_font_size - 1,
-        'axes.linewidth': 0.5,
-        'axes.xmargin': 0.01,
-        'axes.ymargin': 0.01,
-        'lines.linewidth': 1.5,
-        'grid.alpha': 0.2,
-    }
+    'font.family': 'sans-serif',
+    'font.sans-serif': ['Tahoma', 'Bitstream Vera Sans', 'Lucida Grande', 'Verdana'],
+    'font.size': app_info.plot_font_size,
+    'figure.titlesize': app_info.plot_font_size + 1,
+    'axes.labelsize': app_info.plot_font_size,
+    'legend.fontsize': app_info.plot_font_size,
+    'xtick.labelsize': app_info.plot_font_size - 1,
+    'ytick.labelsize': app_info.plot_font_size - 1,
+    'axes.linewidth': 0.5,
+    'axes.xmargin': 0.01,
+    'axes.ymargin': 0.01,
+    'lines.linewidth': 1.5,
+    'grid.alpha': 0.2,
+}
 
 app_info.plot_bathy_cmap = ProductPlotting.default_cmap
 app_info.plot_imagery_cmap = ProductPlotting.default_cmap

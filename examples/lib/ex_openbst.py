@@ -8,13 +8,14 @@ from hyo2.openbst.lib.openbst import OpenBST
 set_logging(ns_list=["hyo2.openbst", ])
 logger = logging.getLogger(__name__)
 
-load_alls = True
-load_kmalls = True
-load_bags = True
+load_alls = False
+load_kmalls = False
+load_bags = False
 
 testing = TestingPaths(root_folder=Path(__file__).parent.parent.parent.resolve())
 
 bst = OpenBST(setup_name="test")
+# logger.debug("setups: %s, projects: %s" % (bst.setups_list, bst.projects_list, ))
 # prj.open_root_folder()
 
 if load_alls:

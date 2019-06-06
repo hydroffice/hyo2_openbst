@@ -13,18 +13,18 @@ if TYPE_CHECKING:
     from hyo2.openbst.app.main_window import MainWindow
     from hyo2.openbst.app.main_tab import MainTab
     from hyo2.openbst.app.main_canvas import MainCanvas
-    from hyo2.openbst.lib.project import Project
+    from hyo2.openbst.lib.openbst import OpenBST
 
 logger = logging.getLogger(__name__)
 
 
 class ProductColorsTool(AbstractTool):
 
-    def __init__(self, main_win: 'MainWindow', main_tab: 'MainTab', main_canvas: 'MainCanvas', prj: 'Project') -> None:
-        super().__init__(main_win=main_win, main_tab=main_tab, main_canvas=main_canvas, prj=prj)
+    def __init__(self, main_win: 'MainWindow', main_tab: 'MainTab', main_canvas: 'MainCanvas', lib: 'OpenBST') -> None:
+        super().__init__(main_win=main_win, main_tab=main_tab, main_canvas=main_canvas, lib=lib)
 
         self.setWindowTitle("Colors Tool")
-        self.resize(480, 100)
+        self.resize(QtCore.QSize(480, 100))
 
         field_sz = 50
 
@@ -293,7 +293,7 @@ class ProductColorsTool(AbstractTool):
 
         if min_value >= max_value:
             msg = "The selected values are invalid: %f and %f" % (min_value, max_value)
-            # noinspection PyCallByClass
+            # noinspection PyCallByClass,PyArgumentList
             QtWidgets.QMessageBox.warning(self, "Invalid Range", msg, QtWidgets.QMessageBox.Ok)
 
             self.min.setText("%.3f" % layer.plot.array_min)

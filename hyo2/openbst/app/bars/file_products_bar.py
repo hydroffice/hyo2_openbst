@@ -15,8 +15,8 @@ logger = logging.getLogger(__name__)
 
 class FileProductsBar(AbstractBar):
 
-    def __init__(self, main_win, main_tab, canvas, prj):
-        super().__init__(main_tab=main_tab, main_win=main_win, canvas=canvas, prj=prj)
+    def __init__(self, main_win, main_tab, canvas, lib):
+        super().__init__(main_tab=main_tab, main_win=main_win, canvas=canvas, lib=lib)
         self.setWindowTitle("File Raster/Vector")
 
         self.setMinimumWidth(480)
@@ -87,7 +87,7 @@ class FileProductsBar(AbstractBar):
     def on_load_product(self) -> None:
         logger.debug("User wants to load raster/vector")
 
-        self.main_win.switch_to_arch_tab()
+        self.main_win.switch_to_main_tab()
 
         # noinspection PyCallByClass
         selection, _ = QtWidgets.QFileDialog.getOpenFileName(self, "Add raster/vector",
@@ -114,11 +114,11 @@ class FileProductsBar(AbstractBar):
 
     def on_unload_raster(self):
         logger.debug("User wants to unload raster")
-        self.prj.close_product_layer_by_basename(self.current_layer_key().split(":")[-1])
+        self.lib.close_product_layer_by_basename(self.current_layer_key().split(":")[-1])
         self.update_layers_combo()
 
         # if there are not layers, we triggered raster_unloaded; otherwise, now we trigger the visualization
-        if len(self.prj.product_layers_list) == 0:
+        if len(self.lib.product_layers_list) == 0:
             self.main_tab.raster_unloaded()
             self.main_tab.on_empty_draw()
             self.canvas.resize_event()
@@ -131,7 +131,7 @@ class FileProductsBar(AbstractBar):
         layer_key = self.current_layer_key()
         logger.debug("User wants to save the current raster [%s]" % layer_key)
 
-        layer = self.prj.product_layers_dict[layer_key]
+        layer = self.lib.product_layers_dict[layer_key]
         title = "Save raster"
         ext = "All files (*.*)"
         if layer.format_type == ProductFormatType.BAG:
@@ -144,7 +144,7 @@ class FileProductsBar(AbstractBar):
             title = "Save ASCII Grid"
             ext = "ASCII Grid file (*.asc)"
 
-        default_output = os.path.join(self.settings.value(app_info.key_raster_export_folder, self.prj.export_folder),
+        default_output = os.path.join(self.settings.value(app_info.key_raster_export_folder, self.lib.export_folder),
                                       layer_key.split(":")[-1])
 
         # noinspection PyCallByClass
@@ -157,7 +157,7 @@ class FileProductsBar(AbstractBar):
         if os.path.exists(last_open_folder):
             self.settings.setValue(app_info.key_raster_export_folder, last_open_folder)
 
-        success = self.prj.save_product_layer_by_key(layer_key=layer_key, output_path=out_path, open_folder=True)
+        success = self.lib.save_product_layer_by_key(layer_key=layer_key, output_path=out_path, open_folder=True)
 
         if success:
             logger.debug("Saving done!")
@@ -168,7 +168,7 @@ class FileProductsBar(AbstractBar):
                                            QtWidgets.QMessageBox.Ok)
 
     def on_open_output_folder(self):
-        output_folder = self.settings.value(app_info.key_raster_export_folder, self.prj.export_folder)
+        output_folder = self.settings.value(app_info.key_raster_export_folder, self.lib.export_folder)
         if not os.path.exists(output_folder):
             logger.warning("unable to locate output folder: %s" % output_folder)
             return
@@ -180,10 +180,10 @@ class FileProductsBar(AbstractBar):
         return self.layers_combo.currentText()
 
     def other_raster_layers_for_current_key(self) -> list:
-        return self.prj.other_product_layers_for_key(layer_key=self.current_layer_key())
+        return self.lib.other_product_layers_for_key(layer_key=self.current_layer_key())
 
     def current_layer(self) -> ProductLayer:
-        return self.prj.product_layers_dict[self.current_layer_key()]
+        return self.lib.product_layers_dict[self.current_layer_key()]
 
     def current_layer_array(self) -> np.ndarray:
         return self.current_layer().array
@@ -192,7 +192,7 @@ class FileProductsBar(AbstractBar):
 
         logger.debug("loading %s" % path)
 
-        if self.prj.is_product_vr(path=path):
+        if self.lib.is_product_vr(path=path):
             msg = "The input file is at Variable Resolution.\n\n" \
                   "VR grids are currently unsupported!"
             # noinspection PyCallByClass
@@ -217,10 +217,10 @@ class FileProductsBar(AbstractBar):
                 hint_type = ProductLayerType.MOSAIC
 
         # store if the project had layers before adding
-        had_layers = self.prj.has_product_layers()
+        had_layers = self.lib.has_product_layers()
 
         # Try to load the layers
-        success = self.prj.load_product_from_source(path=path, hint_type=hint_type)
+        success = self.lib.load_product_from_source(path=path, hint_type=hint_type)
         if not success:
             msg = "Unable to load the selected file!"
             # noinspection PyCallByClass
@@ -240,7 +240,7 @@ class FileProductsBar(AbstractBar):
 
         self.layers_combo.clear()
 
-        for lk in self.prj.ordered_product_layers_list:
+        for lk in self.lib.ordered_product_layers_list:
 
             self.layers_combo.addItem(lk)
 
@@ -253,7 +253,7 @@ class FileProductsBar(AbstractBar):
         self.unload_act.setEnabled(True)
 
     def raster_unloaded(self):
-        if len(self.prj.product_layers_list) == 0:
+        if len(self.lib.product_layers_list) == 0:
             self.layers_combo.setDisabled(True)
         self.save_act.setDisabled(True)
         self.unload_act.setDisabled(True)
@@ -264,7 +264,7 @@ class FileProductsBar(AbstractBar):
         self.unload_act.setEnabled(True)
 
     def vector_unloaded(self):
-        if len(self.prj.product_layers_list) == 0:
+        if len(self.lib.product_layers_list) == 0:
             self.layers_combo.setDisabled(True)
         self.save_act.setDisabled(True)
         self.unload_act.setDisabled(True)

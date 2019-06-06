@@ -7,12 +7,12 @@ logger = logging.getLogger(__name__)
 
 class AbstractBar(QtWidgets.QToolBar):
 
-    def __init__(self, main_win, main_tab, canvas, prj):
+    def __init__(self, main_win, main_tab, canvas, lib):
         super().__init__(parent=main_tab)
         self.main_win = main_win
         self.main_tab = main_tab
         self.canvas = canvas
-        self.prj = prj
+        self.lib = lib
 
         self.settings = QtCore.QSettings()
 

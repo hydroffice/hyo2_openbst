@@ -15,8 +15,8 @@ logger = logging.getLogger(__name__)
 
 class ViewProductsBar(AbstractBar):
 
-    def __init__(self, main_win, main_tab, canvas, prj):
-        super().__init__(main_tab=main_tab, main_win=main_win, canvas=canvas, prj=prj)
+    def __init__(self, main_win, main_tab, canvas, lib):
+        super().__init__(main_tab=main_tab, main_win=main_win, canvas=canvas, lib=lib)
         self.setWindowTitle("View Raster/Vector")
 
         # info
@@ -62,7 +62,7 @@ class ViewProductsBar(AbstractBar):
         layer_key = self.main_tab.current_layer_key()
         logger.debug("User wants to retrieve info from %s" % layer_key)
 
-        msg = "Layer Key: %s\n\n%s" % (layer_key, self.prj.product_layers_dict[layer_key].info_str())
+        msg = "Layer Key: %s\n\n%s" % (layer_key, self.lib.product_layers_dict[layer_key].info_str())
         # noinspection PyCallByClass
         QtWidgets.QMessageBox.information(self, "Grid Info", msg, QtWidgets.QMessageBox.Ok)
 

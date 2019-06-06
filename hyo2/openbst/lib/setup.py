@@ -13,20 +13,15 @@ class Setup:
 
     ext = ".nc"
 
-    def __init__(self, name: str, root_folder: Path) -> None:
+    def __init__(self, name: str, setups_folder: Path) -> None:
 
-        self._root_folder = root_folder
         self._setup_name = self.make_setup_name(name)
-        self._setups_folder = self.make_setups_folder(root_folder=root_folder)
+        self._setups_folder = setups_folder
         self._path = self.make_setup_path(setups_folder=self._setups_folder,
                                           setup_name=name)
         self._ds = None
         self._time = None
         self._nc()
-
-    @property
-    def root_folder(self) -> Path:
-        return self._root_folder
 
     @property
     def path(self) -> Path:
@@ -94,13 +89,6 @@ class Setup:
         return setup_name
 
     @classmethod
-    def make_setups_folder(cls, root_folder: Path) -> Path:
-        setups_folder = root_folder.joinpath("setups")
-        if not setups_folder.exists():
-            setups_folder.mkdir(parents=True, exist_ok=True)
-        return setups_folder
-
-    @classmethod
     def make_setup_path(cls, setups_folder: Path, setup_name: str) -> Path:
         setup_path = setups_folder.joinpath(setup_name + cls.ext)
         return setup_path
@@ -126,12 +114,17 @@ class Setup:
 
     # ### OTHER ###
 
+    def info(self) -> str:
+        txt = str()
+        txt += "  <name: %s>\n" % self.name
+        txt += "  <setups folder: %s>\n" % self._setups_folder
+        txt += "  <version: %s>\n" % self.version
+        txt += "  <created: %s>\n" % self.created
+        txt += "  <modified: %s>\n" % self.modified
+        txt += "  <current project: %s>\n" % self.current_project
+        return txt
+
     def __repr__(self) -> str:
         msg = "<%s>\n" % self.__class__.__name__
-        msg += "  <name: %s>\n" % self.name
-        msg += "  <root folder: %s>\n" % self.root_folder
-        msg += "  <version: %s>\n" % self.version
-        msg += "  <created: %s>\n" % self.created
-        msg += "  <modified: %s>\n" % self.modified
-        msg += "  <current project: %s>\n" % self.current_project
+        msg += self.info()
         return msg
