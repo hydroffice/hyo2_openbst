@@ -1029,6 +1029,9 @@ class Data7027:
             fmt_base = 'H2f2If'
         elif datafieldsize == 26:
             fmt_base = 'H2f2I2f'
+        elif datafieldsize == 34:
+            fmt_base = 'H2f2I2f2I'
+        print('datafieldsize: %s' % datafieldsize)
         if self.numbeams > 0:
             self.fmt_data = '<' + self.numbeams * fmt_base
             self.data_sz = struct.calcsize(self.fmt_data)
@@ -1070,9 +1073,9 @@ class Data7027:
             print("No beams in record.")
 
     def plot(self):
-        rngplot = plt.scatter(self.data[:, 0], self.data[:, 1], c=self.detect, edgecolor=self.detect)
-        plt.xlim((0, self.numbeams))
-        plt.ylim((self.data[1].max(), 0))
+        rngplot = plt.scatter(np.rad2deg(self.data[:, 2]), self.data[:, -3], c=self.detect, edgecolor=self.detect)
+        # plt.xlim((0, self.numbeams))
+        # plt.ylim((np.nanmax(self.data[1]), 0))
         plt.xlabel('Beam Number')
         plt.ylabel('Sample Number')
         plt.draw()
@@ -1419,18 +1422,19 @@ class Data7200:
         self.hdr_sz = struct.calcsize(self.fmt_hdr)
 
     def display(self):
-        self.label = ('File ID',
-                      'Version Number',
-                      'Reserved',
-                      'Session ID',
-                      'Record Data Size',
-                      'Number of Devices',
-                      'Recording Name',
-                      'Recording Program Verision Number',
-                      'User Defined Name',
-                      'Notes')
-        for i in range(len(self.header[1:]) - 1):
-            print(self.label[i] + ': ' + str(self.header[i]))
+        # self.label = ('File ID',
+        #               'Version Number',
+        #               'Reserved',
+        #               'Session ID',
+        #               'Record Data Size',
+        #               'Number of Devices',
+        #               'Recording Name',
+        #               'Recording Program Verision Number',
+        #               'User Defined Name',
+        #               'Notes')
+        # for i in range(len(self.header[1:]) - 1):
+        #     print(self.label[i] + ': ' + str(self.header[i]))
+        pass
 
 
 class Data7503:
