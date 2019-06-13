@@ -4,6 +4,7 @@ import logging
 import traceback
 import numpy as np
 import matplotlib.pyplot as plt
+import matplotlib.patches as patches
 from hyo2.abc.lib.logging import set_logging
 from hyo2.openbst.lib import prr
 
@@ -44,16 +45,81 @@ def run(filename):
 
     print(bs.shape)
 
-    intensity_plot = plt.figure()
-    plt.imshow(bs)
+    # ------------------------------------------------------------------------------------------------------------------
+    # Determine data bounds
+    index_beam = np.arange(100, 112, 1)
+    # index_beam = np.array(50)
+    # index_beam = None
 
-    ara_plot = plt.figure()
-    inx = np.argsort(np.abs(angle[50,:]))
-    plt.plot(np.abs(angle[50,inx]), 20*np.log10(bs[50, inx]))
+    # Load the Calibration data
+    calibration_curve = np.genfromtxt(fname=r'C:\PythonCode\hyo2_openbst\examples\lib\sequim_bay\calibration_200kHz.csv'
+                                      , dtype=float, delimiter=',')
+    plt.figure()
+    plt.plot(calibration_curve[:,0], calibration_curve[:,1], linewidth=2, color='b')
+    plt.grid()
+    plt.xlabel('Angle (degrees)')
+    plt.ylabel('C (dB)')
+    plt.title('Calibration Curve for T50-p at 200kHz')
+
+
+    # Intensity Mosaic
+    intensity_plot = plt.figure()
+    plt.imshow(20*np.log10(bs), cmap='Greys_r')
+    plt.xlabel('Beam Number')
+    plt.ylabel('Ping Number')
+    cbar = plt.colorbar()
+    cbar.set_label('Digital Intensity (dB re arbitrary)')
+    plt.title('Non-Georeferenced Backscatter Mosaic\n  Reson T50-P (200kHz)')
+
+    # Determine if we have a single ping, range or all
+    if index_beam is None:
+        angles = angle[0, :]
+        calibration_data = np.interp(angles, calibration_curve[:, 0], calibration_curve[:, 1])
+        data_uncal = 20 * np.log10(bs.mean(axis=0))
+        data_calibrated = data_uncal + calibration_data
+    elif index_beam.size == 1:
+        angles = angle[index_beam, :]
+        calibration_data = np.interp(angles, calibration_curve[:, 0], calibration_curve[:, 1])
+        data_uncal = 20*np.log10(bs[index_beam, :])
+        data_calibrated = data_uncal + calibration_data
+
+        # plot line where data is from
+        plt.plot([0, angles.size-1], [index_beam, index_beam], linewidth=2, color='r')
+
+    else:
+        angles = angle[index_beam[0], :]
+        calibration_data = np.interp(angles, calibration_curve[:, 0], calibration_curve[:, 1])
+        data_uncal = 20*np.log10(bs[index_beam, :].mean(axis=0))
+        data_calibrated = data_uncal + calibration_data
+
+        # plot rectangle where data is from
+        data_rect = patches.Rectangle((0, index_beam[0]), bs.shape[1], index_beam.size, linewidth=2, edgecolor='r', facecolor='none')
+        plt.gca().add_patch(data_rect)
+
+    # Plot figures
+    fig = plt.figure()
+    fig.suptitle('Correction of Data for System Directivity')
+    plt.subplot(211)
+    plt.plot(angles, data_uncal)
+    plt.grid()
+    plt.ylabel('Digital Intensity Value (dB re Arbitrary)')
+    plt.title('Uncorrected Data')
+
+    plt.subplot(212)
+    plt.plot(angles, data_calibrated)
+    plt.grid()
+    plt.ylabel('Digital Intensity Value (dB re Arbitrary)')
+    plt.xlabel('Angle (degrees)')
+    plt.title('Corrected Data')
+
+    plt.figure()
+    plt.plot(np.abs(angles[:int(angles.size/2):]), data_calibrated[:int(angles.size/2):])
+    plt.grid()
     # plt.xlim((0, self.numbeams))
     # plt.ylim((np.nanmax(self.data[1]), 0))
     plt.xlabel('Angle')
-    plt.ylabel('Sample Number')
+    plt.ylabel('Digital Intensity Value (dB re Arbitrary)')
+    plt.title('Angular Response Curve at 200kHz')
     plt.draw()
 
     d = infile.getrecord(1012, 0)  # this is an attitude record
