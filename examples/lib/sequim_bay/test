@@ -24,14 +24,18 @@ def run(filename):
     print("\n\nFor packet type:", pkt, ":")
     print("  There were %d occurrences\n" % numrecords)
     bs = None
+    angle = None
     for n in range(numrecords):
         try:
             data = infile.getrecord(pkt, n)
             # data.display()  # prints the data and plots a graph if applicable
             if bs is None:
-                bs = data.data[:,-3].reshape(1, data.data[:,-3].size)
+                bs = data.data[:, -3].reshape(1, data.data[:, -3].size)
+                angle = np.rad2deg(data.data[:, 2].reshape(1, data.data[:, 2].size))
+
             else:
-                bs = np.concatenate((bs, data.data[:,-3].reshape(1, data.data[:,-3].size)))
+                bs = np.concatenate((bs, data.data[:, -3].reshape(1, data.data[:, -3].size)))
+                angle = np.concatenate((angle, np.rad2deg(data.data[:, 2].reshape(1, data.data[:, 2].size))))
 
         except Exception as e:
             print(traceback.format_exc())
@@ -39,11 +43,16 @@ def run(filename):
             print("Packet may not be supported yet ", pkt)
 
     print(bs.shape)
-    # rngplot = plt.imshow(bs)
-    rngplot = plt.plot(bs.mean(axis=0))
+
+    intensity_plot = plt.figure()
+    plt.imshow(bs)
+
+    ara_plot = plt.figure()
+    inx = np.argsort(np.abs(angle[50,:]))
+    plt.plot(np.abs(angle[50,inx]), 20*np.log10(bs[50, inx]))
     # plt.xlim((0, self.numbeams))
     # plt.ylim((np.nanmax(self.data[1]), 0))
-    plt.xlabel('Beam Number')
+    plt.xlabel('Angle')
     plt.ylabel('Sample Number')
     plt.draw()
 
