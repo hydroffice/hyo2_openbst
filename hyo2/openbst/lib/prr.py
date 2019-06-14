@@ -1030,7 +1030,7 @@ class Data7027:
         elif datafieldsize == 26:
             fmt_base = 'H2f2I2f'
         elif datafieldsize == 34:
-            fmt_base = 'H2f2I2f2I'
+            fmt_base = 'H2f2I2f2f'
         print('datafieldsize: %s' % datafieldsize)
         if self.numbeams > 0:
             self.fmt_data = '<' + self.numbeams * fmt_base
