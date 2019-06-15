@@ -1,6 +1,7 @@
 from PySide2 import QtWidgets
 import os
 import logging
+from pathlib import Path
 import traceback
 import numpy as np
 import matplotlib.pyplot as plt
@@ -52,7 +53,8 @@ def run(filename):
     # index_beam = None
 
     # Load the Calibration data
-    calibration_curve = np.genfromtxt(fname=r'C:\PythonCode\hyo2_openbst\examples\lib\sequim_bay\calibration_200kHz.csv'
+    csv_path =  Path(__file__).parent.joinpath(r'calibration_200kHz.csv')
+    calibration_curve = np.genfromtxt(fname=csv_path
                                       , dtype=float, delimiter=',')
     plt.figure()
     plt.plot(calibration_curve[:,0], calibration_curve[:,1], linewidth=2, color='b')
@@ -130,9 +132,8 @@ def run(filename):
 
 
 if "__main__" == __name__:
-    file_path = r'C:\PythonCode\hyo2_openbst\examples\lib\sequim_bay\20190321_185116.s7k'
-    # f = os.path.join(os.path.dirname(__file__), r"003_1535.7K")
-    run(file_path)
+    s7k_path =  Path(__file__).parent.joinpath(r'20190321_185116.s7k')
+    run(str(s7k_path))
     plt.ioff()  # turn off interactive more
     plt.show()  # stop the program from exiting until the plots are closed of the demo is killed.
     plt.ion()
