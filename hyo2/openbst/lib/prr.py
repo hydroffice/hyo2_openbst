@@ -5,10 +5,13 @@ This is intended to help trouble shoot Reson data directly from the Reson datagr
 It was inspired by The Great Sam Greenaway during his graduate work at UNH.
 """
 
+import logging
 import sys, struct, pickle
 import numpy as np
 import matplotlib.pyplot as plt
 import time, calendar, math
+
+logger = logging.getLogger(__name__)
 
 
 class x7kRead:
@@ -1031,7 +1034,7 @@ class Data7027:
             fmt_base = 'H2f2I2f'
         elif datafieldsize == 34:
             fmt_base = 'H2f2I2f2f'
-        print('datafieldsize: %s' % datafieldsize)
+        # print('datafieldsize: %s' % datafieldsize)
         if self.numbeams > 0:
             self.fmt_data = '<' + self.numbeams * fmt_base
             self.data_sz = struct.calcsize(self.fmt_data)
