@@ -859,13 +859,13 @@ class Data7010:
         self.read_data()
 
     def setup(self):
-        self.fmt_hdr = '<QIH2I'
-        self.hdr_sz = 22
+        self.fmt_hdr = '<QIH9I'
+        self.hdr_sz = 50
 
     def read_data(self):
-        self.fmt_data = '<' + str(self.header[4] - 1) + 'I'
-        self.data_sz = self.header[4] * 4
-        self.data = struct.unpack(self.fmt_data, self.infile.read(self.data_sz))
+        self.fmt_data = '<' + str(self.header[3]) + 'f'
+        self.data_sz = self.header[3] * 4
+        self.data = np.array(struct.unpack(self.fmt_data, self.infile.read(self.data_sz)))
 
     def display(self):
         self.label = ('SonarID',
