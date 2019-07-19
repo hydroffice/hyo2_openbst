@@ -57,3 +57,4 @@ data/output/
 # resources folder
 resources/~$icons.pptx
 resources/~$images.pptx
+*.s7k
