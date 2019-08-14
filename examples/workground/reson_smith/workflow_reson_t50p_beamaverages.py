@@ -5,9 +5,11 @@ import logging
 import traceback
 from pathlib import Path, PurePath
 
-import scipy.interpolate as interp_sp
+from scipy import interpolate as interp_sp
 import numpy as np
 import matplotlib.pyplot as plt
+
+from pyproj import Geod, Proj
 
 from hyo2.openbst.lib import prr
 
@@ -51,11 +53,11 @@ def run(filneame):
 
     # ----------- Get the sonar bathy/Intensity data -----------------
     pkt = '7027'
-    num_records_bathy = len(infile.map.packdir[pkt])
-    data_bathy = np.empty((num_records_bathy, number_rx_beams, 7))
+    num_pings = len(infile.map.packdir[pkt])
+    data_bathy = np.empty((num_pings, number_rx_beams, 7))
     data_bathy[:] = np.nan
-    time_bathy = np.empty(num_records_bathy)
-    for n in range(num_records_bathy):
+    time_bathy = np.empty(num_pings)
+    for n in range(num_pings):
         try:
             time_bathy[n] = infile.map.packdir[pkt][n, 1]
             if n == 15:
@@ -119,7 +121,7 @@ def run(filneame):
     data_position = data_position.transpose()
 
     # ----------- Get the attitude data ------------------------------
-    # Get the roll, pitch, heave
+    # Get the roll, pitch, heave / Values are in radians
     pkt = '1012'
     num_records_rph = len(infile.map.packdir[pkt])
     time_rph = np.empty(num_records_rph)
@@ -257,8 +259,8 @@ def run(filneame):
 
     # Obtain Calibration Correction for each beam angle of each ping
     rx_angle = data_bathy[:, :, 2]
-    calibration_correction = np.empty((num_records_bathy, number_rx_beams))
-    for n in range(num_records_bathy):
+    calibration_correction = np.empty((num_pings, number_rx_beams))
+    for n in range(num_pings):
         calibration_correction[n, :] = np.interp(np.rad2deg(rx_angle[n, :]),
                                                  calibration_curve[:, 0], calibration_curve[:, 1])
     # Apply calibration values
@@ -319,9 +321,9 @@ def run(filneame):
 
     # Plot the area correction data
     fig_areacorr = plt.figure()
-    plt.plot(10*np.log10(np.nanmean(area_beamlimited, axis=0)))
-    plt.plot(10*np.log10(np.nanmean(area_pulselimited, axis=0)))
-    plt.plot(10*np.log10(np.nanmean(np.minimum(area_pulselimited,area_beamlimited), axis=0)))
+    plt.plot(10 * np.log10(np.nanmean(area_beamlimited, axis=0)))
+    plt.plot(10 * np.log10(np.nanmean(area_pulselimited, axis=0)))
+    plt.plot(10 * np.log10(np.nanmean(np.minimum(area_pulselimited, area_beamlimited), axis=0)))
     plt.grid(which='minor')
     plt.xlabel("Beam [#]")
     plt.ylabel("Area Correction [dB]")
@@ -347,7 +349,96 @@ def run(filneame):
     plt.title('Full Swath ARA Curve\nReson T50-P @200kHz')
 
     # ************************** Geo-reference Data ********************************************************************
-    # ----------- Determine the beam position using slant range ------
+    geo = Geod(ellps='WGS84')
+    utm = Proj(proj='utm', zone=19, ellps='WGS84', preserve_units=False)
+    # ----------- Determine the beam  xyz postion using slant range ------
+    #   Ship Ref                    Geo Ref
+    #       |   x+                      |   n+
+    #       |                           |
+    #       |                           |
+    # ------------- y+              -------- e+
+
+    # Determine x,y,z in ship reference frame
+    y_shiprf = range_m * np.sin(rx_angle)  # Negative rx angles are portside
+    x_shiprf = np.zeros(y_shiprf.shape)
+    z = range_m * np.cos(rx_angle)
+
+    # Determine x,y,z in geographic reference frame (meters) relative to ship
+    azimuth = np.tile(heading_ping[:, np.newaxis], number_rx_beams)
+    nn_georf = np.empty((num_pings, number_rx_beams))
+    ee_georf = np.empty((num_pings, number_rx_beams))
+
+    for m in range(num_pings):  # TODO: Another terrible for loop that should become something else
+        for n in range(number_rx_beams):
+            if np.isnan(x_shiprf[m, n]):
+                nn_georf[m, n] = np.nan
+                ee_georf[m, n] = np.nan
+            else:
+                rot = np.array([[np.cos(azimuth[m, n]), -np.sin(azimuth[m, n])],
+                                [np.sin(azimuth[m, n]), np.cos(azimuth[m, n])]])
+                nn_georf[m, n], ee_georf[m, n] = rot @ [x_shiprf[m, n], y_shiprf[m, n]]
+
+    # Determine the UTM position of each ping
+    lon_in = np.tile(lon_ping[:, np.newaxis], number_rx_beams)
+    lat_in = np.tile(lat_ping[:, np.newaxis], number_rx_beams)
+    ee_ping, nn_ping = utm(lon_in, lat_in)
+    ee_beam = ee_ping + ee_georf
+    nn_beam = nn_ping + nn_georf
+
+    # ----------- Create regular grid --------------------------------
+    # TODO: This section hurts my soul. There has to be a much better way to grid data.
+    # Prep data
+    data_linear = 10 ** (np.ndarray.flatten(datacorr_radiometric) / 10)
+    ee_data = np.ndarray.flatten(ee_beam)
+    nn_data = np.ndarray.flatten(nn_beam)
+
+    # Determine the grid extents and pad -> [left, bottom, right, top]
+    ee_min = np.floor(np.nanmin(ee_data)) - 50
+    nn_min = np.floor(np.nanmin(nn_data)) - 50
+    ee_max = np.ceil(np.nanmax(ee_data)) + 50
+    nn_max = np.ceil(np.nanmax(nn_data)) + 50
+    #
+    # # Create coordinate arrays
+    bin_size = 0.5
+    # ee_range = np.arange(ee_min, ee_max + bin_size, bin_size)
+    # nn_range = np.arange(nn_min, nn_max + bin_size, bin_size)
+    # ee_grid, nn_grid = np.meshgrid(ee_range, nn_range)
+    #
+    # # Make blank grid
+    data_grid = np.zeros((int((nn_max-nn_min)/bin_size)+1, int((ee_max-ee_min)/bin_size)+1))
+    # data_grid[:] = np.nan
+    grid_count = np.copy(data_grid)
+
+    # # Fill in the grid
+    # for n in range(np.alen(data_linear)):
+    #     if np.isnan(data_linear[n]):
+    #         continue
+    #
+    #     ee_diff = np.abs(ee_grid - ee_data[n])
+    #     nn_diff = np.abs(nn_grid - nn_data[n])
+    #     ibin = np.logical_and(ee_diff < bin_size / 2, nn_diff < bin_size / 2)
+    #     ind_bin = np.where(ibin == True)
+    #
+    #     data_grid[ind_bin[0][0], ind_bin[1][0]] += data_linear[n]
+    #     grid_count[ind_bin[0][0], ind_bin[1][0]] += 1
+    for n in range(data_linear.size):
+        if np.isnan(data_linear[n]):
+            continue
+        row = int((nn_data[n] - nn_min)/bin_size)
+        col = int((ee_data[n] - ee_min)/bin_size)
+
+        data_grid[row, col] += data_linear[n]
+        grid_count[row, col] += 1
+
+    mask = grid_count == 0
+    georef_grid = np.empty_like(data_grid)
+    georef_grid[mask] = np.nan
+    georef_grid[~mask] = 10*np.log10(data_grid[~mask]/grid_count[~mask])
+
+    fig_georef = plt.figure()
+    plt.imshow(georef_grid,cmap='Greys_r',origin='lower')
+    plt.colorbar()
+    logger.debug('debug')
 
 
 if __name__ == '__main__':
