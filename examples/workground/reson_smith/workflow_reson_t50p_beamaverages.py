@@ -3,12 +3,13 @@ from PySide2 import QtWidgets
 import os
 import logging
 import traceback
-from pathlib import Path
+from pathlib import Path, PurePath
 
 import scipy.interpolate as interp_sp
 import numpy as np
 import matplotlib.pyplot as plt
-import prr
+
+from hyo2.openbst.lib import prr
 
 logger = logging.getLogger(__name__)
 
@@ -52,14 +53,19 @@ def run(filneame):
     pkt = '7027'
     num_records_bathy = len(infile.map.packdir[pkt])
     data_bathy = np.empty((num_records_bathy, number_rx_beams, 7))
-    time_bathy = np.empty((num_records_bathy))
+    data_bathy[:] = np.nan
+    time_bathy = np.empty(num_records_bathy)
     for n in range(num_records_bathy):
         try:
             time_bathy[n] = infile.map.packdir[pkt][n, 1]
-
+            if n == 15:
+                logger.debug("debug")
             record = infile.getrecord(pkt, n)
+            inds = record.data[:, 0].astype(int)
+            if inds.size != number_rx_beams:
+                logger.debug(f"Ping {n}")
+            data_bathy[n, inds, 1:4] = record.data[:, [1, 2, 6]]
             data_bathy[n, :, 0] = np.tile(np.array(record.header[1], copy=True), number_rx_beams)
-            data_bathy[n, :, 1:4] = record.data[:, [1, 2, 6]]
             data_bathy[n, :, 4] = np.tile(np.array(record.header[7], copy=True), number_rx_beams)
             data_bathy[n, :, 5] = np.tile(np.array(record.header[8], copy=True), number_rx_beams)
             data_bathy[n, :, 6] = np.tile(np.array(record.header[9], copy=True), number_rx_beams)
@@ -205,9 +211,12 @@ def run(filneame):
 
     for n in range(num_records_tvg):  # TODO: Make something better than a nested for loop
         for m in range(number_rx_beams):
-            ind = int(np.round(bottom_detect_sample[n, m]))
-            tvg_curve = data_tvg[n]
-            tvg_gain[n, m] = tvg_curve[ind]
+            if np.isnan(bottom_detect_sample[n, m]):
+                tvg_gain[n, m] = np.nan
+            else:
+                ind = int(np.round(bottom_detect_sample[n, m]))
+                tvg_curve = data_tvg[n]
+                tvg_gain[n, m] = tvg_curve[ind]
 
     alpha = data_runtime[:, 35] / 1000
     spreading = data_runtime[:, 37]
@@ -216,12 +225,12 @@ def run(filneame):
 
     # Plot a comparison between the calculated and estimated tvg values
     fig_tvg_compare = plt.figure()
-    plt.plot(tvg_gain.mean(axis=0))
-    plt.plot(tvg_bswg.mean(axis=0))
+    plt.plot(np.nanmean(tvg_gain, axis=0))
+    plt.plot(np.nanmean(tvg_bswg, axis=0))
     plt.grid()
     plt.title(
-        f"Comparison between the RESON TVG values and the BSWG Values \n Spreading = {spreading[0]} / Absorption = "
-        f"{alpha[0]}")
+        f"Comparison between the RESON TVG values and the BSWG Values \n Spreading = {spreading[0]}dB / Absorption = "
+        f"{alpha[0]}dB/m")
     plt.xlabel("Beam [#]")
     plt.ylabel("Average TVG value [dB}")
     plt.legend(["Reson TVG", "BSWG TVG"])
@@ -310,7 +319,13 @@ def run(filneame):
 
     # Plot the area correction data
     fig_areacorr = plt.figure()
-    plt.plot()
+    plt.plot(10*np.log10(np.nanmean(area_beamlimited, axis=0)))
+    plt.plot(10*np.log10(np.nanmean(area_pulselimited, axis=0)))
+    plt.plot(10*np.log10(np.nanmean(np.minimum(area_pulselimited,area_beamlimited), axis=0)))
+    plt.grid(which='minor')
+    plt.xlabel("Beam [#]")
+    plt.ylabel("Area Correction [dB]")
+    plt.title("Comparison of Area Corrections")
 
     # Plot the corrected data
     fig_radiometric = plt.figure()
@@ -336,7 +351,7 @@ def run(filneame):
 
 
 if __name__ == '__main__':
-    filepath = Path(__file__).parent.joinpath(r'20190730_144835.s7k')
+    filepath = Path(__file__).parents[3].joinpath(PurePath(r'data/input/reson/20190730_144835.s7k'))
 
     ara = run(filepath)
     plt.ioff()
