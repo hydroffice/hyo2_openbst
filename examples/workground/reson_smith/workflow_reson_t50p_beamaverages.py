@@ -42,10 +42,10 @@ def run(raw_input, calib_input):
     # - Get the receiver beam widths
     dg_type = '7004'
     nr_dg_beamgeo = len(infile.map.packdir[dg_type])
-    # determine how many rx beams system was set to. Assume constant through dg
+    # -- determine how many rx beams system was set to. Assume constant through dg
     dg = infile.getrecord(dg_type, 1)
     nr_rx_beams = dg.header[1]
-    # reading all the 4 fields in the data section
+    # -- reading all the 4 fields in the data section
     data_beamgeo = np.empty((nr_dg_beamgeo, nr_rx_beams, 4))
     for i in range(nr_dg_beamgeo):
         try:
@@ -58,8 +58,8 @@ def run(raw_input, calib_input):
     # - Get the sonar bathy/Intensity data
     dg_type = '7027'
     nr_pings = len(infile.map.packdir[dg_type])
-    # 7 because of selecting some of the fields
-    data_bathy = np.empty((nr_pings, nr_rx_beams, 7))
+
+    data_bathy = np.empty((nr_pings, nr_rx_beams, 7))  # 7 because of selecting some of the fields
     data_bathy[:] = np.nan
     time_bathy = np.empty(nr_pings)
     time_bathy[:] = np.nan
@@ -95,8 +95,7 @@ def run(raw_input, calib_input):
     dg_type = '1003'
     nr_dg_position = len(infile.map.packdir[dg_type])
     time_position = np.empty(nr_dg_position)
-    # 3 because we read just 3 of the fields
-    position_measured = np.empty((nr_dg_position, 3))
+    position_measured = np.empty((nr_dg_position, 3))  # 3 because we read just 3 of the fields
     for i in range(nr_dg_position):
         try:
             time_position[i] = infile.map.packdir[dg_type][i, 1]
@@ -111,7 +110,7 @@ def run(raw_input, calib_input):
         except Exception:
             logger.error(traceback.format_exc())
             logger.error("Error reading %s #%d" % (dg_type, i))
-    # Interpolate the position to the ping time
+    # -- Interpolate the position to the ping time
     lat_interp_object = interp_sp.interp1d(time_position, position_measured[:, 0], fill_value='extrapolate')
     lat_ping = lat_interp_object(time_bathy)
 
@@ -125,7 +124,7 @@ def run(raw_input, calib_input):
     # data_position = data_position.transpose()
 
     # - Get the attitude data
-    # Get the roll, pitch, heave / Values are in radians
+    # -- Get the roll, pitch, heave / Values are in radians
     dg_type = '1012'
     nr_dg_rph = len(infile.map.packdir[dg_type])
     time_rph = np.empty(nr_dg_rph)
@@ -140,7 +139,7 @@ def run(raw_input, calib_input):
             logger.error(traceback.format_exc())
             logger.error("Error reading %s #%d" % (dg_type, i))
 
-    # Get the heading
+    # -- Get the heading
     dg_type = '1013'
     nr_dg_heading = len(infile.map.packdir[dg_type])
     time_heading = np.empty(nr_dg_heading)
@@ -155,7 +154,7 @@ def run(raw_input, calib_input):
             logger.error(traceback.format_exc())
             logger.error("Error reading %s #%d" % (dg_type, i))
 
-    # Interpolate the attitude to the ping times
+    # --Interpolate the attitude to the ping times
     # roll_interp_object = interp_sp.interp1d(time_rph, rph_measured[:, 0], fill_value='extrapolate')
     # roll_ping = roll_interp_object(time_bathy)
     #
@@ -176,49 +175,32 @@ def run(raw_input, calib_input):
     # - Convert digital value to dB
     digital_value_db = 20 * np.log10(data_bathy[:, :, 3])
 
-    # Plot the per beam reflectivity
-    # mplt.figure()
-    # mplt.imshow(digital_value_db, cmap='Greys_r')
-    # mplt.title("Initial Raw Reflectivity\nReson T50-P @ 200kHz")
-    # mplt.xlabel("Beam [#]")
-    # mplt.ylabel("Ping [#]")
-    # cbar = mplt.colorbar()
-    # cbar.set_label("Digital Intensity Value [dB re arbitrary]")
-    # mplt.show()
+    # -- Plot the per beam reflectivity
     frequency = data_runtime[0, 3]
     title_str = "Initiial raw Relfectivity\n Reson T50-P @ %d kHz" % (frequency / 1000)
-    fig_raw = data_plt.plot_ping_beam(digital_value_db, title_str)
+    fig_raw = data_plt.plot_ping_beam(digital_value_db, title=title_str)
 
-    # Calculate the estimated slant range
+    # - Calculate the estimated slant range
     bottom_detect_sample = data_bathy[:, :, 1]
     surface_sound_speed = data_runtime[:, 36]
     sample_rate = data_bathy[:, :, 4]
     range_m = bottom_detect_sample / sample_rate * surface_sound_speed[:, np.newaxis] / 2
 
-    # Plot the range and check it's within reason (QPS data says the depth is around 21-22m along this line)
-    fig_range = mplt.figure()
-    mplt.imshow(range_m, cmap='gist_rainbow')
-    mplt.title("Preliminary Slant Range")
-    mplt.xlabel("Beam [#]")
-    mplt.ylabel("Ping [#]")
-    cbar = mplt.colorbar()
-    cbar.set_label("Range [j]")
-    mplt.show()
+    # -- Plot the range and check it's within reason
+    cmap = 'gist_rainbow'
+    title_str = "Preliminary Slant Range"
+    clabel_str = "Range [m]"
+    fig_range = data_plt.plot_ping_beam(range_m, colormap=cmap, title=title_str, clabel=clabel_str)
 
     # - Remove the static gain
     rx_fixed_gain = data_runtime[:, 15]
     datacorr_fixed_gain = digital_value_db - rx_fixed_gain[:, np.newaxis]
 
-    # Plot the adjusted gain
-    fig_fixedgain = mplt.figure()
-    mplt.imshow(datacorr_fixed_gain, cmap='Greys_r')
-    mplt.title("Static Gain [%.1f dB] Correction Product\nReson T50-P @ 200kHz" % rx_fixed_gain[0])
-    mplt.xlabel("Beam [#]")
-    mplt.ylabel("Ping [#]")
-    cbar = mplt.colorbar()
-    cbar.set_label("Digital Intensity Value [dB re arbitrary]")
+    # -- Plot the adjusted gain
+    title_str = "Static Gain [%.1f dB] Correction Product\nReson T50-P @ %d kHz" % (rx_fixed_gain[0], frequency/1000)
+    fig_fixedgain = data_plt.plot_ping_beam(datacorr_fixed_gain, title=title_str)
 
-    # Remove the TVG
+    # - Remove the TVG
     tvg_gain = np.empty((nr_dg_tvg, nr_rx_beams))
 
     for i in range(nr_dg_tvg):  # TODO: Make something better than a nested for loop
@@ -236,86 +218,67 @@ def run(raw_input, calib_input):
     tvg_bswg = (spreading[:, np.newaxis] * np.log10(range_m)) + 2 * (alpha[:, np.newaxis] * range_m)
     datacorr_tvg_gain = digital_value_db - tvg_gain
 
-    # Plot a comparison between the calculated and estimated tvg values
+    # -- Plot a comparison between the calculated and estimated tvg values
     mplt.figure()
     mplt.plot(np.nanmean(tvg_gain, axis=0))
     mplt.plot(np.nanmean(tvg_bswg, axis=0))
     mplt.grid()
     mplt.title(
-        f"Comparison between the RESON TVG values and the BSWG Values \n Spreading = {spreading[0]}dB / Absorption = "
-        f"{alpha[0]}dB/j")
+        "Comparison between RESON TVG and BSWG TVG\nSpreading = %d dB / Absorption = %0.2f dB/m"
+        % (spreading[0], alpha[0]))
     mplt.xlabel("Beam [#]")
     mplt.ylabel("Average TVG value [dB}")
     mplt.legend(["Reson TVG", "BSWG TVG"])
 
-    # - Plot the corrected values using the reson tvg
-    fig_tvgcorr = mplt.figure()
+    # -- Plot the corrected values using the reson tvg
+    title_str = "TVG Correction Product\nReson T50-P @ %dHz" % (frequency/1000)
+    fig_tvgcorr = data_plt.plot_ping_beam(datacorr_tvg_gain, title=title_str)
     mplt.imshow(datacorr_tvg_gain, cmap='Greys_r')
-    # TODO: fix the title frequency
-    mplt.title("TVG Correction Product\nReson T50-P @ 200kHz")
-    mplt.xlabel("Beam [#]")
-    mplt.ylabel("Ping [#]")
-    cbar = mplt.colorbar()
-    cbar.set_label("Digital Intensity Value [dB re arbitrary]")
 
-    # Correct for the Source Level
+    # - Correct for the Source Level
     source_level = data_runtime[:, 14]
     datacorr_sourcelevel = datacorr_tvg_gain - source_level[:, np.newaxis]
 
-    # - Plot the corrected values
-    fig_sourcelevel = mplt.figure()
-    mplt.imshow(datacorr_sourcelevel, cmap='Greys_r')
-    mplt.title("Source Level Correction Product\nReson T50-P @ 200kHz")
-    mplt.xlabel("Beam [#]")
-    mplt.ylabel("Ping [#]")
-    cbar = mplt.colorbar()
-    cbar.set_label("Intensity Value [dB re 1$mu$Pa]")
+    # -- Plot the corrected values
+    title_str = "Source Level Correction Product\nReson T50-P @ %dkHz" % (frequency/1000)
+    fig_sourcelevel = data_plt.plot_ping_beam(datacorr_sourcelevel, title=title_str)
 
-    # Apply Relative Calibration Correction
-    # - Load calibration curve
+    # - Apply Relative Calibration Correction
+    # -- Load calibration curve
     calibration_data = np.genfromtxt(fname=calib_input, dtype=float, delimiter=',')
 
-    # - Generate a 4th Order Fit to the curve data
+    # -- Generate a 4th Order Fit to the curve data
     poly_coefficents = np.polyfit(calibration_data[:, 0], calibration_data[:, 1], 4)
     calibration_curve = np.arange(-75, 75, 0.1)[:, np.newaxis]
     calibration_curve = np.tile(calibration_curve, [1, 2])
     calibration_curve[:, 1] = np.polyval(poly_coefficents, calibration_curve[:, 0])
 
-    # - Obtain Calibration Correction for each beam angle of each ping
+    # -- Obtain Calibration Correction for each beam angle of each ping
     rx_angle = data_bathy[:, :, 2]
     calibration_correction = np.empty((nr_pings, nr_rx_beams))
     for i in range(nr_pings):
         calibration_correction[i, :] = np.interp(np.rad2deg(rx_angle[i, :]),
                                                  calibration_curve[:, 0], calibration_curve[:, 1])
-    # - Apply calibration values
+    # -- Apply calibration values
     datacorr_echolevel = datacorr_sourcelevel - calibration_correction
 
-    # - Plot the corrected values
-    fig_echo = mplt.figure()
-    mplt.imshow(datacorr_echolevel, cmap='Greys_r')
-    # TODO: fix the fixed frequency
-    mplt.title("Echo Level Product\nReson T50-P @ 200kHz")
-    mplt.xlabel("Beam [#]")
-    mplt.ylabel("Ping [#]")
-    cbar = mplt.colorbar()
-    cbar.set_label("Intensity Value [dB re 1$mu$Pa]")
+    # -- Plot the corrected values
+    title_str = "Echo Level Product\nReson T50-P @ %dkHz" % (frequency/1000)
+    clabel_str = "Intensity Value [dB re 1$mu$Pa]"
+    fig_echo = data_plt.plot_ping_beam(datacorr_echolevel, title=title_str, clabel=clabel_str)
 
-    # Correct for the Transmission Loss
+    # - Correct for the Transmission Loss
     # TODO: current assumption is spherical spreading
     transmission_loss = 40 * np.log10(range_m) + 2 * (alpha[:, np.newaxis] / 1000) * range_m
     datacorr_transmissionloss = datacorr_sourcelevel + transmission_loss
 
-    # Plot the corrected values
-    mplt.figure()
-    mplt.imshow(datacorr_transmissionloss, cmap='Greys_r')
-    mplt.title("Transmission Loss Correction Product\nReson T50-P @ 200kHz")
-    mplt.xlabel("Beam [#]")
-    mplt.ylabel("Ping [#]")
-    cbar = mplt.colorbar()
-    cbar.set_label("Intensity Value [dB re 1$mu$Pa]")
+    # -- Plot the corrected values
+    title_str = "Transmission Loss Correction Product\nReson T50-P @ %dkHz" % (frequency/1000)
+    clabel_str = "Intensity Value [dB re 1$mu$Pa]"
+    fig_transmission = data_plt.plot_ping_beam(datacorr_transmissionloss, title=title_str, clabel=clabel_str)
 
-    # Correct for Ensonified Area
-    # Calculate the Ensonified area using a flat seafloor assumption
+    # - Correct for Ensonified Area
+    # -- Calculate the Ensonified area using a flat seafloor assumption
     beamwidth_rx_across = data_beamgeo[:, :, 3]
     beamwidth_tx_along = data_runtime[:, 20]
     pulse_length = data_runtime[:, 6]
@@ -330,10 +293,10 @@ def run(raw_input, calib_input):
     # TODO: justify why taking the minimum
     area_correction = 10 * np.log10(np.minimum(area_beamlimited, area_pulselimited))
 
-    # Correct the data
+    # -- Correct the data
     datacorr_radiometric = datacorr_transmissionloss - area_correction
 
-    # Plot the area correction data
+    # -- Plot area regions
     fig_areacorr = mplt.figure()
     mplt.plot(10 * np.log10(np.nanmean(area_beamlimited, axis=0)))
     mplt.plot(10 * np.log10(np.nanmean(area_pulselimited, axis=0)))
@@ -343,17 +306,13 @@ def run(raw_input, calib_input):
     mplt.ylabel("Area Correction [dB]")
     mplt.title("Comparison of Area Corrections")
 
-    # Plot the corrected data
-    fig_radiometric = mplt.figure()
-    mplt.imshow(datacorr_radiometric, cmap='Greys_r')
-    mplt.title("Seafloor Backscatter Product\nReson T50-P @ 200kHz")
-    mplt.xlabel("Beam [#]")
-    mplt.ylabel("Ping [#]")
-    cbar = mplt.colorbar()
-    cbar.set_label(r'$S(\theta)_b$  [dB re $1\mu$Pa]')
+    # Plot the area corrected data
+    title_str = "Seafloor Backscatter Product\nReson T50-P @ %dkHz" % (frequency/1000)
+    clabel_str = r'$S(\theta)_b$  [dB re $1\mu$Pa]'
+    fig_radiometric = data_plt.plot_ping_beam(datacorr_radiometric, title=title_str, clabel=clabel_str)
 
     # Make an ARA like curve
-    # Determine the mean for all beams over a small ping interval [20 pings]
+    # - Determine the mean for all beams over a small ping interval [20 pings]
     ara_curve = datacorr_radiometric[100:120, :].mean(axis=0)
     angles = np.rad2deg(rx_angle[100, :])
     fig_ara = mplt.figure()
