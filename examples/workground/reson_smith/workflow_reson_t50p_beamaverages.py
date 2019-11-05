@@ -235,12 +235,12 @@ def run(raw_input, calib_input):
     fig_tvgcorr = data_plt.plot_ping_beam(datacorr_tvg_gain, title=title_str)
     mplt.imshow(datacorr_tvg_gain, cmap='Greys_r')
 
-    # - Correct for the Source Level
+       # - Correct for the Source Level
     source_level = data_runtime[:, 14]
     datacorr_sourcelevel = datacorr_tvg_gain - source_level[:, np.newaxis]
 
     # -- Plot the corrected values
-    title_str = "Source Level Correction Product\nReson T50-P @ %dkHz" % (frequency/1000)
+    title_str = "Source Level Correction Product\nReson T50-P @ %dkHz" % (frequency / 1000)
     fig_sourcelevel = data_plt.plot_ping_beam(datacorr_sourcelevel, title=title_str)
 
     # - Apply Relative Calibration Correction
@@ -272,7 +272,7 @@ def run(raw_input, calib_input):
     transmission_loss = 40 * np.log10(range_m) + 2 * (alpha[:, np.newaxis] / 1000) * range_m
     datacorr_transmissionloss = datacorr_sourcelevel + transmission_loss
 
-    # -- Plot the corrected values
+    # -- Plot the corrected values10
     title_str = "Transmission Loss Correction Product\nReson T50-P @ %dkHz" % (frequency/1000)
     clabel_str = "Intensity Value [dB re 1$mu$Pa]"
     fig_transmission = data_plt.plot_ping_beam(datacorr_transmissionloss, title=title_str, clabel=clabel_str)
@@ -332,13 +332,13 @@ def run(raw_input, calib_input):
     #       |                           |
     # ------------- y+              -------- e+
 
-    # Determine x,y,z in ship reference frame
+    # - Determine x,y,z in ship reference frame
     # TODO: use proper georefencing
     y_shiprf = range_m * np.sin(rx_angle)  # Negative rx angles are portside
     x_shiprf = np.zeros(y_shiprf.shape)
     z = range_m * np.cos(rx_angle)
 
-    # Determine x,y,z in geographic reference frame (meters) relative to ship
+    # - Determine x,y,z in geographic reference frame (meters) relative to ship
     azimuth = np.tile(heading_ping[:, np.newaxis], nr_rx_beams)
     nn_georf = np.empty((nr_pings, nr_rx_beams))
     ee_georf = np.empty((nr_pings, nr_rx_beams))
@@ -353,7 +353,7 @@ def run(raw_input, calib_input):
                                 [np.sin(azimuth[j, i]), np.cos(azimuth[j, i])]])
                 nn_georf[j, i], ee_georf[j, i] = rot @ [x_shiprf[j, i], y_shiprf[j, i]]
 
-    # Determine the UTM position of each ping
+    # - Determine the UTM position of each ping
     lon_in = np.tile(lon_ping[:, np.newaxis], nr_rx_beams)
     lat_in = np.tile(lat_ping[:, np.newaxis], nr_rx_beams)
     ee_ping, nn_ping = utm(lon_in, lat_in)

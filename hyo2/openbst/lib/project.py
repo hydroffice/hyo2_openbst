@@ -1,10 +1,14 @@
 import logging
+from netCDF4 import Dataset, Group, num2date
 from pathlib import Path
 
 from hyo2.abc.lib.progress.abstract_progress import AbstractProgress
 from hyo2.abc.lib.progress.cli_progress import CliProgress
 # noinspection PyUnresolvedReferences
+
 from hyo2.openbst.lib import lib_info
+from hyo2.openbst.lib.input.input import Input
+from hyo2.openbst.lib.nc_helper import NetCDFHelper
 from hyo2.openbst.lib.products.product import Product
 from hyo2.openbst.lib.project_info import ProjectInfo
 
@@ -24,11 +28,14 @@ class Project:
         prj_path.mkdir(parents=True, exist_ok=True)
         self._path = prj_path
         _ = self.raws_folder
+        _ = self.process_folder
         _ = self.products_folder
 
         self.progress = progress
 
         self._i = ProjectInfo(prj_path=self._path)
+        self._r = Raws(raw_path=self.raws_folder)
+        self.input = Input(prj_path=self._path)
 
     @property
     def name(self) -> str:
@@ -41,6 +48,12 @@ class Project:
     @property
     def raws_folder(self) -> Path:
         path = self._path.joinpath("raws")
+        path.mkdir(parents=True, exist_ok=True)
+        return path
+
+    @property
+    def process_folder(self) -> Path:
+        path = self._path.joinpath("process")
         path.mkdir(parents=True, exist_ok=True)
         return path
 
@@ -63,8 +76,13 @@ class Project:
         added = self._i.add_raw(path=path)
         if not added:
             self.progress.end()
+            return False
 
         self.progress.update(20)
+        added = self._r.add_raw(path=path)
+        if not added:
+            self.progress.end()
+            return False
 
         self.progress.end()
         return True
@@ -80,6 +98,36 @@ class Project:
 
         self.progress.end()
         return True
+
+    def validate_raws(self, ) -> list:
+        self.progress.start(title="Validating", text="Ongoing validation. Please wait!",
+                            init_value=10)
+        num_files = len(self._i.raws)
+        progress_update = int((self.progress.range - self.progress.value) / num_files)
+        for raw_key, raw_nc in self._i.raws.items():
+
+            if raw_nc.valid == 0 and raw_nc.deleted == 0:
+                raw_object = self._i.validate_raw(Path(raw_nc.source_path))
+                self.input.input_list[raw_key] = raw_object
+                logger.debug("validation - File validated: %s" % raw_nc.source_path)
+                self.progress.update(self.progress.value + progress_update)
+
+            elif raw_nc.deleted == 1:
+                logger.debug("validation - Deleted file: %s" % raw_nc.source_path)
+                self.progress.update(self.progress.value + progress_update)
+
+            elif raw_nc.deleted == 0 and raw_nc.valid == 1:
+                # TODO: add logic to add the file to the self.input.input_list if not present
+                # TODO: this will need a new reconstruct function in the raw_reader class
+                logger.debug("validation - File is alread valid: %s" % raw_nc.source_path)
+                self.progress.update(self.progress.value + progress_update)
+                continue
+
+        self.progress.update(self.progress.range)
+
+        self.progress.end()
+
+        return self._i.valid_raws
 
     # ### PRODUCTS ###
 

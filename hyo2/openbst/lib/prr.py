@@ -1112,10 +1112,9 @@ class Data7028:
                 self.fmt_data = '<' + str(int(self.beamwindow[beam])) + 'H'
                 self.data_sz = struct.calcsize(self.fmt_data)
                 self.startoffset = int((self.maxwindow - self.beamwindow[beam]) / 2)
-                self.snippets[int(self.descriptor[beam, 0]),
-                self.startoffset: self.startoffset + self.beamwindow[beam]] = struct.unpack(self.fmt_data,
-                                                                                            self.infile.read(
-                                                                                                self.data_sz))
+                ind2 = self.startoffset+self.beamwindow[beam]
+                data = np.asarray(struct.unpack(self.fmt_data, self.infile.read(self.data_sz)))
+                self.snippets[int(self.descriptor[beam, 0]), self.startoffset:ind2] = data
         else:
             # Error flag indicates no data.
             self.beamwindow = None

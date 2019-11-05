@@ -4,6 +4,7 @@ from pathlib import Path
 from netCDF4 import Dataset, Group, num2date
 
 from hyo2.openbst.lib.nc_helper import NetCDFHelper
+from hyo2.openbst.lib.raw.raw import Raw
 
 logger = logging.getLogger(__name__)
 
@@ -66,7 +67,8 @@ class ProjectInfo:
         valid_raws = list()
         for raw_key, raw in self.raws.items():
             if raw.deleted == 0:
-                valid_raws.append(raw_key)
+                if raw.valid == 1:
+                    valid_raws.append(raw_key)
         return valid_raws
 
     @property
@@ -119,12 +121,18 @@ class ProjectInfo:
             try:
                 if self.raws[path_hash].deleted == 1:
                     self.raws[path_hash].deleted = 0
+                    self.raws[path_hash].valid = 0
                     logger.info("previously deleted: %s" % path)
+                else:
+                    logger.info("file already in project: %s" % path)
             except AttributeError:
+                self.raws[path_hash].valid = 0
                 self.raws[path_hash].deleted = 0
+
         else:
             path_var = self.raws_group.createVariable(path_hash, 'u1')
             path_var.source_path = str(path)
+            path_var.valid = 0
             path_var.deleted = 0
             logger.debug("added: %s" % path)
 
@@ -143,6 +151,27 @@ class ProjectInfo:
 
         self._ds.sync()
         return True
+
+    def validate_raw(self, path: Path) -> Raw:
+        raw_file = Raw(path)
+        path_hash = NetCDFHelper.hash_string(str(path))
+        raw_nc = self.raws[path_hash]
+
+        if raw_file.valid is False:
+            raw_nc.valid = 0
+        else:
+            map_nc = raw_nc.createGroup("Map")
+            dg_info = map_nc.createDimension("datagram_info", 3)
+            dg_num_records = map_nc.createDimension("num_records",None)
+            for dg_key, dg_map in raw_file.file_object.map.items():
+                dg_name = str(dg_key)
+                dg_variable = map_nc.createVariable(dg_name, "f8", ("num_records", "datagram_info"))
+                dg_variable[:] = dg_map
+
+            raw_nc.valid = 1
+
+        self._ds.sync()
+        return raw_file
 
     # # ### PRODUCTS ###
 
