@@ -1,5 +1,6 @@
-from datetime import datetime
 import logging
+
+from datetime import datetime
 from pathlib import Path
 from netCDF4 import Dataset, Group, num2date
 
@@ -118,7 +119,7 @@ class ProjectInfo:
 
         path_hash = NetCDFHelper.hash_string(str(path))
         if path_hash in self.raws.keys():
-            try:
+            try:                                            # TODO: Why are we trying ...
                 if self.raws[path_hash].deleted == 1:
                     self.raws[path_hash].deleted = 0
                     self.raws[path_hash].valid = 0
@@ -136,7 +137,7 @@ class ProjectInfo:
             path_var.deleted = 0
             logger.debug("added: %s" % path)
 
-        self._ds.sync()
+        self.updated()
         return True
 
     def remove_raw(self, path: Path) -> bool:

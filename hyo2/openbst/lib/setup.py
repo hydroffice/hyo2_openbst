@@ -74,7 +74,7 @@ class Setup:
         try:
             _ = self._ds.current_project
         except AttributeError:
-            self._ds.current_project = "default"
+            self.current_project = "default"
 
         logger.info("open in '%s' mode: [v.%s] %s" % (open_mode, self.version, self.path))
 
