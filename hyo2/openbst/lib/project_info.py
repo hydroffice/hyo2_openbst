@@ -5,7 +5,7 @@ from pathlib import Path
 from netCDF4 import Dataset, Group, num2date
 
 from hyo2.openbst.lib.nc_helper import NetCDFHelper
-from hyo2.openbst.lib.raw.raw import Raw
+from hyo2.openbst.lib.raw.raw_formats import RawFormatType, raw_format_dict
 
 logger = logging.getLogger(__name__)
 
@@ -96,6 +96,7 @@ class ProjectInfo:
         self._ds = Dataset(filename=self._path, mode=open_mode)
 
         NetCDFHelper.init(ds=self._ds)
+
         # logger.debug("conventions: %s" % self.conventions)
         # logger.debug("time: %s [%s]" % (self.time_units, self.time_calendar))
         # logger.debug("version: %s" % self.version)
@@ -117,6 +118,11 @@ class ProjectInfo:
             logger.warning("does not exist: %s" % path)
             return False
 
+        raw_fmt = RawFormatType.retrieve_format_types(path=path)
+        if raw_fmt is RawFormatType.UNKNOWN:
+            logger.warning("unrecognized file type: %s" % path)
+            return False
+
         path_hash = NetCDFHelper.hash_string(str(path))
         if path_hash in self.raws.keys():
             try:                                            # TODO: Why are we trying ...
@@ -135,7 +141,8 @@ class ProjectInfo:
             path_var.source_path = str(path)
             path_var.valid = 0
             path_var.deleted = 0
-            logger.debug("added: %s" % path)
+            path_var.linked = 1
+            logger.info("added: %s" % path)
 
         self.updated()
         return True
@@ -148,7 +155,7 @@ class ProjectInfo:
             return False
 
         self.raws[path_hash].deleted = 1
-        logger.debug("removed: %s" % path)
+        logger.info("removed: %s" % path)
 
         self._ds.sync()
         return True
