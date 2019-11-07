@@ -177,7 +177,6 @@ class Reson:
 
         dg_type = reson_datagram_code[ResonDatagrams.HEADING]
 
-
     @staticmethod
     def get_time(year, day, hour, minute, second):                  # TODO: Change this to use the datetime modules
         time_fmt = '%Y, %j, %H, %M'

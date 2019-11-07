@@ -11,7 +11,7 @@ from hyo2.openbst.lib.input.input import Input
 from hyo2.openbst.lib.nc_helper import NetCDFHelper
 from hyo2.openbst.lib.products.product import Product
 from hyo2.openbst.lib.project_info import ProjectInfo
-
+from hyo2.openbst.lib.raw.raws import Raws
 logger = logging.getLogger(__name__)
 
 
@@ -34,7 +34,7 @@ class Project:
         self.progress = progress
 
         self._i = ProjectInfo(prj_path=self._path)
-        self._r = Raws(raw_path=self.raws_folder)
+        self._r = Raws(raws_path=self.raws_folder)
         self.input = Input(prj_path=self._path)
 
     @property
@@ -78,12 +78,13 @@ class Project:
             self.progress.end()
             return False
 
-        self.progress.update(20)
+        self.progress.update(50)
+
         added = self._r.add_raw(path=path)
         if not added:
             self.progress.end()
             return False
-
+        self.progress.update(99)
         self.progress.end()
         return True
 
@@ -94,19 +95,25 @@ class Project:
         removed = self._i.remove_raw(path=path)
         if not removed:
             self.progress.end()
-        self.progress.update(20)
+        self.progress.update(50)
 
+        removed = self._r.remove_raw(path=path)
+        if not removed:
+            self.progress.end()
+            return False
+
+        self.progress.update(99)
         self.progress.end()
         return True
 
-    def validate_raws(self, ) -> list:
+    def validate_raws(self, force_validate: bool =False) -> list:
         self.progress.start(title="Validating", text="Ongoing validation. Please wait!",
                             init_value=10)
         num_files = len(self._i.raws)
         progress_update = int((self.progress.range - self.progress.value) / num_files)
         for raw_key, raw_nc in self._i.raws.items():
 
-            if raw_nc.valid == 0 and raw_nc.deleted == 0:
+            if (raw_nc.valid == 0 and raw_nc.deleted == 0) or force_validate:
                 raw_object = self._i.validate_raw(Path(raw_nc.source_path))
                 self.input.input_list[raw_key] = raw_object
                 logger.debug("validation - File validated: %s" % raw_nc.source_path)
@@ -128,6 +135,9 @@ class Project:
         self.progress.end()
 
         return self._i.valid_raws
+
+    def relink_raws(self):
+        pass                    # TODO: Write a relink method to find source files
 
     # ### PRODUCTS ###
 
