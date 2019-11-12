@@ -169,10 +169,12 @@ class Reson:
     # Data Type Extractions
     def get_position(self):
         self.is_mapped()
-        position = self.get_datagram(dg_type=ResonDatagrams.POSITION)
         times = list()
         lat = list()
         lon = list()
+
+        position = self.get_datagram(dg_type=ResonDatagrams.POSITION)
+
         for dg_pos in position:
             times.append(dg_pos.time)
 
@@ -181,12 +183,24 @@ class Reson:
                 lon.append(dg_pos.longitude * (180/np.pi))
             else:
                 raise AttributeError("unrecognized datum: %s" % dg_pos.datum)
-
+        # TODO: Write spatial reference check and formatter
         return times, lat, lon
 
     def get_attitude(self):
         self.is_mapped()
-        dg_type = reson_datagram_code[ResonDatagrams.ROLLPITCHHEAVE]
+        times_rph = list()
+        times_head = list()
+        roll = list()
+        pitch = list()
+        heading = list()
+
+        attitude = self.get_datagram(dg_type=ResonDatagrams.ROLLPITCHHEAVE)
+        for dg_attitude in attitude:
+            times_rph.append(dg_attitude.time)
+
+            
+
+        heading = self.get_datagram(dg_type=ResonDatagrams.HEADING)
 
         dg_type = reson_datagram_code[ResonDatagrams.HEADING]
 

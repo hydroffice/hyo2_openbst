@@ -119,5 +119,6 @@ class Raws:
         times, pitch, roll, heave, yaw = raw.get_attitude()
 
         grp_attitude = ds.createGroup("Attitude")
+        grp_attitude.units = "arc-degree"
         grp_attitude.createDimension(dimname="time", size=None)
 
