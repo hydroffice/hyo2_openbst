@@ -4,6 +4,7 @@ import os
 import struct
 import time
 
+import numpy as np
 from pathlib import Path
 from hyo2.openbst.lib.raw.reson_formats import parse, ResonDatagrams, reson_datagram_code
 
@@ -28,7 +29,7 @@ class Reson:
         self.format_type = None
         self.file_length = None
         self.file_location = None
-        self.file_end = True
+        self.file_end = False
 
         # Call initializing methods
         self.check_file(input_path)
@@ -57,8 +58,8 @@ class Reson:
             self._valid = False
         return self._valid
 
-    def data_map(self):
-        if self.mapped is True:
+    def data_map(self, force=False):
+        if self.mapped is True or force is True:
             dg_map = self.map
             return dg_map
 
@@ -97,7 +98,6 @@ class Reson:
                 dg_map[dg_type] = list()
                 dg_map[dg_type].append(map_data_entry)
 
-        self.file.close()
         self.map = dg_map
         self.mapped = True
         return dg_map
@@ -118,7 +118,7 @@ class Reson:
         header_data = struct.unpack(self._header_format, chunk)
 
         header_sync_patt = header_data[2]
-        if header_sync_patt != self._reson_sync_patt:   # TODO: This is a recursive data check. It will probably be removed for something more simple
+        if header_sync_patt != self._reson_sync_patt:   # TODO: This is a recursive data check. It can be simpler
             self.file.seek(-(self._header_size-1), 1)
             header_data, count = self.read_dg_header()
             return header_data, count + 1
@@ -168,10 +168,20 @@ class Reson:
     # Data Type Extractions
     def get_position(self):
         self.is_mapped()
-        dg_type = reson_datagram_code[ResonDatagrams.POSITION]
-        position = self.get_datagram(dg_type)
+        position = self.get_datagram(dg_type=ResonDatagrams.POSITION)
+        times = list()
+        lat = list()
+        lon = list()
+        for dg_time, dg_pos in position.items():
+            times.append(dg_time)
 
-        return position
+            if dg_pos.datum is "WGS":
+                lat.append(dg_pos.latitude * (180/np.pi))
+                lon.append(dg_pos.longitude * (180/np.pi))
+            else:
+                raise AttributeError("unrecognized datum: %s" % dg_pos.datum)
+
+        return times, lat, lon
 
     def get_attitude(self):
         self.is_mapped()
@@ -185,4 +195,5 @@ class Reson:
         temp_string = '%d, %d, %d, %d' % (year, day, hour, minute)
         timestruct = time.strptime(temp_string, time_fmt)
         utctime = calendar.timegm(timestruct) + second
-        return utctime
+
+        return utctime * 1000        # Time in milliseconds to adhere to the cf standard

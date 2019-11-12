@@ -5,7 +5,7 @@ from hyo2.openbst.lib.raw.reson import ResonDatagrams
 
 from pathlib import Path
 from hyo2.openbst.lib.raw.reson import Reson
-from hyo2.openbst.lib import prr
+
 
 logging.basicConfig(level=logging.DEBUG)
 
