@@ -13,7 +13,7 @@ class RawFormatType(Enum):
     R2SONIC_S7K = 6
 
     @classmethod
-    def retrieve_format_types(cls, path: Path):
+    def retrieve_format_type(cls, path: Path):
         fileparts = path.name.split('.')
         extention = fileparts[-1]
 

@@ -7,7 +7,9 @@ from netCDF4 import Dataset, Group, Variable, num2date
 from pathlib import Path
 
 from hyo2.openbst.lib.nc_helper import NetCDFHelper
+from hyo2.openbst.lib.raw.raw_formats import RawFormatType
 
+from hyo2.openbst.lib.raw.reson import Reson
 logger = logging.getLogger(__name__)
 
 
@@ -17,15 +19,6 @@ class Raws:
 
     def __init__(self, raws_path: Path) -> None:
         self._path = raws_path
-        self._validated = False
-
-    @property
-    def validated(self) -> bool:
-        return self._validated
-
-    @validated.setter
-    def validated(self, value: bool) -> None:
-        self._validated = value
 
     @property
     def path(self) -> Path:
@@ -48,7 +41,7 @@ class Raws:
             raw = Dataset(filename=file_name, mode='w')
             NetCDFHelper.init(ds=raw)
             raw.close()
-            logger.info(".nc created for added file: %s" % str(path.resolve()))
+            logger.info("raw .nc created for added file: %s" % str(path.resolve()))
         return True
 
     def remove_raw(self, path: Path) -> bool:
@@ -57,22 +50,32 @@ class Raws:
             logger.info("absent: %s" % path)
             return False
         else:
-            raw_path = self._r_list[path_hash]
+            raw_path = self._path.joinpath(path_hash + Raws.ext)
             os.remove(str(raw_path.resolve()))
-            self.raws_list = self.create_raw_list(self._path)
-            logger.info(".nc deleted for file: %s" % str(path.resolve()))
+            logger.info("raw .nc deleted for file: %s" % str(path.resolve()))
             return True
 
-    def validate_raw(self, path: Path) -> bool:
-        pass
+    def import_raw(self, path: Path) -> bool:
+        raw_format = RawFormatType.retrieve_format_type(path=path)
+        raw = None
 
-    @classmethod
-    def create_raw_list(cls, raws_path: Path) -> OrderedDict:
-        raw_list = OrderedDict()
-        for hash_file in glob.glob(str(raws_path.joinpath("*" + Raws.ext))):
-            hash_path = Path(hash_file)
-
-            raw_list[hash_path.name.split('.')[0]] = Dataset(filename=hash_path, mode='a')
-
-        return raw_list
-
+        if raw_format is RawFormatType.KNG_ALL:
+            pass                                                        # TODO: Create the Kongsberg parser
+        elif raw_format is RawFormatType.KNG_KMALL:
+            pass
+        elif raw_format is RawFormatType.KNG_WCD:
+            pass
+        elif raw_format is RawFormatType.RESON_S7K:
+            raw = Reson(path)
+            if raw.valid is True:
+                raw.data_map()
+            else:
+                return False
+        elif raw_format is RawFormatType.RESON_7K:
+            raw = Reson(path)
+            if raw.valid is True:
+                raw.data_map()
+            else:
+                return False
+        elif raw_format is RawFormatType.R2SONIC_S7K:
+            pass                                                        # TODO: Create R2Sonic Parser

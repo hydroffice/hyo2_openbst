@@ -14,11 +14,11 @@ class Reson:
 
     def __init__(self, input_path: Path):
         # Object attributes
+        self._valid = False
+        self.data = None
         self.map = None
         self.mapped = False
         self.file = None
-        self.file_valid = True
-        self.data = None
 
         # File attributes
         self._header_size = 64  # TODO: Verify if this is proper use of leading '_'. These are special private variables
@@ -32,9 +32,10 @@ class Reson:
 
         # Call initializing methods
         self.check_file(input_path)
-        if self.file_valid is False:
-            logging.debug("File skipped: %s" % input_path)
-            return
+
+    @property
+    def valid(self):
+        return self._valid
 
     # Initializing Methods
     def check_file(self, file_path: Path):
@@ -47,13 +48,14 @@ class Reson:
                 self.file.seek(0)
                 self.file_length = os.stat(self.file.name).st_size
                 self.file_location = self.file.tell()
-                self.file_valid = True
+                self._valid = True
             else:
-                raise TypeError
-        except TypeError:               # TODO: I must be using logging wrong
+                logger.error("Unexpected format type: %s" % self.format_type)
+                self._valid = False
+        except FileNotFoundError:
             logger.error("File Extension Invalid: Currently supporting 's7k' only.")
-            self.file_valid = False
-            return self.file_valid
+            self._valid = False
+        return self._valid
 
     def data_map(self):
         if self.mapped is True:
