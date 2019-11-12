@@ -95,6 +95,7 @@ reson_datagram_code = {
 class ResonData:
     def __init__(self):
         self.desc = None
+        self.time = None
         self.parse_check = None
         self.header_fmt = None
         self.header_size = None

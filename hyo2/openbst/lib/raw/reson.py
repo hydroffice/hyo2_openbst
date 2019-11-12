@@ -131,7 +131,7 @@ class Reson:
         self.is_mapped()
         dg_code = reson_datagram_code[dg_type]
         dg_num_records = len(self.map[dg_code])
-        data_out = dict()
+        data_out = list()
 
         # Determine indices of all desired datagrams
         map_index = None
@@ -154,7 +154,8 @@ class Reson:
             dg_size = self.map[dg_code][n][2]
 
             datapacket = self.get_record(dg_type, dg_data_header_loc, dg_size)
-            data_out[dg_time] = datapacket  # Add to dictionary of data
+            datapacket.time = dg_time
+            data_out.append(datapacket)
 
         return data_out
 
@@ -172,8 +173,8 @@ class Reson:
         times = list()
         lat = list()
         lon = list()
-        for dg_time, dg_pos in position.items():
-            times.append(dg_time)
+        for dg_pos in position:
+            times.append(dg_pos.time)
 
             if dg_pos.datum is "WGS":
                 lat.append(dg_pos.latitude * (180/np.pi))
