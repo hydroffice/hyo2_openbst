@@ -1,10 +1,10 @@
 import logging
 
-from hyo2.openbst.lib.raw.reson import ResonDatagrams
+from hyo2.openbst.lib.raw.parsers.reson.reader import ResonDatagrams
 
 
 from pathlib import Path
-from hyo2.openbst.lib.raw.reson import Reson
+from hyo2.openbst.lib.raw.parsers.reson.reader import Reson
 
 
 logging.basicConfig(level=logging.DEBUG)

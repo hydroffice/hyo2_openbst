@@ -6,7 +6,7 @@ import time
 
 import numpy as np
 from pathlib import Path
-from hyo2.openbst.lib.raw.reson_formats import parse, ResonDatagrams, reson_datagram_code
+from hyo2.openbst.lib.raw.parsers.reson.dg_formats import parse, ResonDatagrams, reson_datagram_code
 
 logger = logging.getLogger(__name__)
 
@@ -169,15 +169,12 @@ class Reson:
     # Data Type Extractions
     def get_position(self):
         self.is_mapped()
-        times = list()
         lat = list()
         lon = list()
 
         position = self.get_datagram(dg_type=ResonDatagrams.POSITION)
-
+        times = [dg_pos.time for dg_pos in position]
         for dg_pos in position:
-            times.append(dg_pos.time)
-
             if dg_pos.datum is "WGS":
                 lat.append(dg_pos.latitude * (180/np.pi))
                 lon.append(dg_pos.longitude * (180/np.pi))
@@ -188,21 +185,18 @@ class Reson:
 
     def get_attitude(self):
         self.is_mapped()
-        times_rph = list()
-        times_head = list()
-        roll = list()
-        pitch = list()
-        heading = list()
 
         attitude = self.get_datagram(dg_type=ResonDatagrams.ROLLPITCHHEAVE)
-        for dg_attitude in attitude:
-            times_rph.append(dg_attitude.time)
-
-            
+        times_rph = [dg_att.time for dg_att in attitude]
+        roll = np.rad2deg([dg_att.roll for dg_att in attitude])
+        pitch = np.rad2deg([dg_att.pitch for dg_att in attitude])
+        heave = np.rad2deg([dg_att.heave for dg_att in attitude])
 
         heading = self.get_datagram(dg_type=ResonDatagrams.HEADING)
+        times_head = [dg_head.time for dg_head in heading]
+        head = np.rad2deg([dg_head.heading for dg_head in heading])
 
-        dg_type = reson_datagram_code[ResonDatagrams.HEADING]
+        return times_rph, roll, pitch, heave, times_head, head
 
     @staticmethod
     def get_time(year, day, hour, minute, second):                  # TODO: Change this to use the datetime modules

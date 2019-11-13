@@ -2,15 +2,14 @@ import glob
 import logging
 import os
 
-from collections import OrderedDict
-from netCDF4 import Dataset, Group, Variable, num2date
+from netCDF4 import Dataset
 from ogr import osr
 from pathlib import Path
 
 from hyo2.openbst.lib.nc_helper import NetCDFHelper
 from hyo2.openbst.lib.raw.raw_formats import RawFormatType
 
-from hyo2.openbst.lib.raw.reson import Reson
+from hyo2.openbst.lib.raw.parsers.reson.reader import Reson
 logger = logging.getLogger(__name__)
 
 
@@ -91,8 +90,10 @@ class Raws:
             file_name = self.path.joinpath(path_hash + self.ext)
             ds_raw = Dataset(filename=file_name, mode='a')
 
-        # Get position
+        # Get position and attitude
         Raws.get_position(raw=raw, ds=ds_raw)
+        Raws.get_attitude(raw=raw, ds=ds_raw)
+
 
     @staticmethod
     def get_position(raw: Reson, ds: Dataset) -> None:
@@ -102,7 +103,7 @@ class Raws:
         grp_pos.createDimension(dimname="time", size=None)
         spatial_reference = osr.SpatialReference()
         spatial_reference.ImportFromEPSG(4326)
-        grp_pos.spatial_ref = spatial_reference
+        grp_pos.spatial_ref = str(spatial_reference)
 
         var_time = grp_pos.createVariable(varname="time", datatype="f8", dimensions=("time",))
         var_time[:] = times
@@ -116,9 +117,29 @@ class Raws:
 
     @staticmethod
     def get_attitude(raw: Reson, ds: Dataset):
-        times, pitch, roll, heave, yaw = raw.get_attitude()
+        times, roll, pitch, heave, times_head, heading = raw.get_attitude()
 
         grp_attitude = ds.createGroup("Attitude")
         grp_attitude.units = "arc-degree"
         grp_attitude.createDimension(dimname="time", size=None)
 
+        var_time = grp_attitude.createVariable(varname="time", datatype="f8", dimensions=("time",))
+        var_time[:] = times
+        var_roll = grp_attitude.createVariable(varname="roll", datatype="f8", dimensions=("time",))
+        var_roll[:] = roll
+        var_pitch = grp_attitude.createVariable(varname="pitch", datatype="f8", dimensions=("time",))
+        var_pitch[:] = pitch
+        var_heave = grp_attitude.createVariable(varname="heave", datatype="f8", dimensions=("time",))
+        var_heave[:] = heave
+        if times_head is not None:
+            var_times_head = grp_attitude.createVariable(varname="heading time", datatype="f8", dimensions=("time",))
+            var_times_head[:] = times_head
+        var_heading = grp_attitude.createVariable(varname="heading", datatype="f8", dimensions=("time",))
+        var_heading[:] = heading
+
+        NetCDFHelper.update_modified(ds=ds)
+        return
+
+    @staticmethod
+    def get_runtime(raw: Reson, ds: Dataset):
+        pass
