@@ -71,6 +71,9 @@ class OpenBST:
     def prj(self) -> Project:
         return self._prj
 
+    def open_projects_folder(self) -> None:
+        Helper.explore_folder(str(self.projects_folder()))
+
     # ### OTHER ###
 
     def __repr__(self):
