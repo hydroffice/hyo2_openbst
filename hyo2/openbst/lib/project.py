@@ -158,14 +158,17 @@ class Project:
                 if raw_file_log.linked == 0:
                     logger.warning("raw file not found: %s" % raw_file_log.source_path)
                     continue
-                self.raws.import_raw(path=Path(raw_file_log.source_path))
-                raw_file_log.imported = 1
+                imported = self.raws.import_raw(path=Path(raw_file_log.source_path))
+                if imported:
+                    raw_file_log.imported = 1
+
                 continue
 
         self.info.updated()
         self.healthy = True
         self.progress.update(self.progress.range)
         self.progress.end()
+        logger.info("project status is healthy")
 
     def relink_raws(self):
         pass                    # TODO: Write a relink method to find source files

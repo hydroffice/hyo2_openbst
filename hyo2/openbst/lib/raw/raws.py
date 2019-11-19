@@ -9,7 +9,9 @@ from pathlib import Path
 from hyo2.openbst.lib.nc_helper import NetCDFHelper
 from hyo2.openbst.lib.raw.raw_formats import RawFormatType
 
+from hyo2.openbst.lib.raw.parsers.reson.imports import RawImport as reson_import
 from hyo2.openbst.lib.raw.parsers.reson.reader import Reson
+
 logger = logging.getLogger(__name__)
 
 
@@ -58,29 +60,9 @@ class Raws:
 
     # class specific methods
     def import_raw(self, path: Path) -> bool:
+        imported = False
         raw_format = RawFormatType.retrieve_format_type(path=path)
         raw = None
-
-        if raw_format is RawFormatType.KNG_ALL:
-            pass                                                        # TODO: Create the Kongsberg parser
-        elif raw_format is RawFormatType.KNG_KMALL:
-            pass
-        elif raw_format is RawFormatType.KNG_WCD:
-            pass
-        elif raw_format is RawFormatType.RESON_S7K:
-            raw = Reson(path)
-            if raw.valid is True:
-                raw.data_map()
-            else:
-                return False
-        elif raw_format is RawFormatType.RESON_7K:
-            raw = Reson(path)
-            if raw.valid is True:
-                raw.data_map()
-            else:
-                return False
-        elif raw_format is RawFormatType.R2SONIC_S7K:
-            pass                                                      # TODO: Create R2Sonic Parser
 
         # Open raw nc
         path_hash = NetCDFHelper.hash_string(str(path))
@@ -90,56 +72,36 @@ class Raws:
             file_name = self.path.joinpath(path_hash + self.ext)
             ds_raw = Dataset(filename=file_name, mode='a')
 
-        # Get position and attitude
-        Raws.get_position(raw=raw, ds=ds_raw)
-        Raws.get_attitude(raw=raw, ds=ds_raw)
+        # generate raw parser object
+        if raw_format is RawFormatType.KNG_ALL:
+            pass                                                    # TODO: Create the Kongsberg parser
 
+        elif raw_format is RawFormatType.KNG_KMALL:
+            pass
 
-    @staticmethod
-    def get_position(raw: Reson, ds: Dataset) -> None:
-        times, lat, lon = raw.get_position()
+        elif raw_format is RawFormatType.KNG_WCD:
+            pass
 
-        grp_pos = ds.createGroup("Position")
-        grp_pos.createDimension(dimname="time", size=None)
-        spatial_reference = osr.SpatialReference()
-        spatial_reference.ImportFromEPSG(4326)
-        grp_pos.spatial_ref = str(spatial_reference)
+        elif raw_format is RawFormatType.RESON_S7K:
+            raw = Reson(path)
+            if raw.valid is True:
+                raw.data_map()
+            else:
+                return False
+            imported = reson_import.import_raw(raw=raw, ds=ds_raw)
 
-        var_time = grp_pos.createVariable(varname="time", datatype="f8", dimensions=("time",))
-        var_time[:] = times
-        var_lat = grp_pos.createVariable(varname="latitude", datatype="f8", dimensions=("time",))
-        var_lat[:] = lat
-        var_lon = grp_pos.createVariable(varname="longitude", datatype="f8", dimensions=("time",))
-        var_lon[:] = lon
+        elif raw_format is RawFormatType.RESON_7K:
+            raw = Reson(path)
+            if raw.valid is True:
+                raw.data_map()
+            else:
+                return False
+            imported = reson_import.import_raw(raw=raw, ds=ds_raw)
 
-        NetCDFHelper.update_modified(ds=ds)
-        return
+        elif raw_format is RawFormatType.R2SONIC_S7K:
+            pass                                                      # TODO: Create R2Sonic Parser
 
-    @staticmethod
-    def get_attitude(raw: Reson, ds: Dataset):
-        times, roll, pitch, heave, times_head, heading = raw.get_attitude()
-
-        grp_attitude = ds.createGroup("Attitude")
-        grp_attitude.units = "arc-degree"
-        grp_attitude.createDimension(dimname="time", size=None)
-
-        var_time = grp_attitude.createVariable(varname="time", datatype="f8", dimensions=("time",))
-        var_time[:] = times
-        var_roll = grp_attitude.createVariable(varname="roll", datatype="f8", dimensions=("time",))
-        var_roll[:] = roll
-        var_pitch = grp_attitude.createVariable(varname="pitch", datatype="f8", dimensions=("time",))
-        var_pitch[:] = pitch
-        var_heave = grp_attitude.createVariable(varname="heave", datatype="f8", dimensions=("time",))
-        var_heave[:] = heave
-        if times_head is not None:
-            var_times_head = grp_attitude.createVariable(varname="heading time", datatype="f8", dimensions=("time",))
-            var_times_head[:] = times_head
-        var_heading = grp_attitude.createVariable(varname="heading", datatype="f8", dimensions=("time",))
-        var_heading[:] = heading
-
-        NetCDFHelper.update_modified(ds=ds)
-        return
-
-    @staticmethod
-    def get_runtime(raw: Reson, ds: Dataset):
-        pass
+        if imported is False:
+            raise RuntimeError(" Error Importing file: %s" % path)
+        logger.info("Imported file into project: %s" % path)
+        return True

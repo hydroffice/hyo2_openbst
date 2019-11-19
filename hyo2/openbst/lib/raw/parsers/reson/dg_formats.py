@@ -233,8 +233,8 @@ class Data7000(ResonData):
         self.bottom_detect_depth_min = None
         self.bottom_detect_depth_max = None
         self.stabilization_roll = None
-        self.stabalization_pitch = None
-        self.stabalization_yaw = None
+        self.stabilization_pitch = None
+        self.stabilization_yaw = None
         self.absorption = None
         self.sound_velocity = None
         self.spreading = None
@@ -252,9 +252,9 @@ class Data7000(ResonData):
         self.rx_band_width = header_unpack[5]
         self.tx_pulse_width = header_unpack[6]
         if header_unpack[7] == 0:
-            self.tx_pulse_mode = "CW"
+            self.tx_wave_form = "CW"
         elif header_unpack[7] == 1:
-            self.tx_pulse_mode = "LFM"
+            self.tx_wave_form = "LFM"
         if header_unpack[8] == 0:
             self.tx_envelope = "Tapered Rect"
         elif header_unpack[8] == 1:
@@ -283,8 +283,8 @@ class Data7000(ResonData):
         self.tx_shading = header_unpack[24]    # TODO: parser for shading term
         self.tx_shading_param = header_unpack[25]
         _transmit_flags = header_unpack[26]      # Currently reson does not have support for pitch and yaw stab
-        self.stabalization_pitch = False
-        self.stabalization_yaw = False
+        self.stabilization_pitch = False
+        self.stabilization_yaw = False
         self.rx_identifier = header_unpack[27]
         self.rx_shading = header_unpack[28]     # TODO: parser for rx shading term
         self.rx_shading_param = header_unpack[29]
