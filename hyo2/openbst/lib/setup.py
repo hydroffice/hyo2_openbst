@@ -13,12 +13,13 @@ class Setup:
 
     ext = ".nc"
 
-    def __init__(self, name: str, setups_folder: Path) -> None:
+    def __init__(self, name: str, prj_name: str, setups_folder: Path) -> None:
 
         self._setup_name = self.make_setup_name(name)
         self._setups_folder = setups_folder
         self._path = self.make_setup_path(setups_folder=self._setups_folder,
                                           setup_name=name)
+        self._prj_name = prj_name
         self._ds = None
         self._time = None
         self._nc()
@@ -71,10 +72,7 @@ class Setup:
         # logger.debug("modified: %s" % self.modified)
 
         # current project
-        try:
-            _ = self._ds.current_project
-        except AttributeError:
-            self.current_project = "default"
+        self.current_project = self._prj_name
 
         logger.info("open in '%s' mode: [v.%s] %s" % (open_mode, self.version, self.path))
 

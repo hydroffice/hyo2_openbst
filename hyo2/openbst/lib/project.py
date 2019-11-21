@@ -2,6 +2,7 @@ import logging
 from netCDF4 import Dataset, Group, num2date
 from pathlib import Path
 
+from hyo2.abc.lib.helper import Helper
 from hyo2.abc.lib.progress.abstract_progress import AbstractProgress
 from hyo2.abc.lib.progress.cli_progress import CliProgress
 # noinspection PyUnresolvedReferences
@@ -83,6 +84,9 @@ class Project:
     @property
     def process(self) -> Process:
         return self._p
+
+    def open_project_folder(self) -> None:
+        Helper.explore_folder(str(self.path))
 
     # ### RAWS ###
 
