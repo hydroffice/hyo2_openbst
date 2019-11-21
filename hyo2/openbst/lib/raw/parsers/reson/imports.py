@@ -20,14 +20,35 @@ class RawImport:
     def import_raw(cls, raw: Reson, ds: Dataset):
         try:
             imported = RawImport.get_runtime_settings(raw=raw, ds=ds)
+            if imported is False:
+                return False
+
             imported = RawImport.get_raw_bathy(raw=raw, ds=ds)
+            if imported is False:
+                return False
+
             imported = RawImport.get_beam_geo(raw=raw, ds=ds)
-            importted = RawImport.get_tvg(raw=raw, ds=ds)
-            importted = RawImport.get_attitude(raw=raw, ds=ds)
-            importted = RawImport.get_position(raw=raw, ds=ds)
+            if imported is False:
+                return False
+            imported = RawImport.get_tvg(raw=raw, ds=ds)
+            if imported is False:
+                return False
+
+            imported = RawImport.get_attitude(raw=raw, ds=ds)
+            if imported is False:
+                return False
+
+            imported = RawImport.get_position(raw=raw, ds=ds)
+            if imported is False:
+                return False
+
+            imported = RawImport.get_snippets(raw=raw, ds=ds)
+            if imported is False:
+                return False
 
         except RuntimeError:
             return False
+        return imported
 
     @classmethod
     def get_position(cls, raw: Reson, ds: Dataset):
@@ -122,7 +143,7 @@ class RawImport:
         raw.is_mapped()
 
         beam_geo = raw.get_datagram(dg_type=ResonDatagrams.BEAMGEO)
-        num_beams = beam_geo[0].num_rx_beams
+        num_beams = beam_geo[0].num_beams_max
         beam_angle_along = np.empty(shape=(len(beam_geo), num_beams))
         beam_angle_across = np.empty(shape=(len(beam_geo), num_beams))
         beam_width_along = np.empty(shape=(len(beam_geo), num_beams))
@@ -130,12 +151,14 @@ class RawImport:
         times_beam_geo = [dg_beam_geo.time for dg_beam_geo in beam_geo]
 
         for index, dg_beam_geo in enumerate(beam_geo):
+            beam_index = [range(dg_beam_geo.num_rx_beams)]
+
             if dg_beam_geo.num_rx_beams != num_beams:
                 return False
-            beam_angle_along[index, :] = np.rad2deg(dg_beam_geo.rx_angle_vertical)
-            beam_angle_across[index, :] = np.rad2deg(dg_beam_geo.rx_angle_horizontal)
-            beam_width_along[index, :] = np.rad2deg(dg_beam_geo.rx_beam_width_along)
-            beam_width_across[index, :] = np.rad2deg(dg_beam_geo.rx_beam_width_across)
+            beam_angle_along[index, beam_index] = np.rad2deg(dg_beam_geo.rx_angle_vertical)
+            beam_angle_across[index, beam_index] = np.rad2deg(dg_beam_geo.rx_angle_horizontal)
+            beam_width_along[index, beam_index] = np.rad2deg(dg_beam_geo.rx_beam_width_along)
+            beam_width_across[index, beam_index] = np.rad2deg(dg_beam_geo.rx_beam_width_across)
 
         grp_beam_geo = ds.createGroup("beam_geometry")
         grp_beam_geo.createDimension(dimname="ping", size=None)
@@ -197,7 +220,7 @@ class RawImport:
             bs_beam_max_gate[index, beam_num] = dg_raw_bathy.max_limit
 
         grp_bathy = ds.createGroup("raw_bathymetry_data")
-        grp_bathy.createDimension(dimname="ping", size=None)
+        grp_bathy.createDimension(dimname="ping", size=num_pings)
         grp_bathy.createDimension(dimname="beam_number", size=num_beams)
 
         var_time = grp_bathy.createVariable(varname="time",
@@ -267,6 +290,37 @@ class RawImport:
 
         NetCDFHelper.update_modified(ds=ds)
         return True
+
+    @classmethod
+    def get_snippets(cls, raw: Reson, ds: Dataset):
+        raw.is_mapped()
+
+        snippets = raw.get_datagram(dg_type=ResonDatagrams.SNIPPETDATA)
+        times_snippets = [dg_snippets for dg_snippets in snippets]
+        num_beams = snippets[0].num_beams_max
+        num_pings = len(snippets)
+
+        detect_sample = np.ones(shape=(num))
+        for ping, dg_snippets in enumerate(snippets):
+            beam_number[ping] = dg_snippets.beam_number
+            bottom_detect[ping, :]
+
+        grp_snippet = ds.createGroup("snippets")
+        dim_ping = grp_snippet.createDimension(dimname="ping", size=None)
+        dim_beam = grp_snippet.createDimension(dimname="beam_number", size=num_beams)
+        dim_sample = grp_snippet.createDimension(dimname="sample", size=None)
+
+        vlen_snippet = grp_snippet.createVLType(datatype="f8",datatype_name="snippet_sample")
+        var_snippet = grp_snippet.createVariable(varname="snippets",
+                                                 datatype=vlen_snippet,
+                                                 dimensions=("ping", "beam_number", "sample"))
+
+
+
+
+        pass
+
+        return  True
 
     @classmethod
     def get_runtime_settings(cls, raw: Reson, ds: Dataset):

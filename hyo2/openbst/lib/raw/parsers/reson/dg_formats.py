@@ -93,9 +93,12 @@ reson_datagram_code = {
 
 
 class ResonData:
+    num_beams_max = 512
+
     def __init__(self):
         self.desc = None
         self.time = None
+        self.num_beams_max = ResonData.num_beams_max
         self.parse_check = None
         self.header_fmt = None
         self.header_size = None

@@ -21,7 +21,7 @@ if not raw_path.exists():
 reson_file = Reson(raw_path)
 reson_file.data_map()
 # raw_position = reson_file.get_position()
-tst = reson_file.get_datagram(ResonDatagrams.RAWDETECTDATA)
+tst = reson_file.get_datagram(ResonDatagrams.SNIPPETDATA)
 # key = list(tst.keys())
 # ping = tst[key[0]]
 # tvg = np.asarray(ping.tvg_curve)
