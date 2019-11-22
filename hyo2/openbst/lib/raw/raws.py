@@ -103,5 +103,7 @@ class Raws:
 
         if imported is False:
             raise RuntimeError(" Error Importing file: %s" % path)
+
+        ds_raw.close()
         logger.info("Imported file into project: %s" % path)
         return True

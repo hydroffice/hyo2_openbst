@@ -158,27 +158,6 @@ class ProjectInfo:
 
         self._ds.sync()
         return True
-    #
-    # def validate_raw(self, path: Path) -> Raw:
-    #     raw_file = Raw(path)
-    #     path_hash = NetCDFHelper.hash_string(str(path))
-    #     raw_nc = self.raws[path_hash]
-    #
-    #     if raw_file.valid is False:
-    #         raw_nc.valid = 0
-    #     else:
-    #         map_nc = raw_nc.createGroup("Map")
-    #         dg_info = map_nc.createDimension("datagram_info", 3)
-    #         dg_num_records = map_nc.createDimension("num_records",None)
-    #         for dg_key, dg_map in raw_file.file_object.map.items():
-    #             dg_name = str(dg_key)
-    #             dg_variable = map_nc.createVariable(dg_name, "f8", ("num_records", "datagram_info"))
-    #             dg_variable[:] = dg_map
-    #
-    #         raw_nc.valid = 1
-    #
-    #     self._ds.sync()
-    #     return raw_file
 
     # # ### PRODUCTS ###
 

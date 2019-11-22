@@ -1,6 +1,7 @@
 import logging
 from netCDF4 import Dataset, Group, num2date
 from pathlib import Path
+import shutil
 
 from hyo2.abc.lib.helper import Helper
 from hyo2.abc.lib.progress.abstract_progress import AbstractProgress
@@ -19,13 +20,20 @@ class Project:
 
     ext = ".openbst"
 
-    def __init__(self, prj_path: Path,
+    def __init__(self, prj_path: Path, force_prj_creation: bool = False,
                  progress: AbstractProgress = CliProgress(use_logger=True)):
 
         # check extension for passed project path
         if prj_path.suffix != self.ext:
             raise RuntimeError("invalid project extension: %s" % prj_path)
+
+        # delete project if force variable is true
+        if force_prj_creation is True:
+            if prj_path.exists() is True:
+                shutil.rmtree(str(prj_path))
+
         prj_path.mkdir(parents=True, exist_ok=True)
+
         self._path = prj_path
         _ = self.raws_folder
         _ = self.process_folder
