@@ -1,9 +1,11 @@
-from datetime import datetime
 import logging
+
+from datetime import datetime
 from pathlib import Path
 from netCDF4 import Dataset, Group, num2date
 
 from hyo2.openbst.lib.nc_helper import NetCDFHelper
+from hyo2.openbst.lib.raw.raw_formats import RawFormatType
 
 logger = logging.getLogger(__name__)
 
@@ -62,12 +64,12 @@ class ProjectInfo:
         return self.raws_group.variables
 
     @property
-    def valid_raws(self) -> list:
-        valid_raws = list()
+    def project_raws(self) -> list:
+        project_raws = list()
         for raw_key, raw in self.raws.items():
             if raw.deleted == 0:
-                valid_raws.append(raw_key)
-        return valid_raws
+                project_raws.append(raw_key)
+        return project_raws
 
     @property
     def products_group(self) -> Group:
@@ -93,6 +95,7 @@ class ProjectInfo:
         self._ds = Dataset(filename=self._path, mode=open_mode)
 
         NetCDFHelper.init(ds=self._ds)
+
         # logger.debug("conventions: %s" % self.conventions)
         # logger.debug("time: %s [%s]" % (self.time_units, self.time_calendar))
         # logger.debug("version: %s" % self.version)
@@ -114,21 +117,33 @@ class ProjectInfo:
             logger.warning("does not exist: %s" % path)
             return False
 
+        raw_fmt = RawFormatType.retrieve_format_type(path=path)
+        if raw_fmt is RawFormatType.UNKNOWN:
+            logger.warning("unrecognized raw input type: %s" % path)
+            return False
+
         path_hash = NetCDFHelper.hash_string(str(path))
         if path_hash in self.raws.keys():
-            try:
+            try:                                            # TODO: Why are we trying ...
                 if self.raws[path_hash].deleted == 1:
                     self.raws[path_hash].deleted = 0
+                    self.raws[path_hash].valid = 0
                     logger.info("previously deleted: %s" % path)
+                else:
+                    logger.info("file already in project: %s" % path)
             except AttributeError:
+                self.raws[path_hash].valid = 0
                 self.raws[path_hash].deleted = 0
+
         else:
             path_var = self.raws_group.createVariable(path_hash, 'u1')
             path_var.source_path = str(path)
             path_var.deleted = 0
-            logger.debug("added: %s" % path)
+            path_var.linked = 1
+            path_var.imported = 0
+            logger.info("added: %s" % path)
 
-        self._ds.sync()
+        self.updated()
         return True
 
     def remove_raw(self, path: Path) -> bool:
@@ -139,7 +154,7 @@ class ProjectInfo:
             return False
 
         self.raws[path_hash].deleted = 1
-        logger.debug("removed: %s" % path)
+        logger.info("removed: %s" % path)
 
         self._ds.sync()
         return True

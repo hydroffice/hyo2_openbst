@@ -15,14 +15,15 @@ logger = logging.getLogger(__name__)
 
 class OpenBST:
 
-    def __init__(self, setup_name: str = "default",
+    def __init__(self, prj_name: str = "default", setup_name: str = "default", force_new: bool = False,
                  progress: AbstractProgress = CliProgress(use_logger=True)) -> None:
 
         self.progress = progress
 
-        self._setup = Setup(name=setup_name, setups_folder=self.setups_folder())
+        self._setup = Setup(name=setup_name, prj_name=prj_name, setups_folder=self.setups_folder())
         cur_proj_path = self.projects_folder().joinpath(self._setup.current_project + Project.ext)
-        self._prj = Project(prj_path=cur_proj_path, progress=self.progress)
+        self._prj = Project(prj_path=cur_proj_path, force_prj_creation=force_new,
+                            progress=self.progress)
 
     # ### ROOT FOLDER ###
 
@@ -70,6 +71,9 @@ class OpenBST:
     @property
     def prj(self) -> Project:
         return self._prj
+
+    def open_projects_folder(self) -> None:
+        Helper.explore_folder(str(self.projects_folder()))
 
     # ### OTHER ###
 

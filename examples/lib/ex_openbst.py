@@ -14,9 +14,11 @@ load_bags = False
 
 testing = TestingPaths(root_folder=Path(__file__).parent.parent.parent.resolve())
 
-bst = OpenBST(setup_name="test")
+bst = OpenBST(prj_name="reson")
 # logger.debug("setups: %s, projects: %s" % (bst.setups_list, bst.projects_list, ))
-# prj.open_root_folder()
+bst.open_root_folder()
+
+
 
 if load_alls:
     for input_path in testing.download_test_files(ext=".all"):

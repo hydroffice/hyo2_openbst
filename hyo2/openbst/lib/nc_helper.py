@@ -35,6 +35,8 @@ class NetCDFHelper:
             version = ds.version
             if version > lib_info.lib_version:
                 raise RuntimeError("Project has a future version: %s" % version)
+            if version < lib_info.lib_version:
+                raise RuntimeError("Project has a path version: %s" % version)
         except AttributeError:
             ds.version = lib_info.lib_version
 
