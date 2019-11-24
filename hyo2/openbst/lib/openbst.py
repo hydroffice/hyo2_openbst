@@ -20,7 +20,8 @@ class OpenBST:
 
         self.progress = progress
 
-        self._setup = Setup(name=setup_name, prj_name=prj_name, setups_folder=self.setups_folder())
+        self._setup = Setup(name=setup_name, prj_name=prj_name, setups_folder=self.setups_folder(),
+                            force_setup_creation=force_new)
         cur_proj_path = self.projects_folder().joinpath(self._setup.current_project + Project.ext)
         self._prj = Project(prj_path=cur_proj_path, force_prj_creation=force_new,
                             progress=self.progress)

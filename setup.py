@@ -61,6 +61,8 @@ setup(
         "netCDF4",
         "h5py",
         "lxml",
+        'numpy',
+        'gdal'
     ],
     python_requires='>=3.5',
     entry_points={

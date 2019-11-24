@@ -22,9 +22,9 @@ bst.prj.add_raw(raw_path)
 
 # import raws via project health check
 bst.prj.check_health()
-
-# remove a raw
-bst.prj.remove_raw(raw_path)
+#
+# # remove a raw
+# bst.prj.remove_raw(raw_path)
 
 # check health
 bst.prj.check_health()

@@ -1,5 +1,6 @@
 from datetime import datetime
 import logging
+import os
 from pathlib import Path
 from netCDF4 import Dataset, num2date
 
@@ -13,12 +14,17 @@ class Setup:
 
     ext = ".nc"
 
-    def __init__(self, name: str, prj_name: str, setups_folder: Path) -> None:
+    def __init__(self, name: str, prj_name: str, setups_folder: Path, force_setup_creation: bool) -> None:
 
         self._setup_name = self.make_setup_name(name)
         self._setups_folder = setups_folder
         self._path = self.make_setup_path(setups_folder=self._setups_folder,
                                           setup_name=name)
+
+        if force_setup_creation is True:
+            if self._path.exists():
+                os.remove(str(self._path.resolve()))
+
         self._prj_name = prj_name
         self._ds = None
         self._time = None
