@@ -549,7 +549,8 @@ class Data7028(ResonData):
         self.snippet_start_sample = list()
         self.bottom_detect_sample = list()
         self.snippet_end_sample = list()
-        self.snippet = list()
+        self.snippet_samples = list()
+        self.snippet_samples_len = list()
 
         self.parse_check = self.parse(chunk)
 
@@ -585,7 +586,8 @@ class Data7028(ResonData):
 
                 snippet_size = struct.calcsize(snippet_fmt)
                 data = struct.unpack(snippet_fmt, data_chunk[offset:offset+snippet_size])
-                self.snippet.append(data)
+                self.snippet_samples.append(data)
+                self.snippet_samples_len.append(num_samples)
                 offset += snippet_size
 
         self.parse_check = True

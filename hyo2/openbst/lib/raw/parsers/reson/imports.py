@@ -224,65 +224,77 @@ class RawImport:
                                             dimensions=("ping",),
                                             fill_value=RawImport.fill_value)
         var_time[:] = times_bathy
+        var_time.missing_value = RawImport.fill_value
 
         var_beam_number = grp_bathy.createVariable(varname="beam_number",
                                                    datatype="i4",
                                                    dimensions=("beam_number",),
                                                    fill_value=RawImport.fill_value)
         var_beam_number[:] = [range(num_beams)]
+        var_beam_number.missing_value = RawImport.fill_value
 
         var_samp_rate = grp_bathy.createVariable(varname="sample_rate",
                                                  datatype="f8",
                                                  dimensions=("ping",),
                                                  fill_value=RawImport.fill_value)
         var_samp_rate[:] = samp_rate
+        var_samp_rate.missing_value = RawImport.fill_value
 
         var_tx_steering = grp_bathy.createVariable(varname="tx_steering",
                                                    datatype="f8",
                                                    dimensions=("ping",),
                                                    fill_value=RawImport.fill_value)
         var_tx_steering[:] = tx_steering
+        var_tx_steering.missing_value = RawImport.fill_value
 
         var_rx_steering = grp_bathy.createVariable(varname="rx_steering",
                                                    datatype="f8",
                                                    dimensions=("ping",),
                                                    fill_value=RawImport.fill_value)
         var_rx_steering[:] = rx_steering
+        var_rx_steering.missing_value = RawImport.fill_value
 
         var_detect_point = grp_bathy.createVariable(varname="detect_point",
                                                     datatype="f8",
                                                     dimensions=("ping", "beam_number"),
                                                     fill_value=RawImport.fill_value)
         var_detect_point[:] = detect_point
+        var_detect_point.missing_value = RawImport.fill_value
+
         var_rx_angle = grp_bathy.createVariable(varname="rx_angle",
                                                 datatype="f8",
                                                 dimensions=("ping", "beam_number"),
                                                 fill_value=RawImport.fill_value)
         var_rx_angle[:] = detect_point
+        var_rx_angle.missing_value = RawImport.fill_value
 
         var_quality = grp_bathy.createVariable(varname="quality",
                                                datatype="f8",
                                                dimensions=("ping", "beam_number"),
                                                fill_value=RawImport.fill_value)
         var_quality[:] = quality
+        var_quality.missing_value = RawImport.fill_value
 
         var_beam_average = grp_bathy.createVariable(varname="bs_beam_average",
                                                     datatype="f8",
                                                     dimensions=("ping", "beam_number"),
                                                     fill_value=RawImport.fill_value)
         var_beam_average[:] = bs_beam_average
+        var_beam_average.missing_value = RawImport.fill_value
 
         var_min_gate = grp_bathy.createVariable(varname="min_sample_gate",
                                                 datatype="f8",
                                                 dimensions=("ping", "beam_number"),
                                                 fill_value=RawImport.fill_value)
         var_min_gate[:] = bs_beam_min_gate
+        var_min_gate.missing_value = RawImport.fill_value
 
         var_max_gate = grp_bathy.createVariable(varname="max sample gate",
                                                 datatype="f8",
                                                 dimensions=("ping", "beam_number"),
                                                 fill_value=RawImport.fill_value)
         var_max_gate[:] = bs_beam_max_gate
+        var_max_gate.missing_value = RawImport.fill_value
 
         NetCDFHelper.update_modified(ds=ds)
         return True
@@ -291,25 +303,28 @@ class RawImport:
     def get_snippets(cls, raw: Reson, ds: Dataset):
         raw.is_mapped()
 
-        snippets = raw.get_datagram(dg_type=ResonDatagrams.SNIPPETDATA)
-        snippet_len = max([len(dg_snippets.snippet) for dg_snippets in snippets])
-        num_beams = snippets[0].num_beams_max
-        num_pings = len(snippets)
+        snippets_data_object = raw.get_datagram(dg_type=ResonDatagrams.SNIPPETDATA)
+        num_beams = snippets_data_object[0].num_beams_max
+        num_pings = len(snippets_data_object)
+        max_snippet_len = max([max(dg_snippets.snippet_samples_len) for dg_snippets in snippets_data_object])
 
+        valid_beams = np.zeros(shape=(num_pings, num_beams), dtype='u1')
         detect_sample = np.ones(shape=(num_pings, num_beams)) * RawImport.fill_value
+        snippet_samples_len = np.ones(shape=(num_pings, num_beams)) * RawImport.fill_value
         snippet_sample_start = np.ones(shape=(num_pings, num_beams)) * RawImport.fill_value
         snippet_sample_end = np.ones(shape=(num_pings, num_beams)) * RawImport.fill_value
-        snippet_data = np.ones(shape=(num_pings, num_beams, snippet_len)) * RawImport.fill_value
-        beam_index = list()
-        times_snippets = [dg_snippets.time for dg_snippets in snippets]
-        for ping, dg_snippets in enumerate(snippets):                           # TODO: Faster code then for loop
-            beam_index.append(dg_snippets.beam_number)
+        snippet_data = np.ones(shape=(num_pings, num_beams, max_snippet_len)) * RawImport.fill_value
+
+        times_snippets = [dg_snippets.time for dg_snippets in snippets_data_object]
+        for ping, dg_snippets in enumerate(snippets_data_object):                    # TODO: Faster code then for loop
+            valid_beams[ping, dg_snippets.beam_number] = 1
             detect_sample[ping, dg_snippets.beam_number] = dg_snippets.bottom_detect_sample
+            snippet_samples_len[ping, dg_snippets.beam_number] = dg_snippets.snippet_samples_len
             snippet_sample_start[ping, dg_snippets.beam_number] = dg_snippets.snippet_start_sample
             snippet_sample_end[ping, dg_snippets.beam_number] = dg_snippets.snippet_end_sample
             for n, beam in enumerate(dg_snippets.beam_number):
-                snippet_size = len(dg_snippets.snippet[n])
-                snippet_data[ping, beam, [range(snippet_size)]] = np.asarray(dg_snippets.snippet[n])
+                snippet_size = len(dg_snippets.snippet_samples[n])
+                snippet_data[ping, beam, [range(snippet_size)]] = np.asarray(dg_snippets.snippet_samples[n])
 
         grp_snippet = ds.createGroup("snippets")
         grp_snippet.createDimension(dimname="ping", size=None)
@@ -324,29 +339,40 @@ class RawImport:
                                                        dimensions=("ping", "beam_number"),
                                                        fill_value=RawImport.fill_value)
         var_detect_sample[:] = detect_sample
+        var_detect_sample.missing_value = RawImport.fill_value
 
         var_snippet_start = grp_snippet.createVariable(varname="snippet_start_sample",
                                                        datatype="f8",
                                                        dimensions=("ping", "beam_number"),
                                                        fill_value=RawImport.fill_value)
         var_snippet_start[:] = snippet_sample_start
+        var_snippet_start.missing_value = RawImport.fill_value
 
         var_snippet_end = grp_snippet.createVariable(varname="snippet_end_sample",
                                                      datatype="f8",
                                                      dimensions=("ping", "beam_number", ),
                                                      fill_value=RawImport.fill_value)
         var_snippet_end[:] = snippet_sample_end
+        var_snippet_end.missing_value = RawImport.fill_value
 
-        vlen_beam = grp_snippet.createVLType(datatype="i4", datatype_name="beam_index_vlen")
-        var_beam = grp_snippet.createVariable(varname="beam_index", datatype=vlen_beam, dimensions=("ping",))
-        for ping, dg_snippets in enumerate(snippets):
-            var_beam[ping] = np.asarray(dg_snippets.beam_number)
+        var_snippets_len = grp_snippet.createVariable(varname="snippet_samples_length",
+                                                      datatype="f8",
+                                                      dimensions=("ping", "beam_number", ),
+                                                      fill_value=RawImport.fill_value)
+        var_snippets_len[:] = snippet_samples_len
+        var_snippets_len.missing_value = RawImport.fill_value
+
+        var_valid_beams = grp_snippet.createVariable(varname="valid_beams",
+                                                     datatype='u1',
+                                                     dimensions=("ping", "beam_number", ))
+        var_valid_beams[:] = valid_beams
 
         var_snippet = grp_snippet.createVariable(varname="snippets",
                                                  datatype="f8",
                                                  dimensions=("ping", "beam_number", "sample"),
                                                  fill_value=RawImport.fill_value)
         var_snippet[:] = snippet_data
+        var_snippet.missing_value = RawImport.fill_value
 
         NetCDFHelper.update_modified(ds=ds)
         return True

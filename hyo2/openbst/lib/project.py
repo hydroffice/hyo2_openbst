@@ -12,6 +12,7 @@ from hyo2.openbst.lib import lib_info
 from hyo2.openbst.lib.nc_helper import NetCDFHelper
 from hyo2.openbst.lib.project_info import ProjectInfo
 from hyo2.openbst.lib.processing.process import Process
+from hyo2.openbst.lib.processing.parameters import Parameters
 from hyo2.openbst.lib.raw.raws import Raws
 logger = logging.getLogger(__name__)
 
@@ -46,6 +47,8 @@ class Project:
         self._p = Process(process_path=self.process_folder)
         self._healthy = False
         self.check_health()
+
+        self.parameters = Parameters()
 
     @property
     def healthy(self) -> bool:
@@ -191,6 +194,18 @@ class Project:
         txt += "  <path: %s>\n" % self.path
         txt += "  <raws: %d>\n" % len(self.info.valid_raws)
         return txt
+
+    # ### Process ###
+    def raw_decode(self):
+        for path_hash in self.raws.raws_list:
+            raw_file_path = self.raws_folder.joinpath(path_hash + self.raws.ext)
+            process_file_path = self.process_folder.joinpath(path_hash + self.process.ext)
+
+            decoded = self.process.raw_decode(process_file_path=process_file_path,
+                                              raw_path=raw_file_path,
+                                              parameters=self.parameters)
+            if decoded is True:
+                print('File Raw Decoded: %s' % process_file_path.resolve())
 
     def __repr__(self) -> str:
         msg = "<%s>\n" % self.__class__.__name__
