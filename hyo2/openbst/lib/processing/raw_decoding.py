@@ -54,14 +54,14 @@ class RawDecodeParameters:
             logger.debug("Something went wrong writing attributes")
             return False
 
-    def process_string(self) -> str:
+    def process_hash(self) -> str:
         processing_string = RawDecodeParameters.process_name + '_'
         parameter_string = str()
         for key, value in self.__dict__.items():
             parameter_string = parameter_string + key + str(value)
 
-        processing_string = processing_string + NetCDFHelper.hash_string(parameter_string)
-        return processing_string
+        hash_string = processing_string + NetCDFHelper.hash_string(parameter_string)
+        return hash_string
 
 
 # ## Raw Decode Class and methods ##
@@ -93,7 +93,7 @@ class RawDecoding:
             bs_raw_decode = RawDecoding.perbeam_bs_from_beam_average(raw_bathy=grp_raw_bathy)
 
         else:
-            raise TypeError("Unrecognized Raw Decode Method: %s")
+            raise TypeError("Unrecognized Raw Decode Method: %s")   # TODO: Fix the error message
 
         data_out = {
             'backscatter_data': bs_raw_decode

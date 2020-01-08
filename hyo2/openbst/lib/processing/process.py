@@ -92,7 +92,7 @@ class Process:
         grp_list = nc_process.groups
         if len(grp_list) != 0:
             for nc_process_step, _ in grp_list.items():
-                nc_process_string = nc_process_step.split('_')
+                nc_process_string = nc_process_step.split('_')  # TODO: Check that I need an index
                 if nc_process_string == process_string:
                     processed = True
                     break
@@ -108,7 +108,7 @@ class Process:
         params_raw_decode = parameters.rawdecode
 
         # check process has not been calculated before
-        process_name_str = params_raw_decode.process_string()
+        process_name_str = params_raw_decode.process_hash()
         has_been_processd = self.check_raw_process(nc_process=ds_process, process_string=process_name_str)
 
         if has_been_processd is True:
@@ -139,3 +139,19 @@ class Process:
                 raise RuntimeError("Error updating process string")
 
             return True
+
+    def static_gain_correction(self, process_file_path: Path, raw_path: Path, parameters: Parameters):
+        # create nc objects
+        ds_process = Dataset(filename=process_file_path, mode='a')
+        ds_raw = Dataset(filename=raw_path, mode='a')
+
+        params_static_gain = parameters.static_gains
+
+        #check process has not been calculated before
+        process_name_str = params_static_gain.process_hash()
+        has_been_processed = self.check_raw_process(nc_process=ds_process, process_string=process_name_str)
+        if has_been_processed is True:
+            logger.debug("Processing step has been computed prior")
+
+
+
