@@ -55,7 +55,7 @@ class RawDecodeParameters:
             return False
 
     def process_hash(self) -> str:
-        processing_string = RawDecodeParameters.process_name + '_'
+        processing_string = RawDecodeParameters.process_name + '__'
         parameter_string = str()
         for key, value in self.__dict__.items():
             parameter_string = parameter_string + key + str(value)
@@ -105,8 +105,8 @@ class RawDecoding:
         try:
             for data_name, data in data_dict.items():
                 if data_name == 'backscatter_data':
-                    dim_ping = grp_process.createDimension(dimname='ping', size=None)
-                    dim_beam = grp_process.createDimension(dimname='beam', size=None)
+                    grp_process.createDimension(dimname='ping', size=None)
+                    grp_process.createDimension(dimname='beam', size=None)
                     var_bs_data = grp_process.createVariable(varname='backscatter_data',
                                                              datatype='f8',
                                                              dimensions=('ping', 'beam'))

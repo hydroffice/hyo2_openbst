@@ -38,7 +38,7 @@ class StaticGainParameters:
             logger.debug("Something went wrong writing attributes")
 
     def process_hash(self) -> str:
-        process_string = StaticGainParameters.process_name + '_'
+        process_string = StaticGainParameters.process_name + '__'
         parameter_string = str()
         for key, value in self.__dict__.items():
             parameter_string += key + str(value)
@@ -56,14 +56,14 @@ class StaticGainCorrection:
         p_method_type = parameters.method_type
 
         if p_method_type is StaticGainEnum.gain_removal:
-            grp_snippets = ds_process.groups[]
+            pass
         elif p_method_type is StaticGainEnum.gain_addition:
             pass
         else:
             raise TypeError("Unrecognized Satic Gain Correction Method: ")
 
         data_out = {
-            'backscatter_data': bs_static_gain_corrected
+            # 'backscatter_data': bs_static_gain_corrected
         }
         return data_out
 

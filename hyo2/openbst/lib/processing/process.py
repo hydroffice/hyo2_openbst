@@ -2,6 +2,7 @@ import glob
 import logging
 import os
 
+from enum import Enum
 from netCDF4 import Dataset
 from pathlib import Path
 
@@ -12,8 +13,17 @@ from hyo2.openbst.lib.processing.raw_decoding import RawDecoding
 logger = logging.getLogger(__name__)
 
 
-class Process:
+class ProcessStageStatus(Enum):
+    # Already in processing chain
+    PRIORPROCESS = 0
+    REPEATEPROCESS = 1
 
+    # Not in processing chain
+    NEWPROCESS = 2
+    MODIFIEDPROCESS = 3
+
+
+class Process:
     ext = ".nc"
 
     def __init__(self, process_path: Path) -> None:
@@ -34,11 +44,11 @@ class Process:
         self._step = step
 
     @property
-    def prior_process(self) -> str:
+    def parent_process(self) -> str:
         return self._prior_process
 
-    @prior_process.setter
-    def prior_process(self, current_process):
+    @parent_process.setter
+    def parent_process(self, current_process):
         self._prior_process = current_process
 
     @property
@@ -74,30 +84,59 @@ class Process:
             return True
 
     def store_process(self, nc: Dataset, process_string: str) -> bool:
+
         NetCDFHelper.update_modified(ds=nc)
+
         nc.close()
 
-        if process_string.split('_')[0] == '00':
+        if process_string.split('__')[0] == '00':
             self.step = 0
         else:
             self.step += 1
 
-        self.prior_process = process_string
+        self.parent_process = process_string
         return True
 
+    def check_process(self, nc_process: Dataset, process_string: str) -> ProcessStageStatus:
+        process_identifiers = process_string.split('__')
+        parent_identifiers = self.parent_process.split('__')
+
+        # Check if this is the first process
+        if self.parent_process == '':
+            return ProcessStageStatus.NEWPROCESS
+
+        # Check new process against parent process
+        if process_identifiers[0] == parent_identifiers[1]:
+            if process_identifiers[-1] == parent_identifiers[-1]:
+                return ProcessStageStatus.PRIORPROCESS
+            else:
+                return ProcessStageStatus.MODIFIEDPROCESS
+        else:
+            # Check if step has been computed prior in chain
+            in_process_chain = self.check_process_chain(nc_process=nc_process,
+                                                        process_str=process_string,
+                                                        parent_str=self.parent_process)
+
     @staticmethod
-    def check_raw_process(nc_process: Dataset, process_string: str) -> bool:
-        processed = False
+    def check_process_chain(nc_process: Dataset, process_str: str, parent_str: str) -> bool:
+        process_identifiers = process_str.split('__')
+        # Find grp_process that matches current parent
+        grp_prior = nc_process.groups[parent_str]
+        nc_parent_str = grp_prior.parent_process
+        nc_parent_identifiers = nc_parent_str.split('__')
+        if nc_parent_identifiers[1] == '':
+            return False
+        elif nc_parent_identifiers[1] == process_identifiers[1]:
+            return True
+        else:
+            Process.check_process_chain(nc_process=nc_process, process_str=process_str, parent_str=nc_parent_str)
 
-        grp_list = nc_process.groups
-        if len(grp_list) != 0:
-            for nc_process_step, _ in grp_list.items():
-                nc_process_string = nc_process_step.split('_')  # TODO: Check that I need an index
-                if nc_process_string == process_string:
-                    processed = True
-                    break
 
-        return processed
+        # Grab parent
+
+        # Compare parents
+
+        # if not same recursive call
 
     # ## Processing Methods ##
     def raw_decode(self, process_file_path: Path, raw_path: Path, parameters: Parameters):
@@ -109,9 +148,9 @@ class Process:
 
         # check process has not been calculated before
         process_name_str = params_raw_decode.process_hash()
-        has_been_processd = self.check_raw_process(nc_process=ds_process, process_string=process_name_str)
+        has_been_processd = self.check_process(nc_process=ds_process, process_string=process_name_str)
 
-        if has_been_processd is True:
+        if has_been_processd == ProcessStageStatus.PRIORPROCESS:
             logger.debug("Processing step has been computed prior")
             return True
         else:
@@ -120,8 +159,9 @@ class Process:
 
             # Write data to nc file
             initial_step = 0
-            nc_process_name = "%02d" % initial_step + '_' + process_name_str
+            nc_process_name = "%02d" % initial_step + '__' + process_name_str
             grp_process = ds_process.createGroup(nc_process_name)
+            grp_process.parent_process = ''
             process_written = RawDecoding.write_data_to_nc(data_dict=bs_raw_decode, grp_process=grp_process)
 
             ds_raw.close()
@@ -147,11 +187,8 @@ class Process:
 
         params_static_gain = parameters.static_gains
 
-        #check process has not been calculated before
+        # check process has not been calculated before
         process_name_str = params_static_gain.process_hash()
-        has_been_processed = self.check_raw_process(nc_process=ds_process, process_string=process_name_str)
+        has_been_processed = self.check_process(nc_process=ds_process, process_string=process_name_str)
         if has_been_processed is True:
             logger.debug("Processing step has been computed prior")
-
-
-
