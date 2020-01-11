@@ -54,14 +54,13 @@ class RawDecodeParameters:
             logger.debug("Something went wrong writing attributes")
             return False
 
-    def process_hash(self) -> str:
-        processing_string = RawDecodeParameters.process_name + '__'
+    def process_identifiers(self) -> list:
+        process_string = RawDecodeParameters.process_name
         parameter_string = str()
         for key, value in self.__dict__.items():
             parameter_string = parameter_string + key + str(value)
-
-        hash_string = processing_string + NetCDFHelper.hash_string(parameter_string)
-        return hash_string
+        process_ids = [process_string, parameter_string]
+        return process_ids
 
 
 # ## Raw Decode Class and methods ##

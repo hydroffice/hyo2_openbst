@@ -7,6 +7,7 @@ from netCDF4 import Dataset, Group
 from hyo2.openbst.lib.nc_helper import NetCDFHelper
 logger = logging.getLogger(__name__)
 
+
 # ## Static Gain Compensation Enum and Dictionaries ##
 class StaticGainEnum(Enum):
     gain_removal = 0
@@ -37,13 +38,13 @@ class StaticGainParameters:
         except TypeError:
             logger.debug("Something went wrong writing attributes")
 
-    def process_hash(self) -> str:
-        process_string = StaticGainParameters.process_name + '__'
+    def process_identifiers(self) -> list:
+        process_string = StaticGainParameters.process_name
         parameter_string = str()
         for key, value in self.__dict__.items():
             parameter_string += key + str(value)
-        hash_string = process_string + NetCDFHelper.hash_string(parameter_string)
-        return hash_string
+        process_ids = [process_string, parameter_string]
+        return process_ids
 
 
 class StaticGainCorrection:
@@ -52,19 +53,23 @@ class StaticGainCorrection:
         pass
 
     @classmethod
-    def static_correction(cls,ds_process: Dataset, parameters: StaticGainParameters,) -> dict:
+    def static_correction(cls, ds_process: Dataset, ds_raw: Dataset,
+                          parent: str, parameters: StaticGainParameters) -> dict:
         p_method_type = parameters.method_type
+        grp_runtime = ds_raw.groups['runtime_settings']      # TODO: Create dictionary in raws to reference.
+        var_static_gain = grp_runtime.variables['static_gain']
+        data_static_gain = var_static_gain[:]
+
+        grp_parent = ds_process.groups[parent]
+        var_backscatter = grp_parent.variables['backscatter_data']
+        data_backscatter = var_backscatter[:]
 
         if p_method_type is StaticGainEnum.gain_removal:
-            pass
+            data_out = StaticGainCorrection.added_gain(static_gain=data_static_gain, backscatter=data_backscatter)
         elif p_method_type is StaticGainEnum.gain_addition:
-            pass
+            data_out = StaticGainCorrection.subtracted_gain(static_gain=data_static_gain, backscatter=data_backscatter)
         else:
-            raise TypeError("Unrecognized Satic Gain Correction Method: ")
-
-        data_out = {
-            # 'backscatter_data': bs_static_gain_corrected
-        }
+            raise TypeError("Unrecognized Static Gain Correction Method: ")
         return data_out
 
     @classmethod
@@ -72,8 +77,8 @@ class StaticGainCorrection:
         try:
             for data_name, data in data_dict.items():
                 if data_name == 'backscatter_data':
-                    dim_ping = grp_process.createDimension(dimname='ping', size=None)
-                    dim_beam = grp_process.createDimension(dimname='beam', size=None)
+                    grp_process.createDimension(dimname='ping', size=None)
+                    grp_process.createDimension(dimname='beam', size=None)
                     var_bs_data = grp_process.createVariable(varname='backscatter_data',
                                                              datatype='f8',
                                                              dimensions=('ping', 'beam'))
@@ -86,12 +91,25 @@ class StaticGainCorrection:
 
     # ## Processing Methods ##
     @classmethod
-    def added_gain(cls):
-        pass
+    def added_gain(cls, static_gain: np.ma.MaskedArray, backscatter: np.ma.MaskedArray):
+        bs_corrected = backscatter + static_gain
+
+        # Create the output data dictionary
+        data_out = {
+            'backscatter_data': bs_corrected
+        }
+        return data_out
 
     @classmethod
-    def subtracted_gain(cls):
-        pass
+    def subtracted_gain(cls, static_gain: np.ma.MaskedArray, backscatter: np.ma.MaskedArray):
+        bs_corrected = backscatter - static_gain
+
+        data_out = {
+            'backscatter_data': bs_corrected
+        }
+
+        return data_out
+
 
 
 

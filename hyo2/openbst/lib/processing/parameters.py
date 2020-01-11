@@ -1,7 +1,7 @@
 import logging
 
-from hyo2.openbst.lib.processing.raw_decoding import RawDecodeParameters
-from hyo2.openbst.lib.processing.static_gain_compensation import StaticGainParameters
+from hyo2.openbst.lib.processing.process_types.raw_decoding import RawDecodeParameters
+from hyo2.openbst.lib.processing.process_types.static_gain_compensation import StaticGainParameters
 
 logger = logging.getLogger(__name__)
 

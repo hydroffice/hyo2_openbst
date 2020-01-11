@@ -2,15 +2,14 @@ import glob
 import logging
 import os
 
-from enum import Enum
 from netCDF4 import Dataset
 from pathlib import Path
 
 from hyo2.openbst.lib.nc_helper import NetCDFHelper
 from hyo2.openbst.lib.processing.parameters import Parameters
 from hyo2.openbst.lib.processing.process_management.process_manager import ProcessManager
-from hyo2.openbst.lib.processing.raw_decoding import RawDecoding
-from hyo2.openbst.lib.processing.static_gain_compensation import StaticGainCorrection
+from hyo2.openbst.lib.processing.process_types.raw_decoding import RawDecoding
+from hyo2.openbst.lib.processing.process_types.static_gain_compensation import StaticGainCorrection
 
 logger = logging.getLogger(__name__)
 
@@ -77,49 +76,55 @@ class Process:
         ds_raw = Dataset(filename=raw_path, mode='a')
         params_raw_decode = parameters.rawdecode
 
-        # check process chain
-        
-        has_been_processd = self.proc_manager.(nc_process=ds_process, process_hash=params_raw_decode.process_hash())
-
-        if has_been_processd == ProcessStageStatus.PRIORPROCESS:
-            logger.debug("Processing step has been computed prior")
+        # check processing chain history
+        has_been_processd = self.proc_manager.start_process(nc_process=ds_process,
+                                                            process_identifiers=params_raw_decode.process_identifiers())
+        if has_been_processd is True:
             return True
-        else:
 
-            bs_raw_decode = RawDecoding.decode(ds_raw=ds_raw, parameters=params_raw_decode)
+        # Calculate the raw decode step
+        bs_raw_decode = RawDecoding.decode(ds_raw=ds_raw, parameters=params_raw_decode)
+        ds_raw.close()
 
-            # Write data to nc file
-            initial_step = 0
-            nc_process_name = "%02d" % initial_step + '__' + process_name_str
-            grp_process = ds_process.createGroup(nc_process_name)
-            grp_process.parent_process = ''
-            process_written = RawDecoding.write_data_to_nc(data_dict=bs_raw_decode, grp_process=grp_process)
+        # Write data to nc file
 
-            ds_raw.close()
+        nc_process_name = "%02d" % initial_step + '__' + process_name_hash
+        grp_process = ds_process.createGroup(nc_process_name)
+        grp_process.parent_process = ''
+        process_written = RawDecoding.write_data_to_nc(data_dict=bs_raw_decode, grp_process=grp_process)
 
-            if process_written is False:
-                raise RuntimeError("Error occurred writing to file!")
+        if process_written is False:
+            raise RuntimeError("Error occurred writing to file!")
 
-            attributes_written = params_raw_decode.nc_write_parameters(grp_process=grp_process)
-            if attributes_written is False:
-                raise RuntimeError("Error occured writing to file!")
+        attributes_written = params_raw_decode.nc_write_parameters(grp_process=grp_process)
+        if attributes_written is False:
+            raise RuntimeError("Error occured writing to file!")
 
-            # store and update nc files
-            process_logged = self.store_process(nc=ds_process, process_string=nc_process_name)
-            if process_logged is False:
-                raise RuntimeError("Error updating process string")
+        # store and update nc files
+        process_logged = self.store_process(nc=ds_process, process_string=nc_process_name)
+        if process_logged is False:
+            raise RuntimeError("Error updating process string")
 
-            return True
+        return True
 
     def static_gain_correction(self, process_file_path: Path, raw_path: Path, parameters: Parameters):
         # create nc objects
-        ds_process = Dataset(filename=process_file_path, mode='a')
-        ds_raw = Dataset(filename=raw_path, mode='a')
-
+        ds_process = Dataset(filename=process_file_path, mode='r')
+        ds_raw = Dataset(filename=raw_path, mode='r')
         params_static_gain = parameters.static_gains
 
-        # check process has not been calculated before
-        process_name_str = params_static_gain.process_hash()
-        has_been_processed = self.check_process(nc_process=ds_process, process_string=process_name_str)
+        # check processing chain history
+        has_been_processed = self.proc_manager.start_process(nc_process=ds_process,
+                                                             process_identifiers=params_static_gain.process_identifiers())
         if has_been_processed is True:
-            logger.debug("Processing step has been computed prior")
+            return True
+
+        # Calculate the static gain correction
+        static_corrected = StaticGainCorrection.static_correction(ds_process=ds_process,
+                                                                  ds_raw=ds_raw,
+                                                                  parent=self.proc_manager.parent_process,
+                                                                  parameters=params_static_gain)
+        ds_raw.close()
+
+        # Write results to the nc file
+        StaticGainCorrection.write_data_to_nc(data_dict=static_corrected,)
