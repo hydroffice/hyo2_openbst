@@ -1,7 +1,7 @@
 import logging
 
 from enum import Enum
-from netCDF4 import Dataset, Group
+from netCDF4 import Dataset
 
 from hyo2.openbst.lib.processing.parameters import Parameters
 from hyo2.openbst.lib.processing.process_methods.dicts import ProcessMethods, process_requirements
@@ -23,9 +23,10 @@ class ProcessStageStatus(Enum):
 class ProcessManager:
     seperator = '__'
 
-    def __init__(self):
+    def __init__(self, parent_process: str):
         self._step = 00
-        self._parent = ''
+        self._parent = None
+        self._setup(parent_process)
 
         self._calc_in_progress = False
         self._cur_process = None
@@ -44,8 +45,22 @@ class ProcessManager:
         return self._parent
 
     @parent_process.setter
-    def parent_process(self, current_process):
-        self._parent = current_process
+    def parent_process(self, process_string):
+        process_identifiers = self.get_process_identifiers(process_string=process_string)
+        try:
+            _ = int(process_identifiers[0])
+            self._parent = process_string
+        except ValueError:
+            raise ValueError("String does not have expected format")
+
+    def _setup(self, parent_process: str):
+        if parent_process == '':
+            self._step = 00
+            self._parent = parent_process
+        else:
+            parent_identifiers = self.get_process_identifiers(process_string=parent_process)
+            self._step = int(parent_identifiers[0])
+            self._parent = parent_process
 
     # ## Processing Status Methods ##
     def start_process(self, process_type: ProcessMethods, nc_process: Dataset, parameter_object: Parameters):
@@ -74,20 +89,22 @@ class ProcessManager:
             self._calc_in_progress = True
             self._status = status
             logger.info("Process ID is modifed version of last process. Process computing.")
+            self.generate_process_name(process_identifiers=method_params.process_identifiers())
             do_process = True
         elif status == ProcessStageStatus.NEWPROCESS:
             self._calc_in_progress = True
             self._status = status
             logger.info("Process ID not in processing chain. Process computing.")
+            self.generate_process_name(process_identifiers=method_params.process_identifiers())
             do_process = True
         elif status == ProcessStageStatus.FIRSTPROCESS:
             self._calc_in_progress = True
             self._status = status
             logger.info("Process ID not in processing chain. Process computing")
+            self.generate_process_name(process_identifiers=method_params.process_identifiers())
             do_process = True
         else:
             raise RuntimeError("Unrecognized process status: %s" % status)
-        self.generate_process_name(process_identifiers=method_params.process_identifiers())
 
         # Check for required processes
         meets_required = self.check_requirements(process_method=process_type,

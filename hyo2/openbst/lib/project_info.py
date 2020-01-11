@@ -16,8 +16,10 @@ class ProjectInfo:
         self._path = prj_path.joinpath("info.nc")
         self._ds = None
         self._raws_name = "raws"
+        self._process_name = "process"
         self._products_name = "products"
         self._nc()
+        self.manage_parent()
 
     @property
     def path(self) -> Path:
@@ -72,6 +74,22 @@ class ProjectInfo:
         return project_raws
 
     @property
+    def process_group(self) -> Group:
+        return self._ds.groups[self._process_name]
+
+    @property
+    def processes(self):
+        return self.process_group.variables
+
+    @property
+    def project_process(self):
+        project_processes = list()
+        for process_key, process in self.processes.items():
+            if process.deleted == 0:
+                project_processes.append(process_key)
+        return project_processes
+
+    @property
     def products_group(self) -> Group:
         return self._ds.groups[self._products_name]
 
@@ -102,7 +120,7 @@ class ProjectInfo:
         # logger.debug("created: %s" % self.created)
         # logger.debug("modified: %s" % self.modified)
 
-        NetCDFHelper.groups(ds=self._ds, names=[self._raws_name, self._products_name])
+        NetCDFHelper.groups(ds=self._ds, names=[self._raws_name, self._process_name, self._products_name])
 
         logger.info("open in '%s' mode: [v.%s] %s" % (open_mode, self.version, self.path))
 
@@ -155,6 +173,53 @@ class ProjectInfo:
 
         self.raws[path_hash].deleted = 1
         logger.info("removed: %s" % path)
+
+        self._ds.sync()
+        return True
+
+    # # ### PROCESSES ###
+    def manage_parent(self, parent=None):
+        if parent is None:
+            try:
+                info_parent = self.process_group.parent_process
+            except AttributeError:
+                self.process_group.parent_process = ''
+        else:
+            self.process_group.parent_process = parent
+        self.updated()
+
+    def add_process(self, path: Path) -> bool:
+        path = path.resolve()
+        if not path.exists():
+            logger.warning("does not exist: %s" % path)
+            return False
+
+        path_hash = NetCDFHelper.hash_string(str(path))
+        if path_hash in self.processes.keys():
+            try:
+                if self.processes[path_hash].deleted == 1:
+                    self.processes[path_hash].deleted = 0
+                    logger.info("previously deleted: %s" % path)
+            except AttributeError:
+                self.processes[path_hash].deleted = 0
+        else:
+            path_var = self.process_group.createVariable(path_hash, 'u1')
+            path_var.source_path = str(path)
+            path_var.deleted = 0
+            logger.debug("added: %s" % path)
+
+        self._ds.sync()
+        return True
+
+    def remove_process(self, path: Path) -> bool:
+
+        path_hash = NetCDFHelper.hash_string(str(path))
+        if path_hash not in self.processes.keys():
+            logger.info("absent: %s" % path)
+            return False
+
+        self.processes[path_hash].deleted = 1
+        logger.debug("removed: %s" % path)
 
         self._ds.sync()
         return True

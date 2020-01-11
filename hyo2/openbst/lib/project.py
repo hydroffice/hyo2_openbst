@@ -44,7 +44,7 @@ class Project:
 
         self._i = ProjectInfo(prj_path=self._path)
         self._r = Raws(raws_path=self.raws_folder)
-        self._p = Process(process_path=self.process_folder)
+        self._p = Process(process_path=self.process_folder, parent_process=self.info.process_group.parent_process)
         self._healthy = False
         self.check_health()
 
@@ -206,6 +206,7 @@ class Project:
                                                  raw_path=raw_file_path,
                                                  parameters=self.parameters)
             if processed is True:
+                self.info.manage_parent(parent=self.process.proc_manager.parent_process)
                 print('File Raw Decoded: %s' % process_file_path.resolve())
 
     def static_gain_correction(self):
@@ -218,6 +219,7 @@ class Project:
                                                  raw_path=raw_file_path,
                                                  parameters=self.parameters)
             if processed is True:
+                self.info.manage_parent(parent=self.process.proc_manager.parent_process)
                 print('File Corrected for static gain: %s' % process_file_path.resolve())
 
     def __repr__(self) -> str:
