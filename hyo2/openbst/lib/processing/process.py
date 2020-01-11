@@ -22,7 +22,6 @@ class Process:
         self._path = process_path
         self.proc_manager = ProcessManager()
 
-
     @property
     def path(self) -> Path:
         return self._path
@@ -59,26 +58,67 @@ class Process:
             logger.info("raw .nc deleted for file: %s" % str(path.resolve()))
             return True
 
-    def store_process(self, nc: Dataset, process_string: str) -> bool:
-        NetCDFHelper.update_modified(ds=nc)
-        nc.close()
-
-        # if process_string.split('__')[0] == '00':
-        #     self.step = 0
-        # else:
-        #     self.step += 1
-        # self.parent_process = process_string
-        return True
-
-    def run_process(self, process_type: ProcessMethods, process_file_path: Path, raw_path: Path, parameters: Parameters):
+    def run_process(self, process_method: ProcessMethods, process_file_path: Path, raw_path: Path,
+                    parameters: Parameters):
         # Create the nc objects for reading
         ds_process = Dataset(filename=process_file_path, mode='r')
         ds_raw = Dataset(filename=raw_path, mode='r')
 
-        # Grab the appropriate parameters object for the task
-        params_object = parameters.get_process_params(process_type=process_type)
-
         # Check processing chain history for repeats and requirements
-        has_been_processed = self.proc_manager.start_process(nc_process=ds_process, parameter_object=parameters)
-        if has_been_processed is True:
+        do_process = self.proc_manager.start_process(process_type=process_method,
+                                                     nc_process=ds_process,
+                                                     parameter_object=parameters)
+        if do_process is True:
             return True
+
+        # Run the process
+        method_parameters = parameters.get_process_params(process_type=process_method)
+        if process_method == ProcessMethods.RAWDECODE:
+            data_out = RawDecoding.decode(ds_raw=ds_raw, parameters=method_parameters)
+        elif process_method == ProcessMethods.STATICGAIN:
+            data_out = StaticGainCorrection.static_correction(ds_process=ds_process,
+                                                              ds_raw=ds_raw,
+                                                              parent=self.proc_manager.parent_process,
+                                                              parameters=method_parameters)
+        else:
+            raise RuntimeError("We realistically cannot get to this point as there is no error handling in the above"
+                               "method calls")
+
+        ds_process.close()
+        ds_raw.close()
+
+        # Store the process
+        process_written = self.store_process(process_method=process_method,
+                                             nc_process_file=process_file_path,
+                                             parameters=method_parameters,
+                                             data=data_out)
+
+        return True
+
+    def store_process(self, process_method: ProcessMethods, nc_process_file: Path, parameters, data: dict) -> bool:
+        ds_process = Dataset(filename=nc_process_file, mode='a')
+
+        # create new group
+        grp_process = ds_process.createGroup(self.proc_manager.current_process)
+
+        # Store the parameters as group attributes
+        attributes_written = parameters.nc_write_parameters(grp_process=grp_process)
+        if attributes_written is False:
+            raise RuntimeError("Something went wrong writing attributes")
+
+        # Store the process
+        if process_method == ProcessMethods.RAWDECODE:
+            process_written = RawDecoding.write_data_to_nc(data_dict=data, grp_process=grp_process)
+        elif process_method == ProcessMethods.STATICGAIN:
+            process_written = StaticGainCorrection.write_data_to_nc(data_dict=data, grp_process=grp_process)
+        else:
+            raise RuntimeError("Unrecognized processing method type: %s" % process_method)
+
+        if process_written is False:
+            raise RuntimeError("Something went wrong writing data")
+
+        NetCDFHelper.update_modified(ds=ds_process)
+        ds_process.close()
+        self.proc_manager.update_process()
+
+        return True

@@ -51,7 +51,6 @@ class RawDecodeParameters:
             grp_process.sample_window_size = self.sample_window_size
             return True
         except TypeError:
-            logger.debug("Something went wrong writing attributes")
             return False
 
     def process_identifiers(self) -> list:
@@ -113,7 +112,6 @@ class RawDecoding:
 
             return True
         except RuntimeError:
-            logger.debug("Something went wrong writing data to nc file")
             return False
 
     # ## Processing Method Types ##

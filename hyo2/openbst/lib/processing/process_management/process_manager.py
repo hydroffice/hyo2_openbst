@@ -50,6 +50,12 @@ class ProcessManager:
     def start_process(self, process_type: ProcessMethods, nc_process: Dataset, parameter_object: Parameters):
         self._calc_in_progress = True
 
+        # Check this is a valid process
+        if process_type not in ProcessMethods:
+            logger.warning("Process Method is not valid: %s" % process_type)
+            self.end_process()
+            return False
+
         # Grab the relevant parameter object
         method_params = parameter_object.get_process_params(process_type=process_type)
 
@@ -58,21 +64,21 @@ class ProcessManager:
         if status == ProcessStageStatus.PRIORPROCESS:
             self.end_process()
             logger.info("Process ID is same as last process. Process not computed")
-            has_been_processed = True
+            do_process = False
         elif status == ProcessStageStatus.REPEATEPROCESS:
             self.end_process()
             logger.info("Process ID found in processing chain. Process not computed.")
-            has_been_processed = True
+            do_process = False
         elif status == ProcessStageStatus.MODIFIEDPROCESS:
             self._calc_in_progress = True
             self._status = status
             logger.info("Process ID is modifed version of last process. Process computing.")
-            has_been_processed = False
+            do_process = True
         elif status == ProcessStageStatus.NEWPROCESS:
             self._calc_in_progress = True
             self._status = status
             logger.info("Process ID not in processing chain. Process computing.")
-            has_been_processed = False
+            do_process = True
         else:
             raise RuntimeError("Unrecognized process status: %s" % status)
         self.generate_process_name(process_identifiers=method_params.process_identifiers())
@@ -84,12 +90,15 @@ class ProcessManager:
 
         if meets_required is False:
             self.end_process()
-            has_been_processed = True
+            do_process = False
 
-        return has_been_processed
+        return do_process
 
     def update_process(self):
-        pass
+        process_identifiers = self.get_process_identifiers(self.current_process)
+        self._step = process_identifiers[0]
+        self._parent = self._cur_process
+        self.end_process()
 
     def end_process(self):
         self._calc_in_progress = False

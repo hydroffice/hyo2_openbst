@@ -36,7 +36,7 @@ class StaticGainParameters:
                     break
                 return True
         except TypeError:
-            logger.debug("Something went wrong writing attributes")
+            return False
 
     def process_identifiers(self) -> list:
         process_string = StaticGainParameters.process_name
@@ -86,7 +86,6 @@ class StaticGainCorrection:
 
                 return True
         except RuntimeError:
-            logger.debug("Something went wrong writing data to nc file")
             return False
 
     # ## Processing Methods ##
