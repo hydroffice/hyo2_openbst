@@ -4,7 +4,7 @@ from pathlib import Path
 from hyo2.abc.lib.logging import set_logging
 from hyo2.abc.lib.testing_paths import TestingPaths
 from hyo2.openbst.lib.openbst import OpenBST
-from hyo2.openbst.lib.processing.process_types.raw_decoding import RawDecodeEnum
+from hyo2.openbst.lib.processing.process_methods.raw_decoding import RawDecodeEnum
 
 set_logging(ns_list=["hyo2.openbst", ])
 logger = logging.getLogger(__name__)

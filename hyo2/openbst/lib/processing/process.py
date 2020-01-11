@@ -8,8 +8,9 @@ from pathlib import Path
 from hyo2.openbst.lib.nc_helper import NetCDFHelper
 from hyo2.openbst.lib.processing.parameters import Parameters
 from hyo2.openbst.lib.processing.process_management.process_manager import ProcessManager
-from hyo2.openbst.lib.processing.process_types.raw_decoding import RawDecoding
-from hyo2.openbst.lib.processing.process_types.static_gain_compensation import StaticGainCorrection
+from hyo2.openbst.lib.processing.process_methods.dicts import ProcessMethods
+from hyo2.openbst.lib.processing.process_methods.raw_decoding import RawDecoding
+from hyo2.openbst.lib.processing.process_methods.static_gain_compensation import StaticGainCorrection
 
 logger = logging.getLogger(__name__)
 
@@ -69,62 +70,15 @@ class Process:
         # self.parent_process = process_string
         return True
 
-    # ## Processing Methods ##
-    def raw_decode(self, process_file_path: Path, raw_path: Path, parameters: Parameters):
-        # create nc objects
-        ds_process = Dataset(filename=process_file_path, mode='a')
-        ds_raw = Dataset(filename=raw_path, mode='a')
-        params_raw_decode = parameters.rawdecode
-
-        # check processing chain history
-        has_been_processd = self.proc_manager.start_process(nc_process=ds_process,
-                                                            process_identifiers=params_raw_decode.process_identifiers())
-        if has_been_processd is True:
-            return True
-
-        # Calculate the raw decode step
-        bs_raw_decode = RawDecoding.decode(ds_raw=ds_raw, parameters=params_raw_decode)
-        ds_raw.close()
-
-        # Write data to nc file
-
-        nc_process_name = "%02d" % initial_step + '__' + process_name_hash
-        grp_process = ds_process.createGroup(nc_process_name)
-        grp_process.parent_process = ''
-        process_written = RawDecoding.write_data_to_nc(data_dict=bs_raw_decode, grp_process=grp_process)
-
-        if process_written is False:
-            raise RuntimeError("Error occurred writing to file!")
-
-        attributes_written = params_raw_decode.nc_write_parameters(grp_process=grp_process)
-        if attributes_written is False:
-            raise RuntimeError("Error occured writing to file!")
-
-        # store and update nc files
-        process_logged = self.store_process(nc=ds_process, process_string=nc_process_name)
-        if process_logged is False:
-            raise RuntimeError("Error updating process string")
-
-        return True
-
-    def static_gain_correction(self, process_file_path: Path, raw_path: Path, parameters: Parameters):
-        # create nc objects
+    def run_process(self, process_type: ProcessMethods, process_file_path: Path, raw_path: Path, parameters: Parameters):
+        # Create the nc objects for reading
         ds_process = Dataset(filename=process_file_path, mode='r')
         ds_raw = Dataset(filename=raw_path, mode='r')
-        params_static_gain = parameters.static_gains
 
-        # check processing chain history
-        has_been_processed = self.proc_manager.start_process(nc_process=ds_process,
-                                                             process_identifiers=params_static_gain.process_identifiers())
+        # Grab the appropriate parameters object for the task
+        params_object = parameters.get_process_params(process_type=process_type)
+
+        # Check processing chain history for repeats and requirements
+        has_been_processed = self.proc_manager.start_process(nc_process=ds_process, parameter_object=parameters)
         if has_been_processed is True:
             return True
-
-        # Calculate the static gain correction
-        static_corrected = StaticGainCorrection.static_correction(ds_process=ds_process,
-                                                                  ds_raw=ds_raw,
-                                                                  parent=self.proc_manager.parent_process,
-                                                                  parameters=params_static_gain)
-        ds_raw.close()
-
-        # Write results to the nc file
-        StaticGainCorrection.write_data_to_nc(data_dict=static_corrected,)

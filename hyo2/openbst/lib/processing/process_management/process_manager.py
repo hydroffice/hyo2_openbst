@@ -3,6 +3,9 @@ import logging
 from enum import Enum
 from netCDF4 import Dataset
 
+from hyo2.openbst.lib.processing.parameters import Parameters
+from hyo2.openbst.lib.processing.process_methods.dicts import ProcessMethods, process_requirements
+
 logger = logging.getLogger(__name__)
 
 
@@ -44,11 +47,14 @@ class ProcessManager:
         self._parent = current_process
 
     # ## Processing Status Methods ##
-    def start_process(self, nc_process: Dataset, process_identifiers: list):
+    def start_process(self, process_type: ProcessMethods, nc_process: Dataset, parameter_object: Parameters):
         self._calc_in_progress = True
 
+        # Grab the relevant parameter object
+        method_params = parameter_object.get_process_params(process_type=process_type)
+
         # Check current process against stored processes
-        status = self.check_for_process(nc_process=nc_process, process_identifiers=process_identifiers)
+        status = self.check_for_process(nc_process=nc_process, process_identifiers=method_params.process_identifiers())
         if status == ProcessStageStatus.PRIORPROCESS:
             self.end_process()
             logger.info("Process ID is same as last process. Process not computed")
@@ -69,8 +75,17 @@ class ProcessManager:
             has_been_processed = False
         else:
             raise RuntimeError("Unrecognized process status: %s" % status)
+        self.generate_process_name(process_identifiers=method_params.process_identifiers())
 
-        self.generate_process_name(process_identifiers=process_identifiers)
+        # Check for required processes
+        meets_required = self.check_requirements(process_method=process_type,
+                                                 nc_process=nc_process,
+                                                 parameters_object=parameter_object)
+
+        if meets_required is False:
+            self.end_process()
+            has_been_processed = True
+
         return has_been_processed
 
     def update_process(self):
@@ -104,6 +119,33 @@ class ProcessManager:
             else:
                 return ProcessStageStatus.NEWPROCESS
 
+    def check_requirements(self, process_method: ProcessMethods, nc_process: Dataset, parameters_object: Parameters):
+        meets_required = False
+        for process, requirement in process_requirements.items():
+            if process_method == process:
+                if requirement is None:
+                    meets_required = True
+                    break
+                else:
+                    required_identifiers = parameters_object.get_process_params(requirement).process_identifiers()
+
+                    # Check if parent is required process
+                    parent_identifiers = self.get_process_identifiers(self.parent_process)
+                    if parent_identifiers[1] == required_identifiers[0]:
+                        meets_required = True
+                        break
+                    else:
+                        # Check processing tree for required process
+                        in_process_chain = self.check_process_chain(nc_process=nc_process,
+                                                                    process_identifiers=required_identifiers,
+                                                                    parent_str=self.parent_process)
+                        if in_process_chain is True:
+                            meets_required = True
+                        else:
+                            logger.warning("Process: %s has a requirement: %s\n"
+                                           "Calculate required process to run current process" % process, requirement)
+        return meets_required
+
     def generate_process_name(self, process_identifiers: list) -> str:
         if self._status == ProcessStageStatus.MODIFIEDPROCESS:
             step = self.step
@@ -122,7 +164,7 @@ class ProcessManager:
         elif self._status == ProcessStageStatus.PRIORPROCESS:
             process_name = self.parent_process
         elif self._status == ProcessStageStatus.REPEATEPROCESS:
-            logger.warn("The generated process name has not been computed. For reference only")
+            logger.warning("The generated process name has not been computed. For reference only")
             step = self.step + 1
             process_name = "%02d" % step \
                            + self.seperator + \
@@ -154,3 +196,8 @@ class ProcessManager:
             ProcessManager.check_process_chain(nc_process=nc_process,
                                                process_identifiers=process_identifiers,
                                                parent_str=nc_parent_str)
+
+    @staticmethod
+    def get_process_identifiers(process_string: str) -> list:
+        process_identifiers = process_string.split(ProcessManager.seperator)
+        return process_identifiers
