@@ -201,10 +201,23 @@ class Project:
             raw_file_path = self.raws_folder.joinpath(path_hash + self.raws.ext)
             process_file_path = self.process_folder.joinpath(path_hash + self.process.ext)
 
-            decoded = self.process.raw_decode(process_file_path=process_file_path,
-                                              raw_path=raw_file_path,
-                                              parameters=self.parameters)
-            if decoded is True:
+            processed = self.process.run_process(process_method=self.process.process_method_types.RAWDECODE,
+                                                 process_file_path=process_file_path,
+                                                 raw_path=raw_file_path,
+                                                 parameters=self.parameters)
+            if processed is True:
+                print('File Raw Decoded: %s' % process_file_path.resolve())
+
+    def static_gain_correction(self):
+        for path_hash in self.raws.raws_list:
+            raw_file_path = self.raws_folder.joinpath(path_hash + self.raws.ext)
+            process_file_path = self.process_folder.joinpath(path_hash + self.process.ext)
+
+            processed = self.process.run_process(process_method=self.process.process_method_types.STATICGAIN,
+                                                 process_file_path=process_file_path,
+                                                 raw_path=raw_file_path,
+                                                 parameters=self.parameters)
+            if processed is True:
                 print('File Raw Decoded: %s' % process_file_path.resolve())
 
     def __repr__(self) -> str:

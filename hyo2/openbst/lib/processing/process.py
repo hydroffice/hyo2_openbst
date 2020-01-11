@@ -20,6 +20,7 @@ class Process:
 
     def __init__(self, process_path: Path) -> None:
         self._path = process_path
+        self._proc_methods = ProcessMethods
         self.proc_manager = ProcessManager()
 
     @property
@@ -33,6 +34,10 @@ class Process:
             hash_path = Path(hash_file)
             raw_process_list.append(hash_path.name.split('.')[0])
         return raw_process_list
+
+    @property
+    def process_method_types(self):
+        return self._proc_methods
 
     # ## NC File Management ##
     def add_raw_process(self, path: Path) -> bool:
