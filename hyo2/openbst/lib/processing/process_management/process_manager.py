@@ -1,7 +1,7 @@
 import logging
 
 from enum import Enum
-from netCDF4 import Dataset
+from netCDF4 import Dataset, Group
 
 from hyo2.openbst.lib.processing.parameters import Parameters
 from hyo2.openbst.lib.processing.process_methods.dicts import ProcessMethods, process_requirements
@@ -15,8 +15,9 @@ class ProcessStageStatus(Enum):
     REPEATEPROCESS = 1
 
     # Not in processing chain
-    NEWPROCESS = 2
-    MODIFIEDPROCESS = 3
+    FIRSTPROCESS = 2
+    NEWPROCESS = 3
+    MODIFIEDPROCESS = 4
 
 
 class ProcessManager:
@@ -79,6 +80,11 @@ class ProcessManager:
             self._status = status
             logger.info("Process ID not in processing chain. Process computing.")
             do_process = True
+        elif status == ProcessStageStatus.FIRSTPROCESS:
+            self._calc_in_progress = True
+            self._status = status
+            logger.info("Process ID not in processing chain. Process computing")
+            do_process = True
         else:
             raise RuntimeError("Unrecognized process status: %s" % status)
         self.generate_process_name(process_identifiers=method_params.process_identifiers())
@@ -94,9 +100,17 @@ class ProcessManager:
 
         return do_process
 
-    def update_process(self):
+    def update_process(self, ds: Dataset):
+        grp_process = ds.groups[self.current_process]
+
+        if self._status == ProcessStageStatus.MODIFIEDPROCESS:
+            grp_parent = ds.groups[self.parent_process]
+            grp_process.parent_process = grp_parent.parent_process
+        else:
+            grp_process.parent_process = self.parent_process
+
         process_identifiers = self.get_process_identifiers(self.current_process)
-        self._step = process_identifiers[0]
+        self._step = int(process_identifiers[0])
         self._parent = self._cur_process
         self.end_process()
 
@@ -110,7 +124,7 @@ class ProcessManager:
 
         # Check if this is the first time processing
         if self.parent_process == '':
-            return ProcessStageStatus.NEWPROCESS
+            return ProcessStageStatus.FIRSTPROCESS
 
         # Check new process against parent process
         if process_identifiers[0] == parent_identifiers[1]:
@@ -158,14 +172,21 @@ class ProcessManager:
     def generate_process_name(self, process_identifiers: list) -> str:
         if self._status == ProcessStageStatus.MODIFIEDPROCESS:
             step = self.step
-            process_name = "%02d" % step\
+            process_name = "%02d" % step \
+                           + self.seperator + \
+                           process_identifiers[0] \
+                           + self.seperator + \
+                           process_identifiers[1]
+        elif self._status == ProcessStageStatus.FIRSTPROCESS:
+            step = 00
+            process_name = "%02d" % step \
                            + self.seperator + \
                            process_identifiers[0] \
                            + self.seperator + \
                            process_identifiers[1]
         elif self._status == ProcessStageStatus.NEWPROCESS:
             step = self.step + 1
-            process_name = "%02d" % step\
+            process_name = "%02d" % step \
                            + self.seperator + \
                            process_identifiers[0] \
                            + self.seperator + \
@@ -194,7 +215,7 @@ class ProcessManager:
         nc_parent_identifiers = nc_parent_str.split(cls.seperator)
 
         # Check if current process matches parent
-        if nc_parent_identifiers[1] == '':
+        if nc_parent_identifiers[0] == '':
             # Reached the start of processing chain, no match found
             return False
         elif nc_parent_identifiers[1] == process_identifiers[0]:

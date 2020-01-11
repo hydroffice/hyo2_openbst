@@ -43,7 +43,8 @@ class StaticGainParameters:
         parameter_string = str()
         for key, value in self.__dict__.items():
             parameter_string += key + str(value)
-        process_ids = [process_string, parameter_string]
+        parameter_hash = NetCDFHelper.hash_string(input_str=parameter_string)
+        process_ids = [process_string, parameter_hash]
         return process_ids
 
 
@@ -59,15 +60,15 @@ class StaticGainCorrection:
         grp_runtime = ds_raw.groups['runtime_settings']      # TODO: Create dictionary in raws to reference.
         var_static_gain = grp_runtime.variables['static_gain']
         data_static_gain = var_static_gain[:]
-
+        data_static_gain = data_static_gain[:, np.newaxis]
         grp_parent = ds_process.groups[parent]
         var_backscatter = grp_parent.variables['backscatter_data']
         data_backscatter = var_backscatter[:]
 
         if p_method_type is StaticGainEnum.gain_removal:
-            data_out = StaticGainCorrection.added_gain(static_gain=data_static_gain, backscatter=data_backscatter)
-        elif p_method_type is StaticGainEnum.gain_addition:
             data_out = StaticGainCorrection.subtracted_gain(static_gain=data_static_gain, backscatter=data_backscatter)
+        elif p_method_type is StaticGainEnum.gain_addition:
+            data_out = StaticGainCorrection.added_gain(static_gain=data_static_gain, backscatter=data_backscatter)
         else:
             raise TypeError("Unrecognized Static Gain Correction Method: ")
         return data_out

@@ -58,7 +58,8 @@ class RawDecodeParameters:
         parameter_string = str()
         for key, value in self.__dict__.items():
             parameter_string = parameter_string + key + str(value)
-        process_ids = [process_string, parameter_string]
+        parameter_hash = NetCDFHelper.hash_string(input_str=parameter_string)
+        process_ids = [process_string, parameter_hash]
         return process_ids
 
 

@@ -73,7 +73,7 @@ class Process:
         do_process = self.proc_manager.start_process(process_type=process_method,
                                                      nc_process=ds_process,
                                                      parameter_object=parameters)
-        if do_process is True:
+        if do_process is False:
             return True
 
         # Run the process
@@ -122,8 +122,12 @@ class Process:
         if process_written is False:
             raise RuntimeError("Something went wrong writing data")
 
+        parent_written = self.proc_manager.update_process(ds=ds_process)
+        if parent_written is False:
+            raise RuntimeError("Something went wrong writing parent data")
         NetCDFHelper.update_modified(ds=ds_process)
+
         ds_process.close()
-        self.proc_manager.update_process()
+
 
         return True

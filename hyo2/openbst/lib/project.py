@@ -218,7 +218,7 @@ class Project:
                                                  raw_path=raw_file_path,
                                                  parameters=self.parameters)
             if processed is True:
-                print('File Raw Decoded: %s' % process_file_path.resolve())
+                print('File Corrected for static gain: %s' % process_file_path.resolve())
 
     def __repr__(self) -> str:
         msg = "<%s>\n" % self.__class__.__name__
