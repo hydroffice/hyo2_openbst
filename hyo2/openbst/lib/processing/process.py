@@ -12,7 +12,7 @@ from hyo2.openbst.lib.processing.process_management.process_manager import Proce
 from hyo2.openbst.lib.processing.process_methods.dicts import ProcessMethods
 from hyo2.openbst.lib.processing.process_methods.raw_decoding import RawDecoding
 from hyo2.openbst.lib.processing.process_methods.static_gain_compensation import StaticGainCorrection
-
+from hyo2.openbst.lib.processing.process_methods.source_level import SourceLevel
 logger = logging.getLogger(__name__)
 
 
@@ -86,6 +86,11 @@ class Process:
                                                               ds_raw=ds_raw,
                                                               parent=self.proc_manager.parent_process,
                                                               parameters=method_parameters)
+        elif process_method == ProcessMethods.SOURCELEVEL:
+            data_out = SourceLevel.source_level_correction(ds_process=ds_process,
+                                                           ds_raw=ds_raw,
+                                                           parent=self.proc_manager.parent_process,
+                                                           parameters=method_parameters)
         else:
             raise RuntimeError("We realistically cannot get to this point as there is no error handling in the above"
                                "method calls")
@@ -117,6 +122,8 @@ class Process:
             process_written = RawDecoding.write_data_to_nc(data_dict=data, grp_process=grp_process)
         elif process_method == ProcessMethods.STATICGAIN:
             process_written = StaticGainCorrection.write_data_to_nc(data_dict=data, grp_process=grp_process)
+        elif process_method == ProcessMethods.SOURCELEVEL:
+            process_written = SourceLevel.write_data_to_nc(data_dict=data, grp_process=grp_process)
         else:
             raise RuntimeError("Unrecognized processing method type: %s" % process_method)
 
