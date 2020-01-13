@@ -44,7 +44,7 @@ class Project:
 
         self._i = ProjectInfo(prj_path=self._path)
         self._r = Raws(raws_path=self.raws_folder)
-        self._p = Process(process_path=self.process_folder)
+        self._p = Process(process_path=self.process_folder, parent_process=self.info.process_group.parent_process)
         self._healthy = False
         self.check_health()
 
@@ -201,11 +201,26 @@ class Project:
             raw_file_path = self.raws_folder.joinpath(path_hash + self.raws.ext)
             process_file_path = self.process_folder.joinpath(path_hash + self.process.ext)
 
-            decoded = self.process.raw_decode(process_file_path=process_file_path,
-                                              raw_path=raw_file_path,
-                                              parameters=self.parameters)
-            if decoded is True:
+            processed = self.process.run_process(process_method=self.process.process_method_types.RAWDECODE,
+                                                 process_file_path=process_file_path,
+                                                 raw_path=raw_file_path,
+                                                 parameters=self.parameters)
+            if processed is True:
+                self.info.manage_parent(parent=self.process.proc_manager.parent_process)
                 print('File Raw Decoded: %s' % process_file_path.resolve())
+
+    def static_gain_correction(self):
+        for path_hash in self.raws.raws_list:
+            raw_file_path = self.raws_folder.joinpath(path_hash + self.raws.ext)
+            process_file_path = self.process_folder.joinpath(path_hash + self.process.ext)
+
+            processed = self.process.run_process(process_method=self.process.process_method_types.STATICGAIN,
+                                                 process_file_path=process_file_path,
+                                                 raw_path=raw_file_path,
+                                                 parameters=self.parameters)
+            if processed is True:
+                self.info.manage_parent(parent=self.process.proc_manager.parent_process)
+                print('File Corrected for static gain: %s' % process_file_path.resolve())
 
     def __repr__(self) -> str:
         msg = "<%s>\n" % self.__class__.__name__

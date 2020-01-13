@@ -51,17 +51,16 @@ class RawDecodeParameters:
             grp_process.sample_window_size = self.sample_window_size
             return True
         except TypeError:
-            logger.debug("Something went wrong writing attributes")
             return False
 
-    def process_string(self) -> str:
-        processing_string = RawDecodeParameters.process_name + '_'
+    def process_identifiers(self) -> list:
+        process_string = RawDecodeParameters.process_name
         parameter_string = str()
         for key, value in self.__dict__.items():
             parameter_string = parameter_string + key + str(value)
-
-        processing_string = processing_string + NetCDFHelper.hash_string(parameter_string)
-        return processing_string
+        parameter_hash = NetCDFHelper.hash_string(input_str=parameter_string)
+        process_ids = [process_string, parameter_hash]
+        return process_ids
 
 
 # ## Raw Decode Class and methods ##
@@ -93,7 +92,7 @@ class RawDecoding:
             bs_raw_decode = RawDecoding.perbeam_bs_from_beam_average(raw_bathy=grp_raw_bathy)
 
         else:
-            raise TypeError("Unrecognized Raw Decode Method: %s")
+            raise TypeError("Unrecognized Raw Decode Method: %s")   # TODO: Fix the error message
 
         data_out = {
             'backscatter_data': bs_raw_decode
@@ -105,8 +104,8 @@ class RawDecoding:
         try:
             for data_name, data in data_dict.items():
                 if data_name == 'backscatter_data':
-                    dim_ping = grp_process.createDimension(dimname='ping', size=None)
-                    dim_beam = grp_process.createDimension(dimname='beam', size=None)
+                    grp_process.createDimension(dimname='ping', size=None)
+                    grp_process.createDimension(dimname='beam', size=None)
                     var_bs_data = grp_process.createVariable(varname='backscatter_data',
                                                              datatype='f8',
                                                              dimensions=('ping', 'beam'))
@@ -114,7 +113,6 @@ class RawDecoding:
 
             return True
         except RuntimeError:
-            logger.debug("Something went wrong writing data to nc file")
             return False
 
     # ## Processing Method Types ##

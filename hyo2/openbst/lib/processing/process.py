@@ -4,42 +4,29 @@ import os
 
 from netCDF4 import Dataset
 from pathlib import Path
+from typing import Optional
 
 from hyo2.openbst.lib.nc_helper import NetCDFHelper
 from hyo2.openbst.lib.processing.parameters import Parameters
-from hyo2.openbst.lib.processing.raw_decoding import RawDecoding
+from hyo2.openbst.lib.processing.process_management.process_manager import ProcessManager
+from hyo2.openbst.lib.processing.process_methods.dicts import ProcessMethods
+from hyo2.openbst.lib.processing.process_methods.raw_decoding import RawDecoding
+from hyo2.openbst.lib.processing.process_methods.static_gain_compensation import StaticGainCorrection
 
 logger = logging.getLogger(__name__)
 
 
 class Process:
-
     ext = ".nc"
 
-    def __init__(self, process_path: Path) -> None:
+    def __init__(self, process_path: Path, parent_process: Optional[str]) -> None:
         self._path = process_path
-        self._step = 00
-        self._prior_process = ''
+        self._proc_methods = ProcessMethods
+        self.proc_manager = ProcessManager(parent_process)
 
     @property
     def path(self) -> Path:
         return self._path
-
-    @property
-    def step(self) -> int:
-        return self._step
-
-    @step.setter
-    def step(self, step):
-        self._step = step
-
-    @property
-    def prior_process(self) -> str:
-        return self._prior_process
-
-    @prior_process.setter
-    def prior_process(self, current_process):
-        self._prior_process = current_process
 
     @property
     def raw_process_list(self) -> list:
@@ -48,6 +35,10 @@ class Process:
             hash_path = Path(hash_file)
             raw_process_list.append(hash_path.name.split('.')[0])
         return raw_process_list
+
+    @property
+    def process_method_types(self):
+        return self._proc_methods
 
     # ## NC File Management ##
     def add_raw_process(self, path: Path) -> bool:
@@ -73,69 +64,69 @@ class Process:
             logger.info("raw .nc deleted for file: %s" % str(path.resolve()))
             return True
 
-    def store_process(self, nc: Dataset, process_string: str) -> bool:
-        NetCDFHelper.update_modified(ds=nc)
-        nc.close()
+    def run_process(self, process_method: ProcessMethods, process_file_path: Path, raw_path: Path,
+                    parameters: Parameters):
+        # Create the nc objects for reading
+        ds_process = Dataset(filename=process_file_path, mode='r')
+        ds_raw = Dataset(filename=raw_path, mode='r')
 
-        if process_string.split('_')[0] == '00':
-            self.step = 0
+        # Check processing chain history for repeats and requirements
+        do_process = self.proc_manager.start_process(process_type=process_method,
+                                                     nc_process=ds_process,
+                                                     parameter_object=parameters)
+        if do_process is False:
+            return True
+
+        # Run the process
+        method_parameters = parameters.get_process_params(process_type=process_method)
+        if process_method == ProcessMethods.RAWDECODE:
+            data_out = RawDecoding.decode(ds_raw=ds_raw, parameters=method_parameters)
+        elif process_method == ProcessMethods.STATICGAIN:
+            data_out = StaticGainCorrection.static_correction(ds_process=ds_process,
+                                                              ds_raw=ds_raw,
+                                                              parent=self.proc_manager.parent_process,
+                                                              parameters=method_parameters)
         else:
-            self.step += 1
+            raise RuntimeError("We realistically cannot get to this point as there is no error handling in the above"
+                               "method calls")
 
-        self.prior_process = process_string
+        ds_process.close()
+        ds_raw.close()
+
+        # Store the process
+        process_written = self.store_process(process_method=process_method,
+                                             nc_process_file=process_file_path,
+                                             parameters=method_parameters,
+                                             data=data_out)
+
         return True
 
-    @staticmethod
-    def check_raw_process(nc_process: Dataset, process_string: str) -> bool:
-        processed = False
+    def store_process(self, process_method: ProcessMethods, nc_process_file: Path, parameters, data: dict) -> bool:
+        ds_process = Dataset(filename=nc_process_file, mode='a')
 
-        grp_list = nc_process.groups
-        if len(grp_list) != 0:
-            for nc_process_step, _ in grp_list.items():
-                nc_process_string = nc_process_step.split('_')
-                if nc_process_string == process_string:
-                    processed = True
-                    break
+        # create new group
+        grp_process = ds_process.createGroup(self.proc_manager.current_process)
 
-        return processed
+        # Store the parameters as group attributes
+        attributes_written = parameters.nc_write_parameters(grp_process=grp_process)
+        if attributes_written is False:
+            raise RuntimeError("Something went wrong writing attributes")
 
-    # ## Processing Methods ##
-    def raw_decode(self, process_file_path: Path, raw_path: Path, parameters: Parameters):
-        # create nc objects
-        ds_process = Dataset(filename=process_file_path, mode='a')
-        ds_raw = Dataset(filename=raw_path, mode='a')
-
-        params_raw_decode = parameters.rawdecode
-
-        # check process has not been calculated before
-        process_name_str = params_raw_decode.process_string()
-        has_been_processd = self.check_raw_process(nc_process=ds_process, process_string=process_name_str)
-
-        if has_been_processd is True:
-            logger.debug("Processing step has been computed prior")
-            return True
+        # Store the process
+        if process_method == ProcessMethods.RAWDECODE:
+            process_written = RawDecoding.write_data_to_nc(data_dict=data, grp_process=grp_process)
+        elif process_method == ProcessMethods.STATICGAIN:
+            process_written = StaticGainCorrection.write_data_to_nc(data_dict=data, grp_process=grp_process)
         else:
+            raise RuntimeError("Unrecognized processing method type: %s" % process_method)
 
-            bs_raw_decode = RawDecoding.decode(ds_raw=ds_raw, parameters=params_raw_decode)
+        if process_written is False:
+            raise RuntimeError("Something went wrong writing data")
 
-            # Write data to nc file
-            initial_step = 0
-            nc_process_name = "%02d" % initial_step + '_' + process_name_str
-            grp_process = ds_process.createGroup(nc_process_name)
-            process_written = RawDecoding.write_data_to_nc(data_dict=bs_raw_decode, grp_process=grp_process)
+        parent_written = self.proc_manager.update_process(ds=ds_process)
+        if parent_written is False:
+            raise RuntimeError("Something went wrong writing parent data")
+        NetCDFHelper.update_modified(ds=ds_process)
 
-            ds_raw.close()
-
-            if process_written is False:
-                raise RuntimeError("Error occurred writing to file!")
-
-            attributes_written = params_raw_decode.nc_write_parameters(grp_process=grp_process)
-            if attributes_written is False:
-                raise RuntimeError("Error occured writing to file!")
-
-            # store and update nc files
-            process_logged = self.store_process(nc=ds_process, process_string=nc_process_name)
-            if process_logged is False:
-                raise RuntimeError("Error updating process string")
-
-            return True
+        ds_process.close()
+        return True
