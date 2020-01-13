@@ -4,8 +4,8 @@ import numpy as np
 from enum import Enum
 from netCDF4 import Dataset, Group
 
-
 from hyo2.openbst.lib.nc_helper import NetCDFHelper
+
 logger = logging.getLogger(__name__)
 
 
