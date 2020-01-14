@@ -22,8 +22,7 @@ class Setup:
                                           setup_name=name)
 
         if force_setup_creation is True:
-            if self._path.exists():
-                os.remove(str(self._path.resolve()))
+            self.remove_nc_file()
 
         self._prj_name = prj_name
         self._ds = None
@@ -84,6 +83,13 @@ class Setup:
 
     def updated(self):
         NetCDFHelper.update_modified(self._ds)
+
+    def remove_nc_file(self):
+        if self._ds:
+            self._ds.close()
+            self._ds = None
+            if self._path.exists():
+                os.remove(str(self._path.resolve()))
 
     @classmethod
     def make_setup_name(cls, setup_name: str) -> str:

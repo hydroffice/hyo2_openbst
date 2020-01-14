@@ -31,6 +31,8 @@ class Project:
         # delete project if force variable is true
         if force_prj_creation is True:
             if prj_path.exists() is True:
+                self._i = ProjectInfo(prj_path=self._path)
+                self._i.remove_nc_file()
                 shutil.rmtree(str(prj_path))
 
         prj_path.mkdir(parents=True, exist_ok=True)

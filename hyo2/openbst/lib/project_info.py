@@ -127,6 +127,12 @@ class ProjectInfo:
     def updated(self):
         NetCDFHelper.update_modified(self._ds)
 
+    def remove_nc_file(self):
+        if self._ds:
+            self._ds.close()
+            self._ds = None
+            if self._path.exists():
+                os.remove(str(self._path.resolve()))
     # # ### RAWS ###
 
     def add_raw(self, path: Path) -> bool:
