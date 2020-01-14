@@ -12,6 +12,7 @@ from hyo2.openbst.lib import lib_info
 from hyo2.openbst.lib.nc_helper import NetCDFHelper
 from hyo2.openbst.lib.project_info import ProjectInfo
 from hyo2.openbst.lib.processing.process import Process
+from hyo2.openbst.lib.processing.parameters import Parameters
 from hyo2.openbst.lib.raw.raws import Raws
 logger = logging.getLogger(__name__)
 
@@ -30,6 +31,8 @@ class Project:
         # delete project if force variable is true
         if force_prj_creation is True:
             if prj_path.exists() is True:
+                self._i = ProjectInfo(prj_path=prj_path)
+                self._i.remove_nc_file()
                 shutil.rmtree(str(prj_path))
 
         prj_path.mkdir(parents=True, exist_ok=True)
@@ -43,9 +46,11 @@ class Project:
 
         self._i = ProjectInfo(prj_path=self._path)
         self._r = Raws(raws_path=self.raws_folder)
-        self._p = Process(process_path=self.process_folder)
+        self._p = Process(process_path=self.process_folder, parent_process=self.info.process_group.parent_process)
         self._healthy = False
         self.check_health()
+
+        self.parameters = Parameters()
 
     @property
     def healthy(self) -> bool:
@@ -191,6 +196,46 @@ class Project:
         txt += "  <path: %s>\n" % self.path
         txt += "  <raws: %d>\n" % len(self.info.valid_raws)
         return txt
+
+    # ### Process ###
+    def raw_decode(self):
+        for path_hash in self.raws.raws_list:
+            raw_file_path = self.raws_folder.joinpath(path_hash + self.raws.ext)
+            process_file_path = self.process_folder.joinpath(path_hash + self.process.ext)
+
+            processed = self.process.run_process(process_method=self.process.process_method_types.RAWDECODE,
+                                                 process_file_path=process_file_path,
+                                                 raw_path=raw_file_path,
+                                                 parameters=self.parameters)
+            if processed is True:
+                self.info.manage_parent(parent=self.process.proc_manager.parent_process)
+                print('File Raw Decoded: %s' % process_file_path.resolve())
+
+    def static_gain_correction(self):
+        for path_hash in self.raws.raws_list:
+            raw_file_path = self.raws_folder.joinpath(path_hash + self.raws.ext)
+            process_file_path = self.process_folder.joinpath(path_hash + self.process.ext)
+
+            processed = self.process.run_process(process_method=self.process.process_method_types.STATICGAIN,
+                                                 process_file_path=process_file_path,
+                                                 raw_path=raw_file_path,
+                                                 parameters=self.parameters)
+            if processed is True:
+                self.info.manage_parent(parent=self.process.proc_manager.parent_process)
+                print('File Corrected for static gain: %s' % process_file_path.resolve())
+
+    def source_level_correction(self):
+        for path_hash in self.raws.raws_list:
+            raw_file_path = self.raws_folder.joinpath(path_hash + self.raws.ext)
+            process_file_path = self.process_folder.joinpath(path_hash + self.process.ext)
+
+            processed = self.process.run_process(process_method=self.process.process_method_types.SOURCELEVEL,
+                                                 process_file_path=process_file_path,
+                                                 raw_path=raw_file_path,
+                                                 parameters=self.parameters)
+            if processed is True:
+                self.info.manage_parent(parent=self.process.proc_manager.parent_process)
+                print('File Corrected for static gain: %s' % process_file_path.resolve())
 
     def __repr__(self) -> str:
         msg = "<%s>\n" % self.__class__.__name__

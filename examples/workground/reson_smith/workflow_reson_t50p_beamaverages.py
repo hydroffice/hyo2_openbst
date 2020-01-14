@@ -409,7 +409,7 @@ def run(raw_input, calib_input):
 
 if __name__ == '__main__':
 
-    raw_path = Path(__file__).parents[3].joinpath('data', 'download', 'reson', '20190321_185116.s7k')
+    raw_path = Path(__file__).parents[3].joinpath('data', 'download', 'reson', '20190730_144835.s7k')
     if not raw_path.exists():
         raise RuntimeError("unable to locate: %s" % raw_path)
 

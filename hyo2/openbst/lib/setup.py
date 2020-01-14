@@ -21,14 +21,15 @@ class Setup:
         self._path = self.make_setup_path(setups_folder=self._setups_folder,
                                           setup_name=name)
 
-        if force_setup_creation is True:
-            if self._path.exists():
-                os.remove(str(self._path.resolve()))
-
         self._prj_name = prj_name
         self._ds = None
         self._time = None
+
+        if force_setup_creation is True:
+            self.remove_nc_file()
+
         self._nc()
+
 
     @property
     def path(self) -> Path:
@@ -84,6 +85,13 @@ class Setup:
 
     def updated(self):
         NetCDFHelper.update_modified(self._ds)
+
+    def remove_nc_file(self):
+        if self._ds:
+            self._ds.close()
+            self._ds = None
+            if self._path.exists():
+                os.remove(str(self._path.resolve()))
 
     @classmethod
     def make_setup_name(cls, setup_name: str) -> str:
