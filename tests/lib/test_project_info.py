@@ -1,4 +1,5 @@
 from copy import deepcopy
+from time import sleep
 from datetime import datetime
 from pathlib import Path
 import unittest
@@ -39,6 +40,7 @@ class TestLibProjectInfo(unittest.TestCase):
     def test_modified(self):
         pi = ProjectInfo(prj_path=self.prj_path)
         mod = deepcopy(pi.modified)
+        sleep(1)
         self.assertGreater(mod, datetime(1970, 1, 1))
         pi.updated()
         self.assertTrue(mod != pi.modified)

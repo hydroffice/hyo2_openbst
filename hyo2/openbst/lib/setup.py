@@ -21,13 +21,15 @@ class Setup:
         self._path = self.make_setup_path(setups_folder=self._setups_folder,
                                           setup_name=name)
 
-        if force_setup_creation is True:
-            self.remove_nc_file()
-
         self._prj_name = prj_name
         self._ds = None
         self._time = None
+
+        if force_setup_creation is True:
+            self.remove_nc_file()
+
         self._nc()
+
 
     @property
     def path(self) -> Path:

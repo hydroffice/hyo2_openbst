@@ -1,5 +1,5 @@
 import logging
-
+import os
 from datetime import datetime
 from pathlib import Path
 from netCDF4 import Dataset, Group, num2date
@@ -133,6 +133,7 @@ class ProjectInfo:
             self._ds = None
             if self._path.exists():
                 os.remove(str(self._path.resolve()))
+
     # # ### RAWS ###
 
     def add_raw(self, path: Path) -> bool:
