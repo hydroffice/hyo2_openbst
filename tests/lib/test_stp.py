@@ -1,5 +1,6 @@
 from datetime import datetime
 from pathlib import Path
+from time import sleep
 import unittest
 
 from hyo2.abc.lib.testing_paths import TestingPaths
@@ -57,6 +58,7 @@ class TestLibSetup(unittest.TestCase):
                       setups_folder=OpenBST.setups_folder(),
                       force_setup_creation=True)
         self.assertGreater(setup.modified, datetime(1970, 1, 1))
+        sleep(1)
         setup.updated()
         self.assertGreater(setup.modified, setup.created)
         setup.remove_nc_file()
