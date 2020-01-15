@@ -30,11 +30,8 @@ class SourceLevelParameters:
 
     def nc_write_parameters(self, grp_process: Group):
         try:
-            for method_enum in SourceLevelEnum:
-                if self.method_type == method_enum:
-                    grp_process.title = source_level_title[method_enum]
-                    grp_process.method_type = method_enum.name
-                    break
+            grp_process.title = source_level_title[self.method_type]
+            grp_process.method_type = self.method_type.name
             return True
         except TypeError:
             return False
@@ -49,6 +46,7 @@ class SourceLevelParameters:
         return process_ids
 
 
+# ## Source Level class and methods ##
 class SourceLevel:
 
     def __init__(self):
@@ -89,6 +87,7 @@ class SourceLevel:
         except RuntimeError:
             return False
 
+    # # Processing Method Types #
     @classmethod
     def subtract_gain(cls, source_level: np.ma.MaskedArray, backscatter: np.ma.MaskedArray):
         bs_corrected = backscatter - source_level

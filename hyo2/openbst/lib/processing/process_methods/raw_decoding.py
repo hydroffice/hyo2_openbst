@@ -42,11 +42,8 @@ class RawDecodeParameters:
 
     def nc_write_parameters(self, grp_process: Group):
         try:
-
-            for enum_value, enum_string in raw_decod_enum.items():
-                if self.method_type == enum_value:
-                    grp_process.method_type = enum_string
-                    break
+            grp_process.title = raw_decode_title[self.method_type]
+            grp_process.method_type = self.method_type.name
             grp_process.use_window = str(self.use_window)
             grp_process.sample_window_size = self.sample_window_size
             return True

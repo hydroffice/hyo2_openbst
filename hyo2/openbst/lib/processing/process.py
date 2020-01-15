@@ -79,18 +79,24 @@ class Process:
 
         # Run the process
         method_parameters = parameters.get_process_params(process_type=process_method)
-        if process_method == ProcessMethods.RAWDECODE:
-            data_out = RawDecoding.decode(ds_raw=ds_raw, parameters=method_parameters)
-        elif process_method == ProcessMethods.STATICGAIN:
+        if process_method is ProcessMethods.RAWDECODE:
+            data_out = RawDecoding.decode(ds_raw=ds_raw,
+                                          parameters=method_parameters)
+        elif process_method is ProcessMethods.STATICGAIN:
             data_out = StaticGainCorrection.static_correction(ds_process=ds_process,
                                                               ds_raw=ds_raw,
                                                               parent=self.proc_manager.parent_process,
                                                               parameters=method_parameters)
-        elif process_method == ProcessMethods.SOURCELEVEL:
+        elif process_method is ProcessMethods.SOURCELEVEL:
             data_out = SourceLevel.source_level_correction(ds_process=ds_process,
                                                            ds_raw=ds_raw,
                                                            parent=self.proc_manager.parent_process,
                                                            parameters=method_parameters)
+        elif process_method is ProcessMethods.TVG:
+            data_out = Tvg.tvg_correction(ds_process=ds_process,
+                                          ds_raw=ds_raw,
+                                          parent=self.proc_manager.parent_process,
+                                          parameters=method_parameters)
         else:
             raise RuntimeError("We realistically cannot get to this point as there is no error handling in the above"
                                "method calls")
@@ -118,12 +124,14 @@ class Process:
             raise RuntimeError("Something went wrong writing attributes")
 
         # Store the process
-        if process_method == ProcessMethods.RAWDECODE:
+        if process_method is ProcessMethods.RAWDECODE:
             process_written = RawDecoding.write_data_to_nc(data_dict=data, grp_process=grp_process)
-        elif process_method == ProcessMethods.STATICGAIN:
+        elif process_method is ProcessMethods.STATICGAIN:
             process_written = StaticGainCorrection.write_data_to_nc(data_dict=data, grp_process=grp_process)
-        elif process_method == ProcessMethods.SOURCELEVEL:
+        elif process_method is ProcessMethods.SOURCELEVEL:
             process_written = SourceLevel.write_data_to_nc(data_dict=data, grp_process=grp_process)
+        elif process_method is ProcessMethods.TVG:
+            process_written = Tvg.write_data_to_nc(data_dict=data, grp_process=grp_process)
         else:
             raise RuntimeError("Unrecognized processing method type: %s" % process_method)
 

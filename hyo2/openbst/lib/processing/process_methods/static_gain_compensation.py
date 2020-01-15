@@ -29,11 +29,8 @@ class StaticGainParameters:
 
     def nc_write_parameters(self, grp_process: Group):
         try:
-            for method_enum in StaticGainEnum:
-                if self.method_type == method_enum:
-                    grp_process.title = static_gain_title[method_enum]
-                    grp_process.method_type = method_enum.name
-                    break
+            grp_process.title = static_gain_title[self.method_type]
+            grp_process.method_type = self.method_type.name
             return True
         except TypeError:
             return False
@@ -48,6 +45,7 @@ class StaticGainParameters:
         return process_ids
 
 
+# ## Static Gain class and methods ##
 class StaticGainCorrection:
 
     def __init__(self):
@@ -89,7 +87,7 @@ class StaticGainCorrection:
         except RuntimeError:
             return False
 
-    # ## Processing Methods ##
+    # # Processing Method Types #
     @classmethod
     def added_gain(cls, static_gain: np.ma.MaskedArray, backscatter: np.ma.MaskedArray):
         bs_corrected = backscatter + static_gain
