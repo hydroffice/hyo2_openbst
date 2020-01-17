@@ -123,17 +123,22 @@ class RawImport:
 
         tvg = raw.get_datagram(dg_type=ResonDatagrams.TVG)
         times_tvg = [dg_tvg.time for dg_tvg in tvg]
+        max_samples_in_curve = max([len(dg_tvg.tvg_curve) for dg_tvg in tvg])
 
         grp_tvg = ds.createGroup("time_varying_gain")
         grp_tvg.createDimension(dimname="ping", size=None)
+        grp_tvg.createDimension(dimname="sample", size=max_samples_in_curve)
 
         var_time = grp_tvg.createVariable(varname="time", datatype="f8", dimensions=("ping",))
         var_time[:] = times_tvg
-        vlen_tvg = grp_tvg.createVLType(datatype="f4", datatype_name="tvg_variable_length")
-        var_tvg = grp_tvg.createVariable(varname="tvg", datatype=vlen_tvg, dimensions=("ping",))
+
+        var_tvg_curve = grp_tvg.createVariable(varname="tvg_curves", datatype='f8', dimensions=("ping", "sample"))
+        # vlen_tvg = grp_tvg.createVLType(datatype="f4", datatype_name="tvg_variable_length")
+        # var_tvg = grp_tvg.createVariable(varname="tvg", datatype=vlen_tvg, dimensions=("ping",))
+
         for ping in range(len(tvg)):
-            tvg_curve = np.asarray(tvg[ping].tvg_curve, dtype="f4")
-            var_tvg[ping] = tvg_curve
+            tvg_curve = np.asarray(tvg[ping].tvg_curve, dtype="f8")
+            var_tvg_curve[ping, 0:len(tvg_curve)] = tvg_curve
 
         NetCDFHelper.update_modified(ds=ds)
         return True

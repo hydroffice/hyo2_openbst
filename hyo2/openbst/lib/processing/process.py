@@ -79,7 +79,7 @@ class Process:
 
         # Run the process
         method_parameters = parameters.get_process_params(process_type=process_method)
-        if process_method is ProcessMethods.RAWDECODE:
+        if process_method == ProcessMethods.RAWDECODE:
             data_out = RawDecoding.decode(ds_raw=ds_raw,
                                           parameters=method_parameters)
         elif process_method is ProcessMethods.STATICGAIN:
