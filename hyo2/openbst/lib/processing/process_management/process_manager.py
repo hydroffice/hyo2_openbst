@@ -107,13 +107,13 @@ class ProcessManager:
             raise RuntimeError("Unrecognized process status: %s" % status)
 
         # Check for required processes
-        meets_required = self.check_requirements(process_method=process_type,
-                                                 nc_process=nc_process,
-                                                 parameters_object=parameter_object)
-
-        if meets_required is False:
-            self.end_process()
-            do_process = False
+        if do_process is True:
+            meets_required = self.check_requirements(process_method=process_type,
+                                                     nc_process=nc_process,
+                                                     parameters_object=parameter_object)
+            if meets_required is False:
+                self.end_process()
+                do_process = False
 
         return do_process
 
@@ -240,9 +240,10 @@ class ProcessManager:
             return True
         else:
             # Process not in current parent, search next parent
-            ProcessManager.check_process_chain(nc_process=nc_process,
-                                               process_identifiers=process_identifiers,
-                                               parent_str=nc_parent_str)
+            in_chain = ProcessManager.check_process_chain(nc_process=nc_process,
+                                                          process_identifiers=process_identifiers,
+                                                          parent_str=nc_parent_str)
+            return in_chain
 
     @staticmethod
     def get_process_identifiers(process_string: str) -> list:

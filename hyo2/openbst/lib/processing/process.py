@@ -75,7 +75,9 @@ class Process:
                                                      nc_process=ds_process,
                                                      parameter_object=parameters)
         if do_process is False:
-            return True
+            ds_raw.close()
+            ds_process.close()
+            return False
 
         # Run the process
         method_parameters = parameters.get_process_params(process_type=process_method)
@@ -99,7 +101,7 @@ class Process:
                                           parameters=method_parameters)
         else:
             raise RuntimeError("We realistically cannot get to this point as there is no error handling in the above"
-                               "method calls")
+                               "method calls")  # TODO: Impliment error handling
 
         ds_process.close()
         ds_raw.close()
