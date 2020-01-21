@@ -125,6 +125,7 @@ class Process:
         if attributes_written is False:
             raise RuntimeError("Something went wrong writing attributes")
 
+        # TODO: I feel like there is a better way than these massive if/elif statements
         # Store the process
         if process_method is ProcessMethods.RAWDECODE:
             process_written = RawDecoding.write_data_to_nc(data_dict=data, grp_process=grp_process)
@@ -140,7 +141,7 @@ class Process:
         if process_written is False:
             raise RuntimeError("Something went wrong writing data")
 
-        parent_written = self.proc_manager.update_process(ds=ds_process)
+        parent_written = self.proc_manager.finalize_process(ds=ds_process)
         if parent_written is False:
             raise RuntimeError("Something went wrong writing parent data")
         NetCDFHelper.update_modified(ds=ds_process)

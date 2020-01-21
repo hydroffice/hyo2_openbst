@@ -21,7 +21,8 @@ class ProcessStageStatus(Enum):
 
 
 class ProcessManager:
-    seperator = '__'
+    proc_seperator = '__'
+    child_seperator = '//'
 
     def __init__(self, parent_process: str):
         self._step = 00
@@ -43,6 +44,10 @@ class ProcessManager:
     @property
     def parent_process(self) -> str:
         return self._parent
+
+    @property
+    def calculation_in_progress(self):
+        return self._calc_in_progress
 
     @parent_process.setter
     def parent_process(self, process_string):
@@ -117,14 +122,17 @@ class ProcessManager:
 
         return do_process
 
-    def update_process(self, ds: Dataset):
-        grp_process = ds.groups[self.current_process]
+    def finalize_process(self, ds: Dataset):
+        # TODO: Error Handling: This will fail if the cur_process group not yet written to nc. Need try/except clause
 
-        if self._status == ProcessStageStatus.MODIFIEDPROCESS:
-            grp_parent = ds.groups[self.parent_process]
-            grp_process.parent_process = grp_parent.parent_process
-        else:
-            grp_process.parent_process = self.parent_process
+        # Write parent meta data
+        parent_written = self.write_parent(ds=ds)
+
+        # Write children meta data.
+        children_written = self.write_children(ds=ds)
+
+        if children_written is False or parent_written is False:
+            raise RuntimeError('Something went wrong writing parent/children')
 
         process_identifiers = self.get_process_identifiers(self.current_process)
         self._step = int(process_identifiers[0])
@@ -136,8 +144,55 @@ class ProcessManager:
         self._status = None
         self._cur_process = None
 
+    # # NC files methods
+    def write_parent(self, ds: Dataset):
+        grp_process = ds.groups[self.current_process]
+        if self._status == ProcessStageStatus.FIRSTPROCESS or self._status == ProcessStageStatus.NEWPROCESS:
+            grp_process.parent_process = self.parent_process
+
+        elif self._status == ProcessStageStatus.REPEATEPROCESS or self._status == ProcessStageStatus.PRIORPROCESS:
+            pass
+
+        elif self._status == ProcessStageStatus.MODIFIEDPROCESS:
+            grp_parent = ds.groups[self.parent_process]
+            grp_process.parent_process = grp_parent.parent_process
+
+        else:
+            raise TypeError('%s is not of enum type %s' % (self._status, ProcessStageStatus))
+
+        return True
+
+    def write_children(self, ds: Dataset):
+        grp_process = ds.groups[self.current_process]
+        child_str = self.child_seperator + self.current_process
+
+        if self._status == ProcessStageStatus.FIRSTPROCESS:
+            grp_process.children_process = str()
+
+        elif self._status == ProcessStageStatus.NEWPROCESS:
+            grp_parent = ds.groups[self.parent_process]
+            grp_parent.children_process += child_str
+            grp_process.children_process = str()
+
+        elif self._status == ProcessStageStatus.MODIFIEDPROCESS:
+            grp_brother = ds.groups[self.parent_process]     # TODO: Confusing Nomenclature, use NetworkX to manage
+            if grp_brother.parent_process != "":
+                grp_ancestor = ds.groups[grp_brother.parent_process]
+                grp_ancestor.children_process += child_str
+
+            grp_process.children_process = str()
+
+        elif self._status == ProcessStageStatus.REPEATEPROCESS or self._status == ProcessStageStatus.PRIORPROCESS:
+            pass
+
+        else:
+            raise TypeError('%s is not of enum type %s' % (self._status, ProcessStageStatus))
+
+        return True
+
+    # # Support Methods #
     def check_for_process(self, nc_process: Dataset, process_identifiers: list) -> ProcessStageStatus:
-        parent_identifiers = self.parent_process.split(self.seperator)
+        parent_identifiers = self.parent_process.split(self.proc_seperator)
 
         # Check if this is the first time processing
         if self.parent_process == '':
@@ -190,23 +245,23 @@ class ProcessManager:
         if self._status == ProcessStageStatus.MODIFIEDPROCESS:
             step = self.step
             process_name = "%02d" % step \
-                           + self.seperator + \
+                           + self.proc_seperator + \
                            process_identifiers[0] \
-                           + self.seperator + \
+                           + self.proc_seperator + \
                            process_identifiers[1]
         elif self._status == ProcessStageStatus.FIRSTPROCESS:
             step = 00
             process_name = "%02d" % step \
-                           + self.seperator + \
+                           + self.proc_seperator + \
                            process_identifiers[0] \
-                           + self.seperator + \
+                           + self.proc_seperator + \
                            process_identifiers[1]
         elif self._status == ProcessStageStatus.NEWPROCESS:
             step = self.step + 1
             process_name = "%02d" % step \
-                           + self.seperator + \
+                           + self.proc_seperator + \
                            process_identifiers[0] \
-                           + self.seperator + \
+                           + self.proc_seperator + \
                            process_identifiers[1]
         elif self._status == ProcessStageStatus.PRIORPROCESS:
             process_name = self.parent_process
@@ -214,9 +269,9 @@ class ProcessManager:
             logger.warning("The generated process name has not been computed. For reference only")
             step = self.step + 1
             process_name = "%02d" % step \
-                           + self.seperator + \
+                           + self.proc_seperator + \
                            process_identifiers[0] \
-                           + self.seperator + \
+                           + self.proc_seperator + \
                            process_identifiers[1]
         else:
             raise RuntimeError("Unknown process status: %s" % self._status)
@@ -229,7 +284,7 @@ class ProcessManager:
         # Find grp_process that matches current parent
         grp_prior = nc_process.groups[parent_str]
         nc_parent_str = grp_prior.parent_process
-        nc_parent_identifiers = nc_parent_str.split(cls.seperator)
+        nc_parent_identifiers = nc_parent_str.split(cls.proc_seperator)
 
         # Check if current process matches parent
         if nc_parent_identifiers[0] == '':
@@ -247,5 +302,5 @@ class ProcessManager:
 
     @staticmethod
     def get_process_identifiers(process_string: str) -> list:
-        process_identifiers = process_string.split(ProcessManager.seperator)
+        process_identifiers = process_string.split(ProcessManager.proc_seperator)
         return process_identifiers
