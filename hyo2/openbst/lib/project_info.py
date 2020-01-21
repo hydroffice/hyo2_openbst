@@ -188,7 +188,7 @@ class ProjectInfo:
     def manage_parent(self, parent=None):
         if parent is None:
             try:
-                info_parent = self.process_group.parent_process
+                _ = self.process_group.parent_process
             except AttributeError:
                 self.process_group.parent_process = ''
         else:

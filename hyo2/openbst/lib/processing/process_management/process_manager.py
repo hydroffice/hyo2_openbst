@@ -2,6 +2,7 @@ import logging
 
 from enum import Enum
 from netCDF4 import Dataset
+from typing import Optional
 
 from hyo2.openbst.lib.processing.parameters import Parameters
 from hyo2.openbst.lib.processing.process_methods.dicts import ProcessMethods, process_requirements
@@ -21,10 +22,11 @@ class ProcessStageStatus(Enum):
 
 
 class ProcessManager:
+    root = 'ROOT'
     proc_seperator = '__'
     child_seperator = '//'
 
-    def __init__(self, parent_process: str):
+    def __init__(self, parent_process: Optional[str]):
         self._step = 00
         self._parent = None
         self._setup(parent_process)
@@ -58,10 +60,10 @@ class ProcessManager:
         except ValueError:
             raise ValueError("String does not have expected format")
 
-    def _setup(self, parent_process: str):
+    def _setup(self, parent_process: Optional[str]):
         if parent_process == '':
             self._step = 00
-            self._parent = parent_process
+            self._parent = self.root
         else:
             parent_identifiers = self.get_process_identifiers(process_string=parent_process)
             self._step = int(parent_identifiers[0])
@@ -145,13 +147,17 @@ class ProcessManager:
         self._cur_process = None
 
     def reset_process(self):
-        self._setup(parent_process="")
+        self._setup(parent_process=self.root)
         self.end_process()
 
     # # NC files methods
     def write_parent(self, ds: Dataset):
         grp_process = ds.groups[self.current_process]
-        if self._status == ProcessStageStatus.FIRSTPROCESS or self._status == ProcessStageStatus.NEWPROCESS:
+
+        if self._status == ProcessStageStatus.FIRSTPROCESS:
+            grp_process.parent_process = self.root
+
+        elif self._status == ProcessStageStatus.NEWPROCESS:
             grp_process.parent_process = self.parent_process
 
         elif self._status == ProcessStageStatus.REPEATEPROCESS or self._status == ProcessStageStatus.PRIORPROCESS:
@@ -180,7 +186,7 @@ class ProcessManager:
 
         elif self._status == ProcessStageStatus.MODIFIEDPROCESS:
             grp_brother = ds.groups[self.parent_process]     # TODO: Confusing Nomenclature, use NetworkX to manage
-            if grp_brother.parent_process != "":
+            if grp_brother.parent_process != self.root:
                 grp_ancestor = ds.groups[grp_brother.parent_process]
                 grp_ancestor.children_process += child_str
 
@@ -199,7 +205,8 @@ class ProcessManager:
         parent_identifiers = self.parent_process.split(self.proc_seperator)
 
         # Check if this is the first time processing
-        if self.parent_process == '':
+        if self.parent_process == self.root:
+            # TODO:  Check for matching process at root
             return ProcessStageStatus.FIRSTPROCESS
 
         # Check new process against parent process
@@ -207,6 +214,7 @@ class ProcessManager:
             if process_identifiers[-1] == parent_identifiers[-1]:
                 return ProcessStageStatus.PRIORPROCESS
             else:
+                # TODO: Check parent children for repeat
                 return ProcessStageStatus.MODIFIEDPROCESS
         else:
             # Check if step has been computed prior in chain
@@ -291,7 +299,7 @@ class ProcessManager:
         nc_parent_identifiers = nc_parent_str.split(cls.proc_seperator)
 
         # Check if current process matches parent
-        if nc_parent_identifiers[0] == '':
+        if nc_parent_identifiers[0] == ProcessManager.root:
             # Reached the start of processing chain, no match found
             return False
         elif nc_parent_identifiers[1] == process_identifiers[0]:
