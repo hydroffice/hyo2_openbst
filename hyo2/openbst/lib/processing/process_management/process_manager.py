@@ -144,6 +144,10 @@ class ProcessManager:
         self._status = None
         self._cur_process = None
 
+    def reset_process(self):
+        self._setup(parent_process="")
+        self.end_process()
+
     # # NC files methods
     def write_parent(self, ds: Dataset):
         grp_process = ds.groups[self.current_process]
