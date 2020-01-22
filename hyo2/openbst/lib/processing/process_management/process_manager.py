@@ -86,8 +86,8 @@ class ProcessManager:
             self.generate_process_name(process_identifiers=method_params.process_identifiers())
             do_process = True
         elif status == ProcessStageStatus.OLDROOTNODE:
-            parent_string = self.generate_process_name(process_identifiers=method_params)
-            self.end_process(_set_parent=parent_string)
+            node_string = self.generate_process_name(process_identifiers=method_params)
+            self.end_process(_set_parent=node_string)
             logger.info("Process ID = %s. Process not computed, parent updated" % status)
             do_process = False
         elif status == ProcessStageStatus.CURRENTNODE:
@@ -105,8 +105,8 @@ class ProcessManager:
             logger.info("Process ID = %s. Process not computed." % status)
             do_process = False
         elif status == ProcessStageStatus.CHILDNODE:
-            # TODO: Update parent and count
-            self.end_process()
+            node_string = self.generate_process_name(process_identifiers=method_params)
+            self.end_process(_set_parent=node_string)
             logger.info("Process ID = %s. Process not computed, parent updated")
             do_process = False
         elif status == ProcessStageStatus.NEWNODE:
@@ -115,33 +115,6 @@ class ProcessManager:
             logger.info("Process ID not in processing chain. Process computing new node.")
             self.generate_process_name(process_identifiers=method_params.process_identifiers())
             do_process = True
-
-        # if status == ProcessStageStatus.CURRENTNODE:
-        #     self.end_process()
-        #     logger.info("Process ID is same as last process. Process not computed")
-        #     do_process = False
-        # elif status == ProcessStageStatus.ANCESTORNODE:
-        #     self.end_process()
-        #     logger.info("Process ID found in processing chain. Process not computed.")
-        #     do_process = False
-        # elif status == ProcessStageStatus.MODIFIEDCURRENTNODE:
-        #     self._calc_in_progress = True
-        #     self._status = status
-        #     logger.info("Process ID is modifed version of last process. Process computing.")
-        #     self.generate_process_name(process_identifiers=method_params.process_identifiers())
-        #     do_process = True
-        # elif status == ProcessStageStatus.NEWNODE:
-        #     self._calc_in_progress = True
-        #     self._status = status
-        #     logger.info("Process ID not in processing chain. Process computing.")
-        #     self.generate_process_name(process_identifiers=method_params.process_identifiers())
-        #     do_process = True
-        # elif status == ProcessStageStatus.ROOTNODE:
-        #     self._calc_in_progress = True
-        #     self._status = status
-        #     logger.info("Process ID not in processing chain. Process computing")
-        #     self.generate_process_name(process_identifiers=method_params.process_identifiers())
-        #     do_process = True
         else:
             raise RuntimeError("Unrecognized process status: %s" % status)
 
@@ -356,26 +329,14 @@ class ProcessManager:
                            + self.proc_seperator + \
                            process_identifiers[1]
         elif self._status == ProcessStageStatus.CHILDNODE:
-            
-
-        elif self._status == ProcessStageStatus.ROOTNODE:
-            step = 00
-            process_name = "%02d" % step \
-                           + self.proc_seperator + \
-                           process_identifiers[0] \
-                           + self.proc_seperator + \
-                           process_identifiers[1]
-        elif self._status == ProcessStageStatus.NEWNODE:
+            step = self.step + 1
             step = self.step + 1
             process_name = "%02d" % step \
                            + self.proc_seperator + \
                            process_identifiers[0] \
                            + self.proc_seperator + \
                            process_identifiers[1]
-        elif self._status == ProcessStageStatus.CURRENTNODE:
-            process_name = self.parent_process
-        elif self._status == ProcessStageStatus.ANCESTORNODE:
-            logger.warning("The generated process name has not been computed. For reference only")
+        elif self._status == ProcessStageStatus.NEWNODE:
             step = self.step + 1
             process_name = "%02d" % step \
                            + self.proc_seperator + \
