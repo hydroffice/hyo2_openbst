@@ -30,7 +30,7 @@ class ProcessManager:
     proc_seperator = '__'
     child_seperator = '//'
 
-    def __init__(self, parent_process: Optional[str]):
+    def __init__(self, parent_process: Optional[str] = None):
         self._step = 00
         self._parent = None
         self._setup(parent_process)
@@ -56,7 +56,7 @@ class ProcessManager:
         return self._calc_in_progress
 
     def _setup(self, parent_process: Optional[str]):
-        if parent_process == '':
+        if parent_process == '' or parent_process is None:
             self._step = 00
             self._parent = self.root
         else:
@@ -86,7 +86,8 @@ class ProcessManager:
             self.generate_process_name(process_identifiers=method_params.process_identifiers())
             do_process = True
         elif status == ProcessStageStatus.OLDROOTNODE:
-            node_string = self.generate_process_name(process_identifiers=method_params)
+            self._status = status
+            node_string = self.generate_process_name(process_identifiers=method_params.process_identifiers())
             self.end_process(_set_parent=node_string)
             logger.info("Process ID = %s. Process not computed, parent updated" % status)
             do_process = False
@@ -105,14 +106,15 @@ class ProcessManager:
             logger.info("Process ID = %s. Process not computed." % status)
             do_process = False
         elif status == ProcessStageStatus.CHILDNODE:
-            node_string = self.generate_process_name(process_identifiers=method_params)
+            self._status = status
+            node_string = self.generate_process_name(process_identifiers=method_params.process_identifiers())
             self.end_process(_set_parent=node_string)
-            logger.info("Process ID = %s. Process not computed, parent updated")
+            logger.info("Process ID = %s. Process not computed, parent updated" % status)
             do_process = False
         elif status == ProcessStageStatus.NEWNODE:
             self._calc_in_progress = True
             self._status = status
-            logger.info("Process ID not in processing chain. Process computing new node.")
+            logger.info("Process ID = %s. Process computing new node." % status)
             self.generate_process_name(process_identifiers=method_params.process_identifiers())
             do_process = True
         else:
@@ -225,13 +227,13 @@ class ProcessManager:
                 if node_identifiers[1] == process_identifiers[0] and node_identifiers[-1] == process_identifiers[-1]:
                     # This is a repeat process based on identifiers.
                     if grp_node.parent_process == self.root:
-                        # This is an old root node, no need to recalculate
+                        # Process matches an old root node, no need to recalculate
                         return ProcessStageStatus.OLDROOTNODE
                     else:
-                        # This is a process with same parameters, but not a root node, thus this is a new root node
-                        return ProcessStageStatus.ROOTNODE
-                else:
-                    continue
+                        # This is a process with same parameters as an old node, but not a root node, continue search
+                        continue
+            # If exiting loop, this process was not found as a root, thus it's a new root
+            return ProcessStageStatus.ROOTNODE
 
         # Not a Root Node - Check parent, ancestors and check parent's children for repeats
         # Check cur_process against parent process
@@ -254,15 +256,22 @@ class ProcessManager:
                     list_child_nodes = grp_parent.children_process.split(self.child_seperator)
                     for child_node in list_child_nodes:
                         child_identifiers = child_node.split(self.proc_seperator)
+                        if len(child_identifiers) <= 1:     # First entry to child is typically empty
+                            continue
+
                         if child_identifiers[1] == process_identifiers[0] \
                                 and child_identifiers[-1] == process_identifiers[-1]:
+                            # Current process matches a child
                             return ProcessStageStatus.CHILDNODE
                         elif child_identifiers[1] == process_identifiers[0] \
                                 and child_identifiers[-1] != process_identifiers[-1]:
+                            # Current process is a modified child process, which is a new node
                             return ProcessStageStatus.NEWNODE
                         else:
                             # No match, continue loop
                             continue
+                    # The process is not a child or a modified child
+                    return ProcessStageStatus.NEWNODE
                 else:
                     # There are no children for the parent, thus this is a new process
                     return ProcessStageStatus.NEWNODE

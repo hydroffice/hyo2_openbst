@@ -235,7 +235,7 @@ class Project:
                                                  parameters=self.parameters)
             if processed is True:
                 self.info.manage_parent(parent=self.process.proc_manager.parent_process)
-                print('File Corrected for static gain: %s' % process_file_path.resolve())
+                print('File Corrected for source level: %s' % process_file_path.resolve())
 
     def __repr__(self) -> str:
         msg = "<%s>\n" % self.__class__.__name__
