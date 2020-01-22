@@ -38,6 +38,7 @@ class ProcessManager:
         self._calc_in_progress = False
         self._cur_process = None
         self._status = None
+        self._duplicate = False
 
     @property
     def step(self) -> int:
@@ -116,6 +117,8 @@ class ProcessManager:
             self._status = status
             logger.info("Process ID = %s. Process computing new node." % status)
             self.generate_process_name(process_identifiers=method_params.process_identifiers())
+            self.check_for_duplicates(nc_process=nc_process, process_string=self._cur_process)
+            self.generate_process_name(process_identifiers=method_params.process_identifiers())
             do_process = True
         else:
             raise RuntimeError("Unrecognized process status: %s" % status)
@@ -152,6 +155,7 @@ class ProcessManager:
         self._calc_in_progress = False
         self._status = None
         self._cur_process = None
+        self._duplicate = False
         if _set_parent is not None:
             self._parent = _set_parent
             parent_identifiers = self.get_process_identifiers(process_string=_set_parent)
@@ -276,6 +280,12 @@ class ProcessManager:
                     # There are no children for the parent, thus this is a new process
                     return ProcessStageStatus.NEWNODE
 
+    def check_for_duplicates(self, nc_process: Dataset, process_string: str):
+        for node_name, _ in nc_process.groups.items():
+            if node_name == process_string:
+                self._duplicate = True
+                break
+
     def check_requirements(self, process_method: ProcessMethods, nc_process: Dataset, parameters_object: Parameters):
         meets_required = False
         for process, requirement in process_requirements.items():
@@ -327,7 +337,6 @@ class ProcessManager:
                            process_identifiers[0] \
                            + self.proc_seperator + \
                            process_identifiers[1]
-
         elif self._status == ProcessStageStatus.ANCESTORNODE:
             # TODO: Find a way to return the proper node name
             logger.warning("The generated process name has not been computed. For reference only")
@@ -346,12 +355,18 @@ class ProcessManager:
                            + self.proc_seperator + \
                            process_identifiers[1]
         elif self._status == ProcessStageStatus.NEWNODE:
+            if self._duplicate is True:
+                prn_hash = self.parent_process[-2:]
+                hash_str = prn_hash + process_identifiers[-1][2:]
+            else:
+                hash_str = process_identifiers[-1]
+
             step = self.step + 1
             process_name = "%02d" % step \
                            + self.proc_seperator + \
                            process_identifiers[0] \
                            + self.proc_seperator + \
-                           process_identifiers[1]
+                           hash_str
         else:
             raise RuntimeError("Unknown process status: %s" % self._status)
         self._cur_process = process_name
@@ -378,6 +393,8 @@ class ProcessManager:
                                                           process_identifiers=process_identifiers,
                                                           parent_str=nc_parent_str)
             return in_chain
+
+
 
     @staticmethod
     def get_process_identifiers(process_string: str) -> list:
