@@ -14,7 +14,7 @@ logger = logging.getLogger(__name__)
 # Set up project
 testing = TestingPaths(root_folder=Path(__file__).parents[3].resolve())
 bst = OpenBST(prj_name="default", force_new=True).prj
-bst.open_project_folder()
+# bst.open_project_folder()
 raw_path = testing.download_data_folder().joinpath('reson', '20190730_144835.s7k')
 bst.add_raw(raw_path)
 
@@ -26,6 +26,7 @@ bst.parameters.rawdecode.use_window = False
 bst.parameters.rawdecode.sample_window_size = 10
 bst.raw_decode()
 
+
 # test 2
 bst.parameters.rawdecode.method_type = RawDecodeEnum.perbeam_from_sonar_beam_average
 bst.raw_decode()
@@ -35,6 +36,9 @@ bst.parameters.static_gains.method_type = StaticGainEnum.gain_removal
 bst.static_gain_correction()
 
 # test 4
+bst.parameters.static_gains.method_type = StaticGainEnum.gain_addition
+bst.static_gain_correction()
+# test 5
 bst.parameters.source_level.method_type = SourceLevelEnum.gain_removal
 bst.source_level_correction()
 
