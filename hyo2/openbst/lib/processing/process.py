@@ -13,6 +13,7 @@ from hyo2.openbst.lib.processing.process_methods.dicts import ProcessMethods
 from hyo2.openbst.lib.processing.process_methods.raw_decoding import RawDecoding
 from hyo2.openbst.lib.processing.process_methods.static_gain_compensation import StaticGainCorrection
 from hyo2.openbst.lib.processing.process_methods.source_level import SourceLevel
+from hyo2.openbst.lib.processing.process_methods.tvg import TVG
 logger = logging.getLogger(__name__)
 
 
@@ -95,7 +96,7 @@ class Process:
                                                            parent=self.proc_manager.parent_process,
                                                            parameters=method_parameters)
         elif process_method is ProcessMethods.TVG:
-            data_out = Tvg.tvg_correction(ds_process=ds_process,
+            data_out = TVG.tvg_correction(ds_process=ds_process,
                                           ds_raw=ds_raw,
                                           parent=self.proc_manager.parent_process,
                                           parameters=method_parameters)
@@ -106,6 +107,10 @@ class Process:
         ds_process.close()
         ds_raw.close()
 
+        if type(data_out) is not dict:
+            self.proc_manager.end_process()
+            return False
+        
         # Store the process
         process_written = self.store_process(process_method=process_method,
                                              nc_process_file=process_file_path,
@@ -134,7 +139,7 @@ class Process:
         elif process_method is ProcessMethods.SOURCELEVEL:
             process_written = SourceLevel.write_data_to_nc(data_dict=data, grp_process=grp_process)
         elif process_method is ProcessMethods.TVG:
-            process_written = Tvg.write_data_to_nc(data_dict=data, grp_process=grp_process)
+            process_written = TVG.write_data_to_nc(data_dict=data, grp_process=grp_process)
         else:
             raise RuntimeError("Unrecognized processing method type: %s" % process_method)
 
