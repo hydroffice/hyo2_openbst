@@ -110,7 +110,7 @@ class Process:
         if type(data_out) is not dict:
             self.proc_manager.end_process()
             return False
-        
+
         # Store the process
         process_written = self.store_process(process_method=process_method,
                                              nc_process_file=process_file_path,

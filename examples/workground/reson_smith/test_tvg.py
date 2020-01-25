@@ -5,8 +5,6 @@ from hyo2.abc.lib.logging import set_logging
 from hyo2.abc.lib.testing_paths import TestingPaths
 from hyo2.openbst.lib.openbst import OpenBST
 from hyo2.openbst.lib.processing.process_methods.raw_decoding import RawDecodeEnum
-from hyo2.openbst.lib.processing.process_methods.static_gain_compensation import StaticGainEnum
-from hyo2.openbst.lib.processing.process_methods.source_level import SourceLevelEnum
 from hyo2.openbst.lib.processing.process_methods.tvg import TVGENUM
 
 set_logging(ns_list=["hyo2.openbst", ])
@@ -18,29 +16,25 @@ bst = OpenBST(prj_name="default", force_new=True).prj
 # bst.open_project_folder()
 raw_path = testing.download_data_folder().joinpath('reson', '20190730_144835.s7k')
 bst.add_raw(raw_path)
-
-# import raws via project health check
 bst.check_health()
 
-# Raw decode
-bst.parameters.rawdecode.use_window = False
-bst.parameters.rawdecode.sample_window_size = 10
-bst.raw_decode()
-
-
-# test 2
-bst.parameters.rawdecode.method_type = RawDecodeEnum.perbeam_from_sonar_beam_average
-bst.raw_decode()
-
-# test 3
-bst.parameters.static_gains.method_type = StaticGainEnum.gain_removal
-bst.static_gain_correction()
-
-# test 4
-bst.parameters.source_level.method_type = SourceLevelEnum.gain_removal
-bst.source_level_correction()
-
-# test 5
+# Test 1 - Fail (raw decode requirement
 bst.parameters.tvg.method_type = TVGENUM.gain_removal_simple_tvg_curve
 bst.tvg_gain_correction()
 
+
+# Raw decode
+bst.parameters.rawdecode.method_type = RawDecodeEnum.perbeam_from_sonar_beam_average
+bst.raw_decode()
+
+# Test 2 - Method:Simple, Pass = No Errors
+bst.parameters.tvg.method_type = TVGENUM.gain_removal_simple_tvg_curve
+bst.tvg_gain_correction()
+
+# Test 3 - Method:From Manufacturer, Pass = No Errors
+bst.parameters.tvg.method_type = TVGENUM.gain_removal_tvg_curve_from_manufacturer
+bst.tvg_gain_correction()
+
+# Test 4 - Method:From Runtime gains ,Pass = No Errors
+bst.parameters.tvg.method_type = TVGENUM.gain_removal_tvg_curve_generated_from_gains
+bst.tvg_gain_correction()
