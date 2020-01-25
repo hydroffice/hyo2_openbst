@@ -17,7 +17,7 @@ class SourceLevelEnum(Enum):
 
 source_level_title = {
     SourceLevelEnum.gain_removal: "Correceted Backscatter - Source Level Subtracted",
-    SourceLevelEnum.gain_addition: " Corrected Backscatter - Source Level Subtracted"
+    SourceLevelEnum.gain_addition: " Corrected Backscatter - Source Level Added"
 }
 
 
@@ -56,10 +56,12 @@ class SourceLevel:
     def source_level_correction(cls, ds_process: Dataset, ds_raw: Dataset,
                                 parent: str, parameters: SourceLevelParameters):
         p_method_type = parameters.method_type
+
         grp_runtime = ds_raw.groups['runtime_settings']
         var_source_level = grp_runtime.variables['source_level']
         data_source_level = var_source_level[:]
         data_source_level = data_source_level[:, np.newaxis]
+
         grp_parent = ds_process.groups[parent]
         var_backscatter = grp_parent.variables['backscatter_data']
         data_backscatter = var_backscatter[:]
@@ -73,7 +75,7 @@ class SourceLevel:
         return data_out
 
     @classmethod
-    def write_data_to_nc(cls,data_dict: dict, grp_process: Group):
+    def write_data_to_nc(cls, data_dict: dict, grp_process: Group):
         try:
             for data_name, data in data_dict.items():
                 if data_name == 'backscatter_data':
