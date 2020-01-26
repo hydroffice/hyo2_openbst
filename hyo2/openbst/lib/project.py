@@ -237,6 +237,19 @@ class Project:
                 self.info.manage_parent(parent=self.process.proc_manager.parent_process)
                 print('File Corrected for source level: %s' % process_file_path.resolve())
 
+    def tvg_gain_correction(self):
+        for path_hash in self.raws.raws_list:
+            raw_file_path = self.raws_folder.joinpath(path_hash + self.raws.ext)
+            process_file_path = self.process_folder.joinpath(path_hash + self.process.ext)
+
+            processed = self.process.run_process(process_method=self.process.process_method_types.TVG,
+                                                 process_file_path=process_file_path,
+                                                 raw_path=raw_file_path,
+                                                 parameters=self.parameters)
+            if processed is True:
+                self.info.manage_parent(parent=self.process.proc_manager.parent_process)
+                print('File Corrected for TVG gain: %s' % process_file_path.resolve())
+
     def __repr__(self) -> str:
         msg = "<%s>\n" % self.__class__.__name__
         msg += self.info_str()

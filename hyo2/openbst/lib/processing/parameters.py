@@ -4,7 +4,7 @@ from hyo2.openbst.lib.processing.process_methods.dicts import ProcessMethods
 from hyo2.openbst.lib.processing.process_methods.raw_decoding import RawDecodeParameters
 from hyo2.openbst.lib.processing.process_methods.static_gain_compensation import StaticGainParameters
 from hyo2.openbst.lib.processing.process_methods.source_level import SourceLevelParameters
-
+from hyo2.openbst.lib.processing.process_methods.tvg import TVGCorrectionParameters
 logger = logging.getLogger(__name__)
 
 
@@ -15,6 +15,7 @@ class Parameters:
         self.rawdecode = RawDecodeParameters()
         self.static_gains = StaticGainParameters()
         self.source_level = SourceLevelParameters()
+        self.tvg = TVGCorrectionParameters()
 
     # TODO: Can there be a check here to create object if not yet created
     def get_process_params(self, process_type: ProcessMethods):
@@ -24,3 +25,5 @@ class Parameters:
             return self.static_gains
         elif process_type == ProcessMethods.SOURCELEVEL:
             return self.source_level
+        elif process_type == ProcessMethods.TVG:
+            return self.tvg

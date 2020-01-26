@@ -298,7 +298,11 @@ class ProcessManager:
 
                     # Check if parent is required process
                     parent_identifiers = self.get_process_identifiers(self.parent_process)
-                    if parent_identifiers[1] == required_identifiers[0]:
+                    if parent_identifiers[0] == self.root:
+                        # This is the first process, we don't meet requirements
+                        meets_required = False
+                        break
+                    elif parent_identifiers[1] == required_identifiers[0]:
                         meets_required = True
                         break
                     else:

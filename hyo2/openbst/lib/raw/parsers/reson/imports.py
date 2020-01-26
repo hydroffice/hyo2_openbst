@@ -340,7 +340,7 @@ class RawImport:
         var_time[:] = times_snippets
 
         var_detect_sample = grp_snippet.createVariable(varname="detect_sample",
-                                                       datatype="f8",
+                                                       datatype="i8",
                                                        dimensions=("ping", "beam_number"),
                                                        fill_value=RawImport.fill_value)
         var_detect_sample[:] = detect_sample
