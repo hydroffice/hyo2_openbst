@@ -140,7 +140,7 @@ class Process:
         if process_method is ProcessMethods.RAWDECODE:
             process_written = RawDecoding.write_data_to_nc(data_dict=data, grp_process=grp_process)
         elif process_method is ProcessMethods.INTERPOLATION:
-            process_written = Interpolation.write_data_to_nc()
+            process_written = Interpolation.write_data_to_nc(data_dict=data, grp_process=grp_process)
         elif process_method is ProcessMethods.STATICGAIN:
             process_written = StaticGainCorrection.write_data_to_nc(data_dict=data, grp_process=grp_process)
         elif process_method is ProcessMethods.SOURCELEVEL:

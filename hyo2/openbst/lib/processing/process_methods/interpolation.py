@@ -15,7 +15,7 @@ class InterpEnum(Enum):
 
 
 interpolation_title = {
-    InterpEnum.simple: "Interpolated Motion Datat"
+    InterpEnum.simple: "Interpolated Motion Data"
 }
 
 
@@ -25,13 +25,23 @@ class InterpParameters:
 
     def __init__(self):
         self.method_type = InterpEnum.simple
-        
+
     def nc_write_parameters(self, grp_process: Group):
-        pass
+        try:
+            grp_process.title = interpolation_title[self.method_type]
+            grp_process.method_type = self.method_type.name
+            return True
+        except TypeError:
+            return False
 
     def process_identifiers(self) -> list:
-        pass
-
+        process_string = InterpParameters.process_name
+        parameter_string = str()
+        for key, value in self.__dict__.items():
+            parameter_string += key + str(value)
+        parameter_hash = NetCDFHelper.hash_string(input_str=parameter_string)
+        process_ids = [process_string, parameter_hash]
+        return process_ids
 
 # ## Interpolation Class and Methods ##
 class Interpolation:
