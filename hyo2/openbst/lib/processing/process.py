@@ -88,7 +88,7 @@ class Process:
             data_out = RawDecoding.decode(ds_raw=ds_raw,
                                           parameters=method_parameters)
         elif process_method is ProcessMethods.INTERPOLATION:
-            data_out = Interpolation.interpolate()
+            data_out = Interpolation.interpolate(ds_raw=ds_raw, parameters=method_parameters)
 
         elif process_method is ProcessMethods.STATICGAIN:
             data_out = StaticGainCorrection.static_correction(ds_process=ds_process,
