@@ -1,9 +1,9 @@
 import logging
 from pathlib import Path
 
-from PySide2 import QtWidgets
-import matplotlib.pyplot as plt
-from netCDF4 import Dataset, Group, Variable
+# from PySide2 import QtWidgets
+# import matplotlib.pyplot as plt
+# from netCDF4 import Dataset, Group, Variable
 from hyo2.abc.lib.logging import set_logging
 from hyo2.abc.lib.testing_paths import TestingPaths
 from hyo2.openbst.lib.openbst import OpenBST
