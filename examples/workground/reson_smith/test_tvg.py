@@ -18,7 +18,7 @@ raw_path = testing.download_data_folder().joinpath('reson', '20190730_144835.s7k
 bst.add_raw(raw_path)
 bst.check_health()
 
-# Test 1 - Fail (raw decode requirement
+# Test 1 - Fail = raw decode requirement
 bst.parameters.tvg.method_type = TVGENUM.gain_removal_simple_tvg_curve
 bst.tvg_gain_correction()
 
