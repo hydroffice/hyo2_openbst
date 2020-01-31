@@ -149,16 +149,17 @@ class TVG:
     @classmethod
     def write_data_to_nc(cls, data_dict: dict, grp_process: Group):
         try:
+            grp_process.createDimension(dimname='ping', size=None)
+            grp_process.createDimension(dimname='beam', size=None)
+            grp_process.createDimension(dimname='sample', size=None)
+
             for data_name, data in data_dict.items():
                 if data_name == 'backscatter_data':
-                    grp_process.createDimension(dimname='ping', size=None)
-                    grp_process.createDimension(dimname='beam', size=None)
                     var_bs_data = grp_process.createVariable(varname='backscatter_data',
                                                              datatype='f8',
                                                              dimensions=('ping', 'beam'))
                     var_bs_data[:] = data
                 elif data_name == 'tvg_curves':
-                    grp_process.createDimension(dimname='sample', size=None)
                     var_tvg_curves = grp_process.createVariable(varname='tvg_curves',
                                                                 datatype='f8',
                                                                 dimensions=('ping', 'sample'))

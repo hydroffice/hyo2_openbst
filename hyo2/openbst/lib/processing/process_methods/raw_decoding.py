@@ -118,7 +118,7 @@ class RawDecoding:
             bs_raw_decode = RawDecoding.perbeam_bs_from_beam_average(raw_bathy=grp_raw_bathy)
 
         else:
-            raise TypeError("Unrecognized Raw Decode Method: %s")  # TODO: Fix the error message
+            raise TypeError("Unrecognized Raw Decode Method: %s", p_method_type)
 
         data_out = {
             'backscatter_data': bs_raw_decode
