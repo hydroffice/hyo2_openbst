@@ -85,19 +85,11 @@ class ProjectInfo:
         return self.supplemental_group.groups[self._ssp_name]
 
     @property
-    def calibration_group(self):
-        return self.supplemental_group.groups[self._calibration_name]
-
-    @property
     def ssps(self):
         return self.ssp_group.variables
 
     @property
-    def calibrations(self):
-        return self.calibration_group.variables
-
-    @property
-    def ssp_list(self):
+    def ssp_list(self) -> list:
         ssp_list = list()
         for ssp_name, ssp in self.ssps.items():
             if ssp.deleted == 0:
@@ -105,7 +97,15 @@ class ProjectInfo:
         return ssp_list
 
     @property
-    def calibration_list(self):
+    def calibration_group(self):
+        return self.supplemental_group.groups[self._calibration_name]
+
+    @property
+    def calibrations(self):
+        return self.calibration_group.variables
+
+    @property
+    def calibration_list(self) -> list:
         calibration_list = list()
         for calib_name, calibration in self.calibrations.items():
             if calibration.deleted == 0:
@@ -135,6 +135,14 @@ class ProjectInfo:
     @property
     def products(self):
         return self.products_group.variables
+
+    @property
+    def project_products(self) -> list:
+        project_products = list()
+        for product_key, product in self.products.items():
+            if product.deleted == 0:
+                project_products.append(product_key)
+        return project_products
 
     @property
     def valid_products(self) -> list:
@@ -233,6 +241,9 @@ class ProjectInfo:
             logger.warning("path does not exist: %s" % path)
             return False
 
+        if path.suffix != '.csv':
+            logger.warning("invalid extension: %s" % path)
+            return False
         if path.stem in self.ssps.keys():
             try:
                 if self.ssps[path.stem].deleted == 1:
@@ -264,6 +275,10 @@ class ProjectInfo:
         path = path.resolve()
         if not path.exists():
             logger.warning("path does not exist: %s" % path)
+            return False
+
+        if path.suffix != '.csv':
+            logger.warning("invalid extension: %s" % path)
             return False
 
         if path.stem in self.calibrations.keys():
