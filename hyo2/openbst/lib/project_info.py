@@ -402,7 +402,7 @@ class ProjectInfo:
         msg += "  <version: %s>\n" % self.version
         msg += "  <created: %s>\n" % self.created
         msg += "  <modified: %s>\n" % self.modified
-        msg += "  <raws: %d [%d]>\n" % (len(self.valid_raws), len(self.raws))
+        msg += "  <raws: %d [%d]>\n" % (len(self.project_raws), len(self.raws))
         for raw_key, raw in self.raws.items():
             msg += "    <%s[D%s]: %s>\n" \
                    % (raw_key, raw.deleted, raw.source_path)
