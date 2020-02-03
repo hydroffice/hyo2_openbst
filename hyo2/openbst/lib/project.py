@@ -197,6 +197,29 @@ class Project:
         txt += "  <raws: %d>\n" % len(self.info.valid_raws)
         return txt
 
+    # ### Supplemental files ###
+    def add_ssp(self, path: Path) -> bool:
+        self.progress.start(title="Adding SSP", text="Ongoing reading. Please wait!",
+                            init_value=1)
+        added = self.info.add_ssp(path=path)
+        if not added:
+            self.progress.end()
+            return False
+        self.progress.update(50)
+
+        added = self.process.add_ssp(path=path)
+        if not added:
+            self.progress.end()
+            return False
+
+        self.progress.update(100)
+        self.progress.end()
+        return True
+
+
+    def add_calibration_file(self):
+        pass
+
     # ### Process ###
     # TODO: Significant code duplication below, need to reduce this
 
