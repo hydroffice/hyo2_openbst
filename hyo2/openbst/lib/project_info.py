@@ -18,7 +18,7 @@ class ProjectInfo:
         self._raws_name = "raws"
         self._process_name = "process"
         self._products_name = "products"
-        self._supplementals_name = "supplemental_files"
+        self._auxilaries_name = "auxiliary_files"
         self._ssp_name = "sound_speed_profiles"
         self._calibration_name = "calibration_files"
         self._nc()
@@ -77,12 +77,12 @@ class ProjectInfo:
         return project_raws
 
     @property
-    def supplemental_group(self):
-        return self._ds.groups[self._supplementals_name]
+    def auxiliary_group(self):
+        return self._ds.groups[self._auxilaries_name]
 
     @property
     def ssp_group(self):
-        return self.supplemental_group.groups[self._ssp_name]
+        return self.auxiliary_group.groups[self._ssp_name]
 
     @property
     def ssps(self):
@@ -98,7 +98,7 @@ class ProjectInfo:
 
     @property
     def calibration_group(self):
-        return self.supplemental_group.groups[self._calibration_name]
+        return self.auxiliary_group.groups[self._calibration_name]
 
     @property
     def calibrations(self):
@@ -168,9 +168,9 @@ class ProjectInfo:
         # logger.debug("modified: %s" % self.modified)
 
         NetCDFHelper.groups(ds=self._ds, names=[self._raws_name, self._process_name, self._products_name,
-                                                self._supplementals_name])
-        grp_supplements = self._ds.groups[self._supplementals_name]
-        NetCDFHelper.groups(ds=grp_supplements, names=[self._ssp_name, self._calibration_name])
+                                                self._auxilaries_name])
+        grp_auxilaries = self._ds.groups[self._auxilaries_name]
+        NetCDFHelper.groups(ds=grp_auxilaries, names=[self._ssp_name, self._calibration_name])
 
         logger.info("open in '%s' mode: [v.%s] %s" % (open_mode, self.version, self.path))
 
