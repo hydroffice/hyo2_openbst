@@ -1,8 +1,10 @@
 from datetime import datetime
 import hashlib
 import logging
-from netCDF4 import Dataset, date2num
+from netCDF4 import Dataset, Group, date2num
 import numpy as np
+
+from typing import Union
 
 from hyo2.openbst.lib import lib_info
 
@@ -59,7 +61,7 @@ class NetCDFHelper:
         return True
 
     @classmethod
-    def groups(cls, ds: Dataset, names: list) -> bool:
+    def groups(cls, ds: Union[Dataset, Group], names: list) -> bool:
 
         for name in names:
 
