@@ -1,5 +1,4 @@
 import logging
-from netCDF4 import Dataset, Group, num2date
 from pathlib import Path
 import shutil
 
@@ -9,7 +8,7 @@ from hyo2.abc.lib.progress.cli_progress import CliProgress
 # noinspection PyUnresolvedReferences
 
 from hyo2.openbst.lib import lib_info
-from hyo2.openbst.lib.nc_helper import NetCDFHelper
+from hyo2.openbst.lib.processing.auxilaries.auxilary import Auxiliary
 from hyo2.openbst.lib.project_info import ProjectInfo
 from hyo2.openbst.lib.processing.process import Process
 from hyo2.openbst.lib.processing.parameters import Parameters
@@ -41,12 +40,14 @@ class Project:
         _ = self.raws_folder
         _ = self.process_folder
         _ = self.products_folder
+        _ = self.auxiliary_folder
 
         self.progress = progress
 
         self._i = ProjectInfo(prj_path=self._path)
         self._r = Raws(raws_path=self.raws_folder)
         self._p = Process(process_path=self.process_folder, parent_process=self.info.process_group.parent_process)
+        self._a = Auxiliary(auxiliary_path=self.auxiliary_folder)
         self._healthy = False
         self.check_health()
 
@@ -83,6 +84,12 @@ class Project:
     @property
     def products_folder(self) -> Path:
         path = self._path.joinpath("products")
+        path.mkdir(parents=True, exist_ok=True)
+        return path
+
+    @property
+    def auxiliary_folder(self) -> Path:
+        path = self._path.joinpath("auxiliary")
         path.mkdir(parents=True, exist_ok=True)
         return path
 
