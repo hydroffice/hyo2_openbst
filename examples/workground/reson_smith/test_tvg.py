@@ -12,7 +12,7 @@ logger = logging.getLogger(__name__)
 
 # Set up project
 testing = TestingPaths(root_folder=Path(__file__).parents[3].resolve())
-bst = OpenBST(prj_name="default", force_new=True).prj
+bst = OpenBST(prj_name="test_tvg", force_new=True).prj
 # bst.open_project_folder()
 raw_path = testing.download_data_folder().joinpath('reson', '20190730_144835.s7k')
 bst.add_raw(raw_path)
