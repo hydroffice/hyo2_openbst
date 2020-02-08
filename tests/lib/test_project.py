@@ -1,5 +1,6 @@
 from pathlib import Path
 import unittest
+import shutil
 
 from hyo2.abc.lib.testing_paths import TestingPaths
 from hyo2.openbst.app import app_info  # for GDAL data
@@ -13,6 +14,8 @@ class TestLibProject(unittest.TestCase):
         cls.testing = TestingPaths(
             root_folder=Path(__file__).parent.parent.parent.resolve())
         cls.prj_path = cls.testing.output_data_folder().joinpath("test.openbst")
+        if cls.prj_path.exists():
+            shutil.rmtree(str(cls.prj_path))
 
     def test__init__(self):
         _ = Project(prj_path=self.prj_path)
