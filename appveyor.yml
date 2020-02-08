@@ -55,7 +55,9 @@ build_script:
   # - conda remove --force PyQt Qt sip
   - del /q %MINICONDA%\envs\test-environment\qt.conf
   - conda list --show-channel-urls
-  - python data/download_products.py
+  # The following two rows download from FTP files that may be required for running the test suite
+  # - python data/download_products.py
+  # - python data/download_raw_km.py
 
 test: off
 test_script:
