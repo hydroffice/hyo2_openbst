@@ -60,7 +60,9 @@ install:
   - rm -f $HOME/miniconda/envs/test-environment/qt.conf
   - pip install pytest pytest-cov
   - conda list --show-channel-urls
-  - python data/download_products.py
+  # The following two rows download from FTP files that may be required for running the test suite
+  # - python data/download_products.py
+  # - python data/download_raw_km.py
 
 script:
   - py.test --cov=hyo2.openbst
