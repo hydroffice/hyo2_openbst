@@ -241,18 +241,21 @@ class ProjectInfo:
             logger.warning("path does not exist: %s" % path)
             return False
 
+        # TODO: Either Restrict to 1 type of ssp or add Sound Speed Manager profile handling
         if path.suffix != '.csv':
             logger.warning("invalid extension: %s" % path)
             return False
-        if path.stem in self.ssps.keys():
+
+        path_hash = NetCDFHelper.hash_string(str(path))
+        if path_hash in self.ssps.keys():
             try:
-                if self.ssps[path.stem].deleted == 1:
-                    self.ssps[path.stem].deleted = 0
+                if self.ssps[path_hash].deleted == 1:
+                    self.ssps[path_hash].deleted = 0
                     logger.info("previously deleted: %s" % path)
             except AttributeError:
-                self.ssps[path.stem].deleted = 0
+                self.ssps[path_hash].deleted = 0
         else:
-            path_var = self.ssp_group.createVariable(path.stem, 'u1')
+            path_var = self.ssp_group.createVariable(path_hash, 'u1')
             path_var.source_path = str(path)
             path_var.deleted = 0
             logger.debug("added: %s" % path)
@@ -261,11 +264,12 @@ class ProjectInfo:
         return True
 
     def remove_ssp(self, path: Path) -> bool:
-        if path.stem not in self.ssps.keys():
+        path_hash = NetCDFHelper.hash_string(str(path.resolve()))
+        if path_hash not in self.ssps.keys():
             logger.info("absent: %s" % path)
             return False
 
-        self.ssps[path.stem].deleted = 1
+        self.ssps[path_hash].deleted = 1
         logger.debug("removed: %s" % path)
 
         self._ds.sync()
@@ -281,15 +285,16 @@ class ProjectInfo:
             logger.warning("invalid extension: %s" % path)
             return False
 
-        if path.stem in self.calibrations.keys():
+        path_hash = NetCDFHelper.hash_string(str(path))
+        if path_hash in self.calibrations.keys():
             try:
-                if self.calibrations[path.stem].deleted == 1:
-                    self.calibrations[path.stem].deleted = 0
+                if self.calibrations[path_hash].deleted == 1:
+                    self.calibrations[path_hash].deleted = 0
                     logger.info("previously deleted: %s" % path)
             except AttributeError:
-                self.calibrations[path.stem].deleted = 0
+                self.calibrations[path_hash].deleted = 0
         else:
-            path_var = self.calibration_group.createVariable(path.stem, 'u1')
+            path_var = self.calibration_group.createVariable(path_hash, 'u1')
             path_var.source_path = str(path)
             path_var.deleted = 0
             logger.debug("added: %s" % path)
@@ -297,11 +302,12 @@ class ProjectInfo:
         return True
 
     def remove_calibration(self, path: Path) -> bool:
-        if path.stem not in self.calibrations.keys():
+        path_hash = NetCDFHelper.hash_string(str(path.resolve()))
+        if path_hash not in self.calibrations.keys():
             logger.info("absent: %s" % path)
             return False
 
-        self.calibrations[path.stem].deleted = 1
+        self.calibrations[path_hash].deleted = 1
         logger.debug("removed: %s" % path)
         self._ds.sync()
         return True
