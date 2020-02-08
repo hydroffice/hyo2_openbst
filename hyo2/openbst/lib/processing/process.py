@@ -7,6 +7,7 @@ from pathlib import Path
 from typing import Optional
 
 from hyo2.openbst.lib.nc_helper import NetCDFHelper
+from hyo2.openbst.lib.processing.auxilaries.auxilary import Auxiliary
 from hyo2.openbst.lib.processing.parameters import Parameters
 from hyo2.openbst.lib.processing.process_management.process_manager import ProcessManager
 from hyo2.openbst.lib.processing.process_methods.dicts import ProcessMethods
@@ -22,14 +23,27 @@ logger = logging.getLogger(__name__)
 class Process:
     ext = ".nc"
 
-    def __init__(self, process_path: Path, parent_process: Optional[str]) -> None:
+    def __init__(self, process_path: Path,
+                 auxiliary_path: Path,
+                 parent_process: Optional[str]) -> None:
+        self._aux = Auxiliary(auxiliary_path=auxiliary_path)
         self._path = process_path
         self._proc_methods = ProcessMethods
+
         self.proc_manager = ProcessManager(parent_process)
+
+    @property
+    def auxiliary_files(self):
+        return self._aux
 
     @property
     def path(self) -> Path:
         return self._path
+
+
+    @property
+    def process_method_types(self):
+        return self._proc_methods
 
     @property
     def raw_process_list(self) -> list:
@@ -38,10 +52,6 @@ class Process:
             hash_path = Path(hash_file)
             raw_process_list.append(hash_path.name.split('.')[0])
         return raw_process_list
-
-    @property
-    def process_method_types(self):
-        return self._proc_methods
 
     # ## NC File Management ##
     def add_raw_process(self, path: Path) -> bool:

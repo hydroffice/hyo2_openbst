@@ -46,8 +46,9 @@ class Project:
 
         self._i = ProjectInfo(prj_path=self._path)
         self._r = Raws(raws_path=self.raws_folder)
-        self._p = Process(process_path=self.process_folder, parent_process=self.info.process_group.parent_process)
-        self._a = Auxiliary(auxiliary_path=self.auxiliary_folder)
+        self._p = Process(process_path=self.process_folder,
+                          auxiliary_path=self.auxiliary_folder,
+                          parent_process=self.info.process_group.parent_process)
         self._healthy = False
         self.check_health()
 
@@ -89,7 +90,7 @@ class Project:
 
     @property
     def auxiliary_folder(self) -> Path:
-        path = self._path.joinpath("auxiliary")
+        path = self.process_folder.joinpath("auxiliary")
         path.mkdir(parents=True, exist_ok=True)
         return path
 
@@ -201,7 +202,7 @@ class Project:
         txt = str()
         txt += "  <name: %s>\n" % self.name
         txt += "  <path: %s>\n" % self.path
-        txt += "  <raws: %d>\n" % len(self.info.valid_raws)
+        txt += "  <raws: %d>\n" % len(self.info.project_raws)
         return txt
 
     # ### Supplemental files ###
@@ -222,7 +223,6 @@ class Project:
         self.progress.update(100)
         self.progress.end()
         return True
-
 
     def add_calibration_file(self):
         pass
