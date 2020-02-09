@@ -2,7 +2,7 @@ import os
 import logging
 from typing import IO
 # To use a consistent encoding
-from codecs import open
+
 
 logger = logging.getLogger(__name__)
 

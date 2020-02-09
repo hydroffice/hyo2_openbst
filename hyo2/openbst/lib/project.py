@@ -8,7 +8,6 @@ from hyo2.abc.lib.progress.cli_progress import CliProgress
 # noinspection PyUnresolvedReferences
 
 from hyo2.openbst.lib import lib_info
-from hyo2.openbst.lib.processing.auxilaries.auxiliary import Auxiliary
 from hyo2.openbst.lib.project_info import ProjectInfo
 from hyo2.openbst.lib.processing.process import Process
 from hyo2.openbst.lib.processing.parameters import Parameters
