@@ -17,7 +17,7 @@ def setup():
     testing = TestingPaths(root_folder=Path(__file__).parents[3].resolve())
     bst = OpenBST(prj_name="test_proc_man", force_new=True).prj
     # bst.open_project_folder()
-    raw_path = testing.download_data_folder().joinpath('reson', '20190730_144835.s7k')
+    raw_path = testing.download_data_folder().joinpath('raw_reson', '20190730_144835.s7k')
     bst.add_raw(raw_path)
 
     # import raws via project health check
