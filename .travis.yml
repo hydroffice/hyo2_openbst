@@ -61,8 +61,8 @@ install:
   - pip install pytest pytest-cov
   - conda list --show-channel-urls
   # The following two rows download from FTP files that may be required for running the test suite
-  # - python data/download_products.py
-  # - python data/download_raw_km.py
+  - python data/download_products.py
+  - python data/download_raw_km.py
   - python data/download_raw_reson.py
   - python data/download_auxiliaries.py
 
