@@ -241,8 +241,7 @@ class ProjectInfo:
             logger.warning("path does not exist: %s" % path)
             return False
 
-        # TODO: Either Restrict to 1 type of ssp or add Sound Speed Manager profile handling
-        if path.suffix != '.csv':
+        if path.suffix != '.svp':
             logger.warning("invalid extension: %s" % path)
             return False
 

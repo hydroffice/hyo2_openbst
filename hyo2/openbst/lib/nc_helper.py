@@ -12,6 +12,8 @@ logger = logging.getLogger(__name__)
 
 
 class NetCDFHelper:
+    t_units = 'milliseconds since 1970-01-01T00:00:00'
+    t_calendar = 'gregorian'
 
     @classmethod
     def init(cls, ds: Dataset) -> bool:
@@ -29,8 +31,8 @@ class NetCDFHelper:
         except KeyError:
             tdim = ds.createDimension('time', None)
             time = ds.createVariable('time', np.float64, (tdim.name,))
-            time.units = 'milliseconds since 1970-01-01T00:00:00'
-            time.calendar = 'gregorian'
+            time.units = NetCDFHelper.t_units
+            time.calendar = NetCDFHelper.t_calendar
 
         # version
         try:
