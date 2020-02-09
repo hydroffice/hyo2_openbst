@@ -23,7 +23,7 @@ did_it_work = ssp.read(data_path=svp_fail_path)
 print(did_it_work)
 
 # TEST 4: Add a profile to the project = True
-bst = OpenBST(prj_name="test_interp", force_new=True).prj
+bst = OpenBST(prj_name="test_ssp", force_new=True).prj
 did_it_work = bst.process.auxiliary_files.add_ssp(path=svp_path)
 print(did_it_work)
 
