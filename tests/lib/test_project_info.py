@@ -19,9 +19,8 @@ class TestLibProjectInfo(unittest.TestCase):
         cls.prj_path.mkdir(parents=True, exist_ok=True)
 
         cls.sonar_file_path = cls.testing.download_data_folder().joinpath('reson', '20190321_185116.s7k')
-        cls.ssp_path = cls.testing.download_data_folder().joinpath('ssp','20190729_184301_ssp.csv')
-        cls.calibration_path = cls.testing.download_data_folder().joinpath('calibration',
-                                                                           'chain_14m_200kHz.csv')
+        cls.ssp_path = cls.testing.download_data_folder().joinpath('ssp', 'SBE19plus_01907633_2019_07_30_cast4.svp')
+        cls.calibration_path = cls.testing.download_data_folder().joinpath('calibration', 'chain_14m_200kHz.csv')
 
     def test__init__(self):
         _ = ProjectInfo(prj_path=self.prj_path)
