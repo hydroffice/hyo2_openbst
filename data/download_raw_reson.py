@@ -41,7 +41,7 @@ for fid in data_files:
 
     print("> downloading %s to %s" % (data_src, data_dst))
     try:
-        ftp = Ftp(ftp_address, show_progress=True, debug_mode=False)
+        ftp = Ftp(ftp_address, show_progress=False, debug_mode=False)
         ftp.get_file(str(data_src.resolve()), str(data_dst.resolve()), unzip_it=False)
         ftp.disconnect()
 
