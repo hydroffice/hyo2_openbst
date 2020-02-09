@@ -75,8 +75,12 @@ class RawImport:
         var_time[:] = times
         var_lat = grp_pos.createVariable(varname="latitude", datatype="f8", dimensions=("time",))
         var_lat[:] = lat
+        var_lat.long_name = 'Latitude in common grid'
+        var_lat.units = 'degrees_north'
         var_lon = grp_pos.createVariable(varname="longitude", datatype="f8", dimensions=("time",))
         var_lon[:] = lon
+        var_lon.long_name = 'Longitude in common grid'
+        var_lon.units = 'degrees_east'
 
         NetCDFHelper.update_modified(ds=ds)
         return True

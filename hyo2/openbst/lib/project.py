@@ -1,5 +1,4 @@
 import logging
-from netCDF4 import Dataset, Group, num2date
 from pathlib import Path
 import shutil
 
@@ -9,7 +8,6 @@ from hyo2.abc.lib.progress.cli_progress import CliProgress
 # noinspection PyUnresolvedReferences
 
 from hyo2.openbst.lib import lib_info
-from hyo2.openbst.lib.nc_helper import NetCDFHelper
 from hyo2.openbst.lib.project_info import ProjectInfo
 from hyo2.openbst.lib.processing.process import Process
 from hyo2.openbst.lib.processing.parameters import Parameters
@@ -46,7 +44,8 @@ class Project:
 
         self._i = ProjectInfo(prj_path=self._path)
         self._r = Raws(raws_path=self.raws_folder)
-        self._p = Process(process_path=self.process_folder, parent_process=self.info.process_group.parent_process)
+        self._p = Process(process_path=self.process_folder,
+                          parent_process=self.info.process_group.parent_process)
         self._healthy = False
         self.check_health()
 
@@ -83,6 +82,12 @@ class Project:
     @property
     def products_folder(self) -> Path:
         path = self._path.joinpath("products")
+        path.mkdir(parents=True, exist_ok=True)
+        return path
+
+    @property
+    def auxiliary_folder(self) -> Path:
+        path = self.process_folder.joinpath("auxiliary")
         path.mkdir(parents=True, exist_ok=True)
         return path
 
@@ -194,8 +199,41 @@ class Project:
         txt = str()
         txt += "  <name: %s>\n" % self.name
         txt += "  <path: %s>\n" % self.path
-        txt += "  <raws: %d>\n" % len(self.info.valid_raws)
+        txt += "  <raws: %d>\n" % len(self.info.project_raws)
         return txt
+
+    # ### Supplemental files ###
+    def add_ssp(self, path: Path) -> bool:
+        self.progress.start(title="Adding SSP", text="Ongoing reading. Please wait!",
+                            init_value=1)
+        added = self.info.add_ssp(path=path)
+        if not added:
+            self.progress.end()
+            return False
+        self.progress.update(50)
+
+        added = self.process.auxiliary_files.add_ssp(path=path)
+        if not added:
+            self.progress.end()
+            return False
+
+        self.progress.update(100)
+        self.progress.end()
+        return True
+
+    def remove_ssp(self, path: Path):
+        removed = self.info.remove_ssp(path=path)
+        if not removed:
+            logger.warning("unable to make deleted in project info")
+
+        removed = self.process.auxiliary_files.remove_ssp(path=path)
+        if not removed:
+            return False
+
+        return True
+
+    def add_calibration_file(self):
+        pass
 
     # ### Process ###
     # TODO: Significant code duplication below, need to reduce this

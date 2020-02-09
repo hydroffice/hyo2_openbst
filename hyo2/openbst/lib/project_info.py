@@ -18,6 +18,9 @@ class ProjectInfo:
         self._raws_name = "raws"
         self._process_name = "process"
         self._products_name = "products"
+        self._auxilaries_name = "auxiliary_files"
+        self._ssp_name = "sound_speed_profiles"
+        self._calibration_name = "calibration_files"
         self._nc()
         self.manage_parent()
 
@@ -74,6 +77,42 @@ class ProjectInfo:
         return project_raws
 
     @property
+    def auxiliary_group(self):
+        return self._ds.groups[self._auxilaries_name]
+
+    @property
+    def ssp_group(self):
+        return self.auxiliary_group.groups[self._ssp_name]
+
+    @property
+    def ssps(self):
+        return self.ssp_group.variables
+
+    @property
+    def ssp_list(self) -> list:
+        ssp_list = list()
+        for ssp_name, ssp in self.ssps.items():
+            if ssp.deleted == 0:
+                ssp_list.append(ssp_name)
+        return ssp_list
+
+    @property
+    def calibration_group(self):
+        return self.auxiliary_group.groups[self._calibration_name]
+
+    @property
+    def calibrations(self):
+        return self.calibration_group.variables
+
+    @property
+    def calibration_list(self) -> list:
+        calibration_list = list()
+        for calib_name, calibration in self.calibrations.items():
+            if calibration.deleted == 0:
+                calibration_list.append(calib_name)
+        return calibration_list
+
+    @property
     def process_group(self) -> Group:
         return self._ds.groups[self._process_name]
 
@@ -98,6 +137,14 @@ class ProjectInfo:
         return self.products_group.variables
 
     @property
+    def project_products(self) -> list:
+        project_products = list()
+        for product_key, product in self.products.items():
+            if product.deleted == 0:
+                project_products.append(product_key)
+        return project_products
+
+    @property
     def valid_products(self) -> list:
         valid_products = list()
         for product_key, product in self.products.items():
@@ -120,7 +167,10 @@ class ProjectInfo:
         # logger.debug("created: %s" % self.created)
         # logger.debug("modified: %s" % self.modified)
 
-        NetCDFHelper.groups(ds=self._ds, names=[self._raws_name, self._process_name, self._products_name])
+        NetCDFHelper.groups(ds=self._ds, names=[self._raws_name, self._process_name, self._products_name,
+                                                self._auxilaries_name])
+        grp_auxilaries = self._ds.groups[self._auxilaries_name]
+        NetCDFHelper.groups(ds=grp_auxilaries, names=[self._ssp_name, self._calibration_name])
 
         logger.info("open in '%s' mode: [v.%s] %s" % (open_mode, self.version, self.path))
 
@@ -184,7 +234,84 @@ class ProjectInfo:
         self._ds.sync()
         return True
 
-    # # ### PROCESSES ###
+    # # ### Supplemental Files ### # #
+    def add_ssp(self, path: Path) -> bool:
+        path = path.resolve()
+        if not path.exists():
+            logger.warning("path does not exist: %s" % path)
+            return False
+
+        if path.suffix != '.svp':
+            logger.warning("invalid extension: %s" % path)
+            return False
+
+        path_hash = NetCDFHelper.hash_string(str(path))
+        if path_hash in self.ssps.keys():
+            try:
+                if self.ssps[path_hash].deleted == 1:
+                    self.ssps[path_hash].deleted = 0
+                    logger.info("previously deleted: %s" % path)
+            except AttributeError:
+                self.ssps[path_hash].deleted = 0
+        else:
+            path_var = self.ssp_group.createVariable(path_hash, 'u1')
+            path_var.source_path = str(path)
+            path_var.deleted = 0
+            logger.debug("added: %s" % path)
+
+        self._ds.sync()
+        return True
+
+    def remove_ssp(self, path: Path) -> bool:
+        path_hash = NetCDFHelper.hash_string(str(path.resolve()))
+        if path_hash not in self.ssps.keys():
+            logger.info("absent: %s" % path)
+            return False
+
+        self.ssps[path_hash].deleted = 1
+        logger.debug("removed: %s" % path)
+
+        self._ds.sync()
+        return True
+
+    def add_calibration(self, path: Path) -> bool:
+        path = path.resolve()
+        if not path.exists():
+            logger.warning("path does not exist: %s" % path)
+            return False
+
+        if path.suffix != '.csv':
+            logger.warning("invalid extension: %s" % path)
+            return False
+
+        path_hash = NetCDFHelper.hash_string(str(path))
+        if path_hash in self.calibrations.keys():
+            try:
+                if self.calibrations[path_hash].deleted == 1:
+                    self.calibrations[path_hash].deleted = 0
+                    logger.info("previously deleted: %s" % path)
+            except AttributeError:
+                self.calibrations[path_hash].deleted = 0
+        else:
+            path_var = self.calibration_group.createVariable(path_hash, 'u1')
+            path_var.source_path = str(path)
+            path_var.deleted = 0
+            logger.debug("added: %s" % path)
+        self._ds.sync()
+        return True
+
+    def remove_calibration(self, path: Path) -> bool:
+        path_hash = NetCDFHelper.hash_string(str(path.resolve()))
+        if path_hash not in self.calibrations.keys():
+            logger.info("absent: %s" % path)
+            return False
+
+        self.calibrations[path_hash].deleted = 1
+        logger.debug("removed: %s" % path)
+        self._ds.sync()
+        return True
+
+    # # ### PROCESSES ### # #
     def manage_parent(self, parent=None):
         if parent is None:
             try:
@@ -280,7 +407,7 @@ class ProjectInfo:
         msg += "  <version: %s>\n" % self.version
         msg += "  <created: %s>\n" % self.created
         msg += "  <modified: %s>\n" % self.modified
-        msg += "  <raws: %d [%d]>\n" % (len(self.valid_raws), len(self.raws))
+        msg += "  <raws: %d [%d]>\n" % (len(self.project_raws), len(self.raws))
         for raw_key, raw in self.raws.items():
             msg += "    <%s[D%s]: %s>\n" \
                    % (raw_key, raw.deleted, raw.source_path)
