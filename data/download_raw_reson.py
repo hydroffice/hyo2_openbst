@@ -2,7 +2,7 @@ import ftplib
 import logging
 import shutil
 
-from pathlib import Path
+from pathlib import Path, PureWindowsPath
 from hyo2.abc.lib.ftp import Ftp
 from hyo2.abc.lib.testing_paths import TestingPaths
 
@@ -13,7 +13,7 @@ logger = logging.getLogger(__name__)
 # Set Script Parameters
 clear_download_folder = False
 force_dwnld = True
-ftp_path = Path("fromccom/hydroffice/openbst/testdata/raw_reson")
+ftp_path = PureWindowsPath("fromccom/hydroffice/openbst/testdata/raw_reson")
 ftp_address = "ftp.ccom.unh.edu"
 
 # list of file to download
@@ -42,7 +42,7 @@ for fid in data_files:
     print("> downloading %s to %s" % (data_src, data_dst))
     try:
         ftp = Ftp(ftp_address, show_progress=False, debug_mode=False)
-        ftp.get_file(str(data_src.resolve()), str(data_dst.resolve()), unzip_it=False)
+        ftp.get_file(str(data_src), str(data_dst.resolve()), unzip_it=False)
         ftp.disconnect()
 
     except ftplib.all_errors as e:

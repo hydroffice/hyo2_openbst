@@ -2,7 +2,7 @@ import ftplib
 import logging
 import shutil
 
-from pathlib import Path
+from pathlib import Path, PureWindowsPath
 from hyo2.abc.lib.ftp import Ftp
 from hyo2.abc.lib.testing_paths import TestingPaths
 
@@ -14,8 +14,8 @@ logger = logging.getLogger(__name__)
 clear_download_folder = False
 force_dwnld = True
 ftp_address = "ftp.ccom.unh.edu"
-ftp_ssp_path = Path("fromccom/hydroffice/openbst/testdata/ssp")
-ftp_cal_path = Path("fromccom/hydroffice/openbst/testdata/calibration")
+ftp_ssp_path = PureWindowsPath("fromccom/hydroffice/openbst/testdata/ssp")
+ftp_cal_path = PureWindowsPath("fromccom/hydroffice/openbst/testdata/calibration")
 
 # list of file to download
 calibration_files = [
