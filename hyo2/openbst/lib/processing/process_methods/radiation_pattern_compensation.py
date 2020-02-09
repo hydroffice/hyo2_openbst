@@ -1,5 +1,5 @@
 import logging
-import numpy as np
+# import numpy as np
 
 from enum import Enum
 from netCDF4 import Dataset, Group

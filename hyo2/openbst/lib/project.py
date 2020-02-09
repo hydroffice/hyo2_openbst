@@ -213,13 +213,24 @@ class Project:
             return False
         self.progress.update(50)
 
-        added = self.process.add_ssp(path=path)
+        added = self.process.auxiliary_files.add_ssp(path=path)
         if not added:
             self.progress.end()
             return False
 
         self.progress.update(100)
         self.progress.end()
+        return True
+
+    def remove_ssp(self, path: Path):
+        removed = self.info.remove_ssp(path=path)
+        if not removed:
+            logger.warning("unable to make deleted in project info")
+
+        removed = self.process.auxiliary_files.remove_ssp(path=path)
+        if not removed:
+            return False
+
         return True
 
     def add_calibration_file(self):
