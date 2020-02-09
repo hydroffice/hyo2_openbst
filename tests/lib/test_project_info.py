@@ -18,7 +18,7 @@ class TestLibProjectInfo(unittest.TestCase):
         cls.prj_path = cls.testing.output_data_folder().joinpath("test.openbst")
         cls.prj_path.mkdir(parents=True, exist_ok=True)
 
-        cls.sonar_file_path = cls.testing.download_data_folder().joinpath('reson', '20190321_185116.s7k')
+        cls.sonar_file_path = cls.testing.download_data_folder().joinpath('raw_reson', '20190321_185116.s7k')
         cls.ssp_path = cls.testing.download_data_folder().joinpath('ssp', 'SBE19plus_01907633_2019_07_30_cast4.svp')
         cls.calibration_path = cls.testing.download_data_folder().joinpath('calibration', 'chain_14m_200kHz.csv')
 
