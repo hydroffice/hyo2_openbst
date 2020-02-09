@@ -12,7 +12,7 @@ logger = logging.getLogger(__name__)
 
 # Set Script Parameters
 clear_download_folder = False
-force_dwnld = False
+force_dwnld = True
 ftp_path = Path("fromccom/hydroffice/openbst/testdata/raw_reson")
 ftp_address = "ftp.ccom.unh.edu"
 
