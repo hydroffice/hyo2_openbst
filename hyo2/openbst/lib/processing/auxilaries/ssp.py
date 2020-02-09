@@ -4,7 +4,7 @@ import numpy as np
 from datetime import datetime as dt
 from pathlib import Path
 
-from hyo2.soundspeed.base.files import FileManager
+from hyo2.openbst.lib.processing.auxilaries.files import FileManager
 logger = logging.getLogger(__name__)
 
 # TODO: How should ssp files be handled? Restrict to single format or implement multiformat reader
