@@ -14,10 +14,10 @@ bst = OpenBST(setup_name="test")
 bst.open_root_folder()
 
 # Add a file
-raw_path = testing.download_data_folder().joinpath('reson', '20190321_185116.s7k')
+raw_path = testing.download_data_folder().joinpath('raw_reson', '20190321_185116.s7k')
 bst.prj.add_raw(raw_path)
 
-raw_path = testing.download_data_folder().joinpath('reson', '20190730_144835.s7k')
+raw_path = testing.download_data_folder().joinpath('raw_reson', '20190730_144835.s7k')
 bst.prj.add_raw(raw_path)
 
 # Validate file list

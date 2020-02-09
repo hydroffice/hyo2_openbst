@@ -53,6 +53,36 @@ class TestLibProjectInfo(unittest.TestCase):
         pi = ProjectInfo(prj_path=self.prj_path)
         self.assertGreaterEqual(len(pi.products), 0)
 
+    def test_add_raw(self):
+        pi = ProjectInfo(prj_path=self.prj_path)
+        raw_path = self.testing.download_test_files('.s7k')[0]
+        added = pi.add_raw(path=raw_path)
+        self.assertTrue(added)
+        self.assertEqual(len(pi.project_raws), 1)
+
+    def test_remove_raw(self):
+        pi = ProjectInfo(prj_path=self.prj_path)
+        raw_path = self.testing.download_test_files('.s7k')[0]
+        pi.add_raw(path=raw_path)
+        removed = pi.remove_raw(path=raw_path)
+        self.assertTrue(removed)
+        self.assertEqual(len(pi.project_raws), 0)
+
+    def test_add_process(self):
+        pi = ProjectInfo(prj_path=self.prj_path)
+        raw_path = self.testing.download_test_files('.s7k')[0]
+        added = pi.add_process(path=raw_path)
+        self.assertTrue(added)
+        self.assertEqual(len(pi.project_process), 1)
+
+    def test_remove_process(self):
+        pi = ProjectInfo(prj_path=self.prj_path)
+        raw_path = self.testing.download_test_files('.s7k')[0]
+        pi.add_process(path=raw_path)
+        removed = pi.remove_process(path=raw_path)
+        self.assertTrue(removed)
+        self.assertEqual(len(pi.project_process), 0)
+
 
 def suite():
     s = unittest.TestSuite()
