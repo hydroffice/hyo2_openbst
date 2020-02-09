@@ -16,7 +16,6 @@ force_dwnld = True
 ftp_path = Path("fromccom/hydroffice/openbst/testdata/raw_reson")
 ftp_address = "ftp.ccom.unh.edu"
 
-
 # list of file to download
 data_files = [
     '20190730_144835.s7k',
