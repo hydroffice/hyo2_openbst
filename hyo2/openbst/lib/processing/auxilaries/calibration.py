@@ -8,6 +8,7 @@ logger = logging.getLogger(__name__)
 
 
 class Calibration:
+    # TODO: File format needs an update to indicate angle convension
 
     def __init__(self):
         self._ext = ".csv"
@@ -31,6 +32,10 @@ class Calibration:
         self._read(data_path=data_path)
         self._parse_header()
         self._parse_body()
+
+        if np.max(np.abs(self.angle)) > 180:
+            raise RuntimeError("calibration file contains data above 180 degrees! This is a multibeam you fool. We "
+                               "look up or down, not down and up")
 
     def check_ext(self, data_path: Path):
         if data_path.suffix != self._ext:
@@ -57,10 +62,6 @@ class Calibration:
                 self.lines = self.total_data.splitlines()
             else:
                 raise e
-
-        self.samples_offset = 0
-        self.field_index = dict()
-        self.more_fields = list()
 
         if self.fid is not None:
             self.fid.close()
@@ -131,3 +132,22 @@ class Calibration:
             self.angle = np.resize(self.angle, count)
         if self.c_values is not None:
             self.c_values = np.resize(self.c_values, count)
+
+    def to_deg(self):
+        if self.angle is None:
+            return False
+        else:
+            max_ang = np.max(np.abs(self.angle))
+            if max_ang > np.pi:
+                logger.debug("data format is degrees")
+            else:
+                logger.debug("data format is radians")
+                self.angle = np.rad2deg(self.angle)
+                max_ang = np.max(np.abs(self.angle))
+
+            if max_ang > 90:
+                logger.debug("data ranges from 0 to 180, converting to -90 to 90")
+                self.angle = self.angle - 90
+            else:
+                logger.debug("data has proper format")
+                return True
