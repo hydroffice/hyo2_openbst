@@ -232,9 +232,35 @@ class Project:
 
         return True
 
-    def add_calibration_file(self):
-        pass
+    def add_calibration(self, path: Path) -> bool:
+        self.progress.start(title="Adding calibration file", text="Ongoing reading. Please wait!",
+                            init_value=1)
+        added = self.info.add_calibration(path=path)
+        if not added:
+            self.progress.end()
+            return False
+        self.progress.update(50)
 
+        added = self.process.auxiliary_files.add_calibration(path=path)
+        if not added:
+            self.progress.end()
+            return False
+
+        self.progress.update(100)
+        self.progress.end()
+        return True
+
+    def remove_calibration(self, path: Path):
+        removed = self.info.remove_calibration(path=path)
+        if not removed:
+            logger.warning("unable to make deleted in project info")
+
+        removed = self.process.auxiliary_files.remove_calibration(path=path)
+        if not removed:
+            return False
+
+        return True
+    
     # ### Process ###
     # TODO: Significant code duplication below, need to reduce this
 
