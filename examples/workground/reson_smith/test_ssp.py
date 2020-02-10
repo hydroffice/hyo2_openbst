@@ -10,7 +10,7 @@ logger = logging.getLogger(__name__)
 
 testing = TestingPaths(root_folder=Path(__file__).parents[3].resolve())
 svp_path = testing.download_data_folder().joinpath('ssp', 'SBE19plus_01907633_2019_07_30_cast4.svp')
-svp_fail_path = testing.download_data_folder().joinpath('ssp','SBE19plus_01907633_2019_07_30_cast4.svc')
+svp_fail_path = testing.download_data_folder().joinpath('ssp', 'SBE19plus_01907633_2019_07_30_cast4.svc')
 # TEST 1: Create SSP class
 ssp = SSP()
 

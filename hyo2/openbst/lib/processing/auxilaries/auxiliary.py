@@ -5,6 +5,7 @@ from pathlib import Path
 
 
 from hyo2.openbst.lib.nc_helper import NetCDFHelper
+from hyo2.openbst.lib.processing.auxilaries.calibration import Calibration
 from hyo2.openbst.lib.processing.auxilaries.ssp import SSP
 logger = logging.getLogger(__name__)
 
@@ -54,12 +55,12 @@ class Auxiliary:
         pass
 
     @property
-    def claibration_group(self) -> Group:
+    def calibration_group(self) -> Group:
         return self.ds.groups[self._calibration_name]
 
     @property
     def calibration_files(self):
-        return self.claibration_group.groups
+        return self.calibration_group.groups
 
     @property
     def calibration_list(self) -> list:
@@ -167,7 +168,7 @@ class Auxiliary:
             grp_profile.deleted = 1
             return True
 
-    def add_calibration(self, path: Path) -> bool:
+    def add_calibration(self, path: Path, fit_curve: bool = True) -> bool:
         path_hash = NetCDFHelper.hash_string(str(path.resolve()))
         if path_hash in self.calibration_files.keys():
             if self.calibration_files[path_hash].deleted == 1:
@@ -185,9 +186,53 @@ class Auxiliary:
             # Read Calibration File
             cal_obj = Calibration()
             cal_obj.read(data_path=path)
+            cal_obj.to_deg()
 
-    def remove_calibration(self) -> bool:
-        pass
+            # Write to nc file
+            grp_cal = self.calibration_group.createGroup(path_hash)
+            # Add attributes
+            grp_cal.source_path = str(path)
+            grp_cal.deleted = 0
+            # Add variables and data
+            grp_cal.createDimension(dimname="frequency", size=1)
+            grp_cal.createDimension(dimname="angle", size=None)
+
+            var_frequency = grp_cal.createVariable(varname="frequency",
+                                                   datatype='i8',
+                                                   dimensions=("frequency",))
+            var_frequency.long_name = "calibraion_frequency"
+            var_frequency.standard_name = "sound_frequency"
+            var_frequency.units = "s-1"
+            var_frequency[:] = cal_obj.frequency
+
+            var_angles = grp_cal.createVariable(varname="angles",
+                                                datatype='f8',
+                                                dimensions=("angle",))
+            var_angles.long_name = "angle_in_sonar_reference_frame"
+            var_angles.units = "degree"
+            var_angles.convention = "clockwise_from_boresite"
+            var_angles[:] = cal_obj.angle
+
+            var_cal = grp_cal.createVariable(varname="calibration_value",
+                                             datatype="f8",
+                                             dimensions=("angle",))
+            var_cal.long_name = "sonar_calibration_value"
+            var_cal.units = "dB"
+            var_cal[:] = cal_obj.c_values
+
+            NetCDFHelper.update_modified(ds=self._ds)
+            self._ds.close()
+            return True
+
+    def remove_calibration(self, path: Path) -> bool:
+        path_hash = NetCDFHelper.hash_string(input_str=str(path.resolve()))
+        if path_hash not in self.calibration_list:
+            logger.info("absent: %s" % path)
+            return False
+        else:
+            grp_cal_file = self.calibration_files[path_hash]
+            grp_cal_file.deleted = 1
+            return True
 
     # support functions #
     def nc_ssp_name(self, path: Path):
