@@ -167,8 +167,24 @@ class Auxiliary:
             grp_profile.deleted = 1
             return True
 
-    def add_calibration(self) -> bool:
-        pass
+    def add_calibration(self, path: Path) -> bool:
+        path_hash = NetCDFHelper.hash_string(str(path.resolve()))
+        if path_hash in self.calibration_files.keys():
+            if self.calibration_files[path_hash].deleted == 1:
+                add_calibration = True
+                logger.info("previously deleted: re-adding %s" % path)
+            elif self.calibration_files[path_hash] == 0:
+                add_calibration = False
+            else:
+                logger.error("profile not added. %s.deleted is not 0 or 1" % str(self.calibration_files[path_hash]))
+                add_calibration = False
+        else:
+            add_calibration = True
+
+        if add_calibration is True:
+            # Read Calibration File
+            cal_obj = Calibration()
+            cal_obj.read(data_path=path)
 
     def remove_calibration(self) -> bool:
         pass
