@@ -19,7 +19,6 @@ class Calibration:
         self.common_path = None
         self.cur_row_idx = None
         self.max_nr_lines = None
-        self.section_token = "Section"
         self.num_samples = None
 
     def read(self, data_path: Path):
@@ -36,6 +35,7 @@ class Calibration:
         if np.max(np.abs(self.angle)) > 180:
             raise RuntimeError("calibration file contains data above 180 degrees! This is a multibeam you fool. We "
                                "look up or down, not down and up")
+        return True
 
     def check_ext(self, data_path: Path):
         if data_path.suffix != self._ext:
@@ -90,6 +90,8 @@ class Calibration:
 
             if tokens[0] != second_tokens[0] and tokens[0] != second_tokens[1]:
                 raise RuntimeError("UNknown second line of file: it should be '%s , %s" % second_tokens)
+            else:
+                self.cur_row_idx += 1
         except Exception as e:
             raise e
 
