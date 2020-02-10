@@ -197,7 +197,7 @@ def run(raw_input, calib_input):
     datacorr_fixed_gain = digital_value_db - rx_fixed_gain[:, np.newaxis]
 
     # -- Plot the adjusted gain
-    title_str = "Static Gain [%.1f dB] Correction Product\nReson T50-P @ %d kHz" % (rx_fixed_gain[0], frequency/1000)
+    title_str = "Static Gain [%.1f dB] Correction Product\nReson T50-P @ %d kHz" % (rx_fixed_gain[0], frequency / 1000)
     fig_fixedgain = data_plt.plot_ping_beam(datacorr_fixed_gain, title=title_str)
 
     # - Remove the TVG
@@ -231,11 +231,11 @@ def run(raw_input, calib_input):
     mplt.legend(["Reson TVG", "BSWG TVG"])
 
     # -- Plot the corrected values using the reson tvg
-    title_str = "TVG Correction Product\nReson T50-P @ %dHz" % (frequency/1000)
+    title_str = "TVG Correction Product\nReson T50-P @ %dHz" % (frequency / 1000)
     fig_tvgcorr = data_plt.plot_ping_beam(datacorr_tvg_gain, title=title_str)
     mplt.imshow(datacorr_tvg_gain, cmap='Greys_r')
 
-       # - Correct for the Source Level
+    # - Correct for the Source Level
     source_level = data_runtime[:, 14]
     datacorr_sourcelevel = datacorr_tvg_gain - source_level[:, np.newaxis]
 
@@ -245,7 +245,7 @@ def run(raw_input, calib_input):
 
     # - Apply Relative Calibration Correction
     # -- Load calibration curve
-    calibration_data = np.genfromtxt(fname=calib_input, dtype=float, delimiter=',')
+    calibration_data = np.genfromtxt(fname=calib_input, dtype=float, delimiter=',', skip_header=2)
 
     # -- Generate a 4th Order Fit to the curve data
     poly_coefficents = np.polyfit(calibration_data[:, 0], calibration_data[:, 1], 4)
@@ -263,7 +263,7 @@ def run(raw_input, calib_input):
     datacorr_echolevel = datacorr_sourcelevel - calibration_correction
 
     # -- Plot the corrected values
-    title_str = "Echo Level Product\nReson T50-P @ %dkHz" % (frequency/1000)
+    title_str = "Echo Level Product\nReson T50-P @ %dkHz" % (frequency / 1000)
     clabel_str = "Intensity Value [dB re 1$mu$Pa]"
     fig_echo = data_plt.plot_ping_beam(datacorr_echolevel, title=title_str, clabel=clabel_str)
 
@@ -273,7 +273,7 @@ def run(raw_input, calib_input):
     datacorr_transmissionloss = datacorr_sourcelevel + transmission_loss
 
     # -- Plot the corrected values10
-    title_str = "Transmission Loss Correction Product\nReson T50-P @ %dkHz" % (frequency/1000)
+    title_str = "Transmission Loss Correction Product\nReson T50-P @ %dkHz" % (frequency / 1000)
     clabel_str = "Intensity Value [dB re 1$mu$Pa]"
     fig_transmission = data_plt.plot_ping_beam(datacorr_transmissionloss, title=title_str, clabel=clabel_str)
 
@@ -307,7 +307,7 @@ def run(raw_input, calib_input):
     mplt.title("Comparison of Area Corrections")
 
     # Plot the area corrected data
-    title_str = "Seafloor Backscatter Product\nReson T50-P @ %dkHz" % (frequency/1000)
+    title_str = "Seafloor Backscatter Product\nReson T50-P @ %dkHz" % (frequency / 1000)
     clabel_str = r'$S(\theta)_b$  [dB re $1\mu$Pa]'
     fig_radiometric = data_plt.plot_ping_beam(datacorr_radiometric, title=title_str, clabel=clabel_str)
 
