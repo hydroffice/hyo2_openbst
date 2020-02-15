@@ -30,7 +30,6 @@ class Setup:
 
         self._nc()
 
-
     @property
     def path(self) -> Path:
         return self._path

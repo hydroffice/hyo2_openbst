@@ -85,6 +85,7 @@ class Process:
                                                      nc_process=ds_process,
                                                      parameter_object=parameters)
         if do_process is False:
+            self.proc_manager.end_process()
             ds_raw.close()
             ds_process.close()
             return False
@@ -129,6 +130,7 @@ class Process:
                                              parameters=method_parameters,
                                              data=data_out)
         if process_written is False:
+            self.proc_manager.end_process()
             return False
 
         return True

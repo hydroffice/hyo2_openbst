@@ -62,7 +62,6 @@ class Raws:
     def import_raw(self, path: Path) -> bool:
         imported = False
         raw_format = RawFormatType.retrieve_format_type(path=path)
-        raw = None
 
         # Open raw nc
         path_hash = NetCDFHelper.hash_string(str(path))
@@ -89,6 +88,7 @@ class Raws:
             else:
                 return False
             imported = reson_import.import_raw(raw=raw, ds=ds_raw)
+            raw.close()
 
         elif raw_format is RawFormatType.RESON_7K:
             raw = Reson(path)
@@ -97,6 +97,7 @@ class Raws:
             else:
                 return False
             imported = reson_import.import_raw(raw=raw, ds=ds_raw)
+            raw.close()
 
         elif raw_format is RawFormatType.R2SONIC_S7K:
             pass                                                      # TODO: Create R2Sonic Parser
