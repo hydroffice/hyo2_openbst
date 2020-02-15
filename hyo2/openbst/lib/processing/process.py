@@ -38,7 +38,6 @@ class Process:
     def path(self) -> Path:
         return self._path
 
-
     @property
     def process_method_types(self):
         return self._proc_methods
@@ -129,6 +128,8 @@ class Process:
                                              nc_process_file=process_file_path,
                                              parameters=method_parameters,
                                              data=data_out)
+        if process_written is False:
+            return False
 
         return True
 
