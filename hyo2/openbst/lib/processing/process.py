@@ -119,7 +119,7 @@ class Process:
         ds_process.close()
         ds_raw.close()
 
-        if type(data_out) is not dict:
+        if isinstance(data_out, dict) is False:
             self.proc_manager.end_process()
             return False
 
