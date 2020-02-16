@@ -5,6 +5,7 @@ from netCDF4 import Dataset
 from pathlib import Path
 from hyo2.abc.lib.testing_paths import TestingPaths
 
+from hyo2.openbst.lib.nc_helper import NetCDFHelper
 from hyo2.openbst.lib.project import Project
 from hyo2.openbst.lib.processing.process_management.process_manager import ProcessManager, ProcessStageStatus
 from hyo2.openbst.lib.processing.process_methods.dicts import ProcessMethods
@@ -44,7 +45,7 @@ class TestProcessingManager(unittest.TestCase):
 
         pm = self.prj.process.proc_manager
         params = self.prj.parameters
-        nc_path = self.prj.process.path.joinpath(self.prj.process.raw_process_list[0] + '.nc')
+        nc_path = self.prj.process.path.joinpath(NetCDFHelper.hash_string(str(self.sonar_file_path)) + '.nc')
         nc = Dataset(filename=nc_path, mode='a')
         pm.start_process(process_type=ProcessMethods.RAWDECODE, nc_process=nc, parameter_object=params)
 
@@ -60,7 +61,7 @@ class TestProcessingManager(unittest.TestCase):
 
         pm = self.prj.process.proc_manager
         params = self.prj.parameters
-        nc_path = self.prj.process.path.joinpath(self.prj.process.raw_process_list[0] + '.nc')
+        nc_path = self.prj.process.path.joinpath(NetCDFHelper.hash_string(str(self.sonar_file_path)) + '.nc')
         nc = Dataset(filename=nc_path, mode='a')
         pm.start_process(process_type=ProcessMethods.RAWDECODE, nc_process=nc, parameter_object=params)
         pm.end_process()
@@ -90,7 +91,7 @@ class TestProcessingManager(unittest.TestCase):
 
         pm = self.prj.process.proc_manager
         params = self.prj.parameters
-        nc_path = self.prj.process.path.joinpath(self.prj.process.raw_process_list[0] + '.nc')
+        nc_path = self.prj.process.path.joinpath(NetCDFHelper.hash_string(str(self.sonar_file_path)) + '.nc')
         nc = Dataset(filename=nc_path, mode='a')
         pm.start_process(process_type=ProcessMethods.RAWDECODE, nc_process=nc, parameter_object=params)
 
@@ -106,7 +107,7 @@ class TestProcessingManager(unittest.TestCase):
 
         pm = self.prj.process.proc_manager
         params = self.prj.parameters
-        nc_path = self.prj.process.path.joinpath(self.prj.process.raw_process_list[0] + '.nc')
+        nc_path = self.prj.process.path.joinpath(NetCDFHelper.hash_string(str(self.sonar_file_path)) + '.nc')
         nc = Dataset(filename=nc_path, mode='a')
         pm.start_process(process_type=ProcessMethods.STATICGAIN, nc_process=nc, parameter_object=params)
 
@@ -123,7 +124,7 @@ class TestProcessingManager(unittest.TestCase):
 
         pm = self.prj.process.proc_manager
         params = self.prj.parameters
-        nc_path = self.prj.process.path.joinpath(self.prj.process.raw_process_list[0] + '.nc')
+        nc_path = self.prj.process.path.joinpath(NetCDFHelper.hash_string(str(self.sonar_file_path)) + '.nc')
         nc = Dataset(filename=nc_path, mode='a')
         pm.start_process(process_type=ProcessMethods.STATICGAIN, nc_process=nc, parameter_object=params)
 
@@ -142,7 +143,7 @@ class TestProcessingManager(unittest.TestCase):
 
         pm = self.prj.process.proc_manager
         params = self.prj.parameters
-        nc_path = self.prj.process.path.joinpath(self.prj.process.raw_process_list[0] + '.nc')
+        nc_path = self.prj.process.path.joinpath(NetCDFHelper.hash_string(str(self.sonar_file_path)) + '.nc')
         nc = Dataset(filename=nc_path, mode='a')
         pm.start_process(process_type=ProcessMethods.RAWDECODE, nc_process=nc, parameter_object=params)
 
@@ -159,7 +160,7 @@ class TestProcessingManager(unittest.TestCase):
         pm = self.prj.process.proc_manager
         pm.reset_process()
         params = self.prj.parameters
-        nc_path = self.prj.process.path.joinpath(self.prj.process.raw_process_list[0] + '.nc')
+        nc_path = self.prj.process.path.joinpath(NetCDFHelper.hash_string(str(self.sonar_file_path)) + '.nc')
         nc = Dataset(filename=nc_path, mode='a')
         pm.start_process(process_type=ProcessMethods.RAWDECODE, nc_process=nc, parameter_object=params)
 
@@ -178,7 +179,7 @@ class TestProcessingManager(unittest.TestCase):
 
         pm = self.prj.process.proc_manager
         params = self.prj.parameters
-        nc_path = self.prj.process.path.joinpath(self.prj.process.raw_process_list[0] + '.nc')
+        nc_path = self.prj.process.path.joinpath(NetCDFHelper.hash_string(str(self.sonar_file_path)) + '.nc')
         nc = Dataset(filename=nc_path, mode='a')
         pm.start_process(process_type=ProcessMethods.STATICGAIN, nc_process=nc, parameter_object=params)
 
@@ -195,7 +196,7 @@ class TestProcessingManager(unittest.TestCase):
 
         pm = self.prj.process.proc_manager
         params = self.prj.parameters
-        nc_path = self.prj.process.path.joinpath(self.prj.process.raw_process_list[0] + '.nc')
+        nc_path = self.prj.process.path.joinpath(NetCDFHelper.hash_string(str(self.sonar_file_path)) + '.nc')
         nc = Dataset(filename=nc_path, mode='a')
         pm.start_process(process_type=ProcessMethods.RAWDECODE, nc_process=nc, parameter_object=params)
 
