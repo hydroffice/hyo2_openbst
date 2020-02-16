@@ -71,7 +71,7 @@ class TestProcessingManager(unittest.TestCase):
         nc.close()
 
     def test_reset(self):
-        self.prj = Project(prj_path=self.test_dir.joinpath("end_process" + self.ext), force_prj_creation=True)
+        self.prj = Project(prj_path=self.test_dir.joinpath("reset_process" + self.ext), force_prj_creation=True)
         self.prj.add_raw(self.sonar_file_path)
         self.prj.check_health()
         self.prj.raw_decode()
@@ -151,7 +151,7 @@ class TestProcessingManager(unittest.TestCase):
         nc.close()
 
     def test_old_root_node(self):
-        self.prj = Project(prj_path=self.test_dir.joinpath("new_node" + self.ext), force_prj_creation=True)
+        self.prj = Project(prj_path=self.test_dir.joinpath("old_root_node" + self.ext), force_prj_creation=True)
         self.prj.add_raw(self.sonar_file_path)
         self.prj.check_health()
         self.prj.raw_decode()
@@ -168,7 +168,7 @@ class TestProcessingManager(unittest.TestCase):
         nc.close()
 
     def test_child_node(self):
-        self.prj = Project(prj_path=self.test_dir.joinpath("new_node" + self.ext), force_prj_creation=True)
+        self.prj = Project(prj_path=self.test_dir.joinpath("child_node" + self.ext), force_prj_creation=True)
         self.prj.add_raw(self.sonar_file_path)
         self.prj.check_health()
         self.prj.raw_decode()
@@ -187,7 +187,7 @@ class TestProcessingManager(unittest.TestCase):
         nc.close()
 
     def test_ancestor_node(self):
-        self.prj = Project(prj_path=self.test_dir.joinpath("new_node" + self.ext), force_prj_creation=True)
+        self.prj = Project(prj_path=self.test_dir.joinpath("ancestor_node" + self.ext), force_prj_creation=True)
         self.prj.add_raw(self.sonar_file_path)
         self.prj.check_health()
         self.prj.raw_decode()
