@@ -355,7 +355,7 @@ class Data7004(ResonData):
         self.rx_angle_horizontal = data_unpack[self.num_rx_beams:2*self.num_rx_beams]
         self.rx_beam_width_along = data_unpack[2*self.num_rx_beams:3*self.num_rx_beams]
         self.rx_beam_width_across = data_unpack[3*self.num_rx_beams:4*self.num_rx_beams]
-        logging.debug('sdf')
+
 
         self.parse_check = True
         return self.parse_check

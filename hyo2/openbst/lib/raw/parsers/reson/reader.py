@@ -4,7 +4,7 @@ import os
 import struct
 import time
 
-import numpy as np
+
 from pathlib import Path
 from hyo2.openbst.lib.raw.parsers.reson.dg_formats import parse, ResonDatagrams, reson_datagram_code
 
@@ -37,6 +37,13 @@ class Reson:
     @property
     def valid(self):
         return self._valid
+
+    def close(self):
+        if self.file.closed is True:
+            return True
+        else:
+            self.file.close()
+            return True
 
     # Initializing Methods
     def check_file(self, file_path: Path):
