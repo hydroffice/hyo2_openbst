@@ -39,7 +39,7 @@ class RayTraceParams:
         except TypeError:
             return False
 
-    def process_identifier(self):
+    def process_identifiers(self):
         process_string = RayTraceParams.process_name
         parameter_string = str()
         for key, value in self.__dict__.items():
@@ -93,8 +93,8 @@ class RayTrace:
                     grp_process.createDimension(dimname='ping', size=None)
                     grp_process.createDimension(dimname='beam', size=None)
                     var_range_data = grp_process.createVariable(varname='range',
-                                                             datatype='f8',
-                                                             dimensions=('ping', 'beam'))
+                                                                datatype='f8',
+                                                                dimensions=('ping', 'beam'))
                     var_range_data.longname = "computed_range_to_seafloor"
                     var_range_data.units = 'm'
                     var_range_data[:] = data
