@@ -89,13 +89,13 @@ class RayTrace:
     def write_data_to_nc(cls,data_dict: dict, grp_process: Group):
         try:
             for data_name, data in data_dict.items():
-                if data_name == 'range':
+                if data_name == 'ray_path_length':
                     grp_process.createDimension(dimname='ping', size=None)
                     grp_process.createDimension(dimname='beam', size=None)
-                    var_range_data = grp_process.createVariable(varname='range',
+                    var_range_data = grp_process.createVariable(varname='path_length',
                                                                 datatype='f8',
                                                                 dimensions=('ping', 'beam'))
-                    var_range_data.longname = "computed_range_to_seafloor"
+                    var_range_data.longname = "computed_ray_path_length"
                     var_range_data.units = 'm'
                     var_range_data[:] = data
 
@@ -109,10 +109,9 @@ class RayTrace:
                     surface_sound_speed: np.ma.MaskedArray,
                     sample_rate: np.ma.MaskedArray):
 
-        slant_range = detection_point / sample_rate * surface_sound_speed / 2
-
+        ray_path_length = detection_point / sample_rate * surface_sound_speed / 2
         data_out = {
-            'range': slant_range
+            'ray_path_length': ray_path_length
         }
         return data_out
 
