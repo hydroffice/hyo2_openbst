@@ -274,7 +274,7 @@ class RawImport:
                                                 datatype="f8",
                                                 dimensions=("ping", "beam_number"),
                                                 fill_value=RawImport.fill_value)
-        var_rx_angle[:] = detect_point
+        var_rx_angle[:] = rx_angle
         var_rx_angle.missing_value = RawImport.fill_value
 
         var_quality = grp_bathy.createVariable(varname="quality",
