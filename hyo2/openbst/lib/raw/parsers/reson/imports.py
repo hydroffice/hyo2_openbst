@@ -218,7 +218,7 @@ class RawImport:
         for index, dg_raw_bathy in enumerate(raw_bathy):
             beam_num = dg_raw_bathy.beam
             detect_point[index, beam_num] = dg_raw_bathy.detect_point
-            rx_angle[index, beam_num] = dg_raw_bathy.rx_angle
+            rx_angle[index, beam_num] = np.rad2deg(dg_raw_bathy.rx_angle)
             quality[index, beam_num] = dg_raw_bathy.quality_flag
             bs_beam_average[index, beam_num] = dg_raw_bathy.signal_strength
             bs_beam_min_gate[index, beam_num] = dg_raw_bathy.min_limit
