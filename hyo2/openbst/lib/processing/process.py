@@ -11,12 +11,12 @@ from hyo2.openbst.lib.processing.auxilaries.auxiliary import Auxiliary
 from hyo2.openbst.lib.processing.parameters import Parameters
 from hyo2.openbst.lib.processing.process_management.process_manager import ProcessManager
 from hyo2.openbst.lib.processing.process_methods.dicts import ProcessMethods
-
 from hyo2.openbst.lib.processing.process_methods.interpolation import Interpolation
 from hyo2.openbst.lib.processing.process_methods.raw_decoding import RawDecoding
 from hyo2.openbst.lib.processing.process_methods.raytracing import RayTrace
-from hyo2.openbst.lib.processing.process_methods.static_gain_compensation import StaticGainCorrection
 from hyo2.openbst.lib.processing.process_methods.source_level import SourceLevel
+from hyo2.openbst.lib.processing.process_methods.static_gain_compensation import StaticGainCorrection
+from hyo2.openbst.lib.processing.process_methods.transmission_loss import TransmissonLoss
 from hyo2.openbst.lib.processing.process_methods.tvg import TVG
 logger = logging.getLogger(__name__)
 
@@ -111,6 +111,12 @@ class Process:
                                                            parent=self.proc_manager.parent_process,
                                                            parameters=method_parameters)
 
+        elif process_method is ProcessMethods.TRANSMISSIONLOSS:
+            data_out = TransmissonLoss.tl_compensation(ds_process=ds_process,
+                                                       ds_raw=ds_raw,
+                                                       parent=self.proc_manager.parent_process,
+                                                       parameters=method_parameters)
+
         elif process_method is ProcessMethods.TVG:
             data_out = TVG.tvg_correction(ds_process=ds_process,
                                           ds_raw=ds_raw,
@@ -168,6 +174,8 @@ class Process:
             process_written = StaticGainCorrection.write_data_to_nc(data_dict=data, grp_process=grp_process)
         elif process_method is ProcessMethods.SOURCELEVEL:
             process_written = SourceLevel.write_data_to_nc(data_dict=data, grp_process=grp_process)
+        elif process_method is ProcessMethods.TRANSMISSIONLOSS:
+            process_written = TransmissonLoss.write_data_to_nc(data_dict=data, grp_process=grp_process)
         elif process_method is ProcessMethods.TVG:
             process_written = TVG.write_data_to_nc(data_dict=data, grp_process=grp_process)
         else:
