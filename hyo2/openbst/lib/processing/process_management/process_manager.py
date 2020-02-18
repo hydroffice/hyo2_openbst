@@ -283,6 +283,8 @@ class ProcessManager:
                     if parent_identifiers[0] == self.root:
                         # This is the first process, we don't meet requirements
                         meets_required = False
+                        logger.warning("Process: %s has a requirement: %s\n"
+                                       "Calculate required process to run current process" % (process, requirement))
                         break
                     elif parent_identifiers[1] == required_identifiers[0]:
                         meets_required = True
@@ -295,8 +297,10 @@ class ProcessManager:
                         if in_process_chain is True:
                             meets_required = True
                         else:
+                            meets_required = False
                             logger.warning("Process: %s has a requirement: %s\n"
-                                           "Calculate required process to run current process" % process, requirement)
+                                           "Calculate required process to run current process" % (process, requirement))
+
         return meets_required
 
     def generate_process_name(self, process_identifiers: list, duplicate: bool = False) -> str:
