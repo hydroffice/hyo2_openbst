@@ -11,6 +11,7 @@ from hyo2.openbst.lib.processing.auxilaries.auxiliary import Auxiliary
 from hyo2.openbst.lib.processing.parameters import Parameters
 from hyo2.openbst.lib.processing.process_management.process_manager import ProcessManager
 from hyo2.openbst.lib.processing.process_methods.dicts import ProcessMethods
+from hyo2.openbst.lib.processing.process_methods.radiation_pattern_compensation import RadiationPatternCorrection
 from hyo2.openbst.lib.processing.process_methods.interpolation import Interpolation
 from hyo2.openbst.lib.processing.process_methods.raw_decoding import RawDecoding
 from hyo2.openbst.lib.processing.process_methods.raytracing import RayTrace
@@ -98,6 +99,16 @@ class Process:
                                           parameters=method_parameters)
         elif process_method is ProcessMethods.INTERPOLATION:
             data_out = Interpolation.interpolate(ds_raw=ds_raw, parameters=method_parameters)
+
+        elif process_method is ProcessMethods.CALIBRATION:
+            ds_aux = Dataset(filename=self.auxiliary_files.path, mode='r')
+            cal_list = self.auxiliary_files.calibration_list
+            data_out = RadiationPatternCorrection.radiation_pattern_correction(ds_process=ds_process,
+                                                                               ds_raw=ds_raw,
+                                                                               ds_aux=ds_aux,
+                                                                               parent=self.proc_manager.parent_process,
+                                                                               parameters=method_parameters,
+                                                                               calibration_list=cal_list)
 
         elif process_method is ProcessMethods.STATICGAIN:
             data_out = StaticGainCorrection.static_correction(ds_process=ds_process,
