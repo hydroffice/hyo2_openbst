@@ -2,13 +2,20 @@ import logging
 import numpy as np
 
 from datetime import datetime as dt
+from enum import Enum
 from pathlib import Path
+from typing import Optional, Union
 
 from hyo2.openbst.lib.processing.auxilaries.files import FileManager
+
 logger = logging.getLogger(__name__)
+
 
 # TODO: How should ssp files be handled? Restrict to single format or implement multiformat reader
 # TODO: This is copy paste from SSM and made to quickly work. Needs a rework if it is being kept
+class SSPEnum(Enum):
+    nearest_in_time = 0
+    nearest_in_location = 1
 
 
 class SSP:
@@ -231,3 +238,52 @@ class SSP:
             self.depth = np.resize(self.depth, count)
         if self.sv is not None:
             self.sv = np.resize(self.sv, count)
+
+    @classmethod
+    def absorption(cls,
+                   frequency: Union[int, np.ndarray],
+                   depth: Union[float, np.ndarray],
+                   temperature: Union[float, np.ndarray] = 21.0,
+                   salinity: Union[float, np.ndarray] = 35.0,
+                   ph: Union[float, np.ndarray] = 7.0):
+        """Calculate attenuation
+
+        ref: Francois and Garrison, J. Acoust. Soc. Am., Vol. 72, No. 6, December 1982
+
+        Args:
+            frequency: frequency in kHz
+            temperature: temperature in deg Celsius
+            salinity: salinity in ppt
+            depth: depth in meter
+            ph: acidity`
+
+        Returns: attenuation
+
+        """
+        abs_t = 273.0 + temperature
+        c = 1412.0 + 3.21 * temperature + 1.19 * salinity + 0.0167 * depth  # sound speed calculation
+
+        # Boric Acid Contribution
+        a1 = (8.86 / c) * np.power(10.0, (0.78 * ph - 5.0))
+        p1 = 1.0
+
+        f1 = 2.8 * np.power((salinity / 35.0), 0.5) * np.power(10.0, 4.0 - (1245.0 / abs_t))
+
+        # MgSO4 Contribution
+        a2 = (21.44 * salinity / c) * (1.0 + 0.025 * temperature)
+        p2 = (1.0 - 1.37E-4 * depth) + (6.2E-9 * depth * depth)
+        f2 = (8.17 * np.power(10.0, 8.0 - 1990.0 / abs_t)) / (1.0 + 0.0018 * (salinity - 35.0))
+
+        # Pure Water Contribution
+        if temperature <= 20.0:
+            a3 = 4.937E-4 - 2.590E-5 * temperature + 9.11E-7 * temperature ** 2 - 1.50E-8 * temperature ** 3
+        else:
+            a3 = 3.964E-4 - 1.146E-5 * temperature + 1.45E-7 * temperature ** 2 - 6.50E-10 * temperature ** 3
+
+        p3 = 1.0 - 3.83E-5 * depth + 4.9E-10 * depth * depth
+
+        boric = (a1 * p1 * f1 * frequency * frequency) / (frequency * frequency + f1 * f1)
+        mgso4 = (a2 * p2 * f2 * frequency * frequency) / (frequency * frequency + f2 * f2)
+        h2o = a3 * p3 * frequency * frequency
+
+        return boric + mgso4 + h2o

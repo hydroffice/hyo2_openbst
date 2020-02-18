@@ -27,6 +27,12 @@ bst = OpenBST(prj_name="test_ssp", force_new=True).prj
 did_it_work = bst.process.auxiliary_files.add_ssp(path=svp_path)
 print(did_it_work)
 
+
+# TEST 5: Calculate the absorption bins
+# TODO: Test the absorption bins
+
+
 # Test 5: Delete a profile = True
 did_it_work = bst.process.auxiliary_files.remove_ssp(path=svp_path)
 print(did_it_work)
+
