@@ -288,7 +288,20 @@ class Project:
                                                  parameters=self.parameters)
             if processed is True:
                 self.info.manage_parent(parent=self.process.proc_manager.parent_process)
-                print('File Motion data interpolated to ping times %s' % process_file_path.resolve())
+                print('File Motion data interpolated to ping times: %s' % process_file_path.resolve())
+
+    def raytrace(self):
+        for path_hash in self.raws.raws_list:
+            raw_file_path = self.raws_folder.joinpath(path_hash + self.raws.ext)
+            process_file_path = self.process_folder.joinpath(path_hash + self.process.ext)
+
+            processed = self.process.run_process(process_method=self.process.process_method_types.RAYTRACE,
+                                                 process_file_path=process_file_path,
+                                                 raw_path=raw_file_path,
+                                                 parameters=self.parameters)
+            if processed is True:
+                self.info.manage_parent(parent=self.process.proc_manager.parent_process)
+                print('File data has been raytrace: %s' % process_file_path.resolve())
 
     def static_gain_correction(self):
         for path_hash in self.raws.raws_list:

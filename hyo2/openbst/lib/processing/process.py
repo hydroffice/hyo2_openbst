@@ -14,6 +14,7 @@ from hyo2.openbst.lib.processing.process_methods.dicts import ProcessMethods
 
 from hyo2.openbst.lib.processing.process_methods.interpolation import Interpolation
 from hyo2.openbst.lib.processing.process_methods.raw_decoding import RawDecoding
+from hyo2.openbst.lib.processing.process_methods.raytracing import RayTrace
 from hyo2.openbst.lib.processing.process_methods.static_gain_compensation import StaticGainCorrection
 from hyo2.openbst.lib.processing.process_methods.source_level import SourceLevel
 from hyo2.openbst.lib.processing.process_methods.tvg import TVG
@@ -103,16 +104,25 @@ class Process:
                                                               ds_raw=ds_raw,
                                                               parent=self.proc_manager.parent_process,
                                                               parameters=method_parameters)
+
         elif process_method is ProcessMethods.SOURCELEVEL:
             data_out = SourceLevel.source_level_correction(ds_process=ds_process,
                                                            ds_raw=ds_raw,
                                                            parent=self.proc_manager.parent_process,
                                                            parameters=method_parameters)
+
         elif process_method is ProcessMethods.TVG:
             data_out = TVG.tvg_correction(ds_process=ds_process,
                                           ds_raw=ds_raw,
                                           parent=self.proc_manager.parent_process,
                                           parameters=method_parameters)
+
+        elif process_method is ProcessMethods.RAYTRACE:
+            data_out = RayTrace.ray_trace(ds_process=ds_process,
+                                          ds_raw=ds_raw,
+                                          parent=self.proc_manager.parent_process,
+                                          parameters=method_parameters)
+
         else:
             raise RuntimeError("We realistically cannot get to this point as there is no error handling in the above"
                                "method calls")  # TODO: Impliment error handling
@@ -152,6 +162,8 @@ class Process:
             process_written = RawDecoding.write_data_to_nc(data_dict=data, grp_process=grp_process)
         elif process_method is ProcessMethods.INTERPOLATION:
             process_written = Interpolation.write_data_to_nc(data_dict=data, grp_process=grp_process)
+        elif process_method is ProcessMethods.RAYTRACE:
+            process_written = RayTrace.write_data_to_nc(data_dict=data, grp_process=grp_process)
         elif process_method is ProcessMethods.STATICGAIN:
             process_written = StaticGainCorrection.write_data_to_nc(data_dict=data, grp_process=grp_process)
         elif process_method is ProcessMethods.SOURCELEVEL:

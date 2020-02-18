@@ -13,13 +13,14 @@ class ProcessMethods(Enum):
     MANUFACTURERGAIN = 4
     SOURCELEVEL = 5
     CALIBRATION = 6
-    GEOLOCATION = 7
-    GRIDDING = 8
-    TRANSMISSIONLOSS = 9
-    INSONIFIEDAREA = 10
-    ANGULARDEPENDENCE = 11
-    DESPECKLE = 12
-    ANTIALIASING = 13
+    RAYTRACE = 7
+    GEOLOCATION = 8
+    GRIDDING = 9
+    TRANSMISSIONLOSS = 10
+    INSONIFIEDAREA = 11
+    ANGULARDEPENDENCE = 12
+    DESPECKLE = 13
+    ANTIALIASING = 14
 
 
 process_requirements = {
@@ -30,7 +31,8 @@ process_requirements = {
     ProcessMethods.MANUFACTURERGAIN: ProcessMethods.RAWDECODE,
     ProcessMethods.SOURCELEVEL: ProcessMethods.RAWDECODE,
     ProcessMethods.CALIBRATION: ProcessMethods.RAWDECODE,
-    ProcessMethods.GEOLOCATION: ProcessMethods.INTERPOLATION,
+    ProcessMethods.RAYTRACE: ProcessMethods.INTERPOLATION,
+    ProcessMethods.GEOLOCATION: ProcessMethods.RAYTRACE,
     ProcessMethods.GRIDDING: ProcessMethods.GEOLOCATION,
     ProcessMethods.TRANSMISSIONLOSS: ProcessMethods.RAWDECODE,
     ProcessMethods.INSONIFIEDAREA: ProcessMethods.INTERPOLATION,
