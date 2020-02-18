@@ -65,7 +65,7 @@ class TransmissonLoss:
 
     @classmethod
     def tl_compensation(cls, ds_process: Dataset, ds_raw: Dataset,
-                        parent: str, parameters: TransmissonLossParameters) -> dict:
+                        parent: str, parameters: TransmissonLossParameters) -> Union[dict, bool]:
         p_method_type = parameters.method_type
         p_use_ssp = parameters.use_ssp
         p_ssp_nearest_in = parameters.ssp_nearest_in
@@ -75,6 +75,14 @@ class TransmissonLoss:
 
         data_backscatter = cls.find_bs_data(ds_process=ds_process, parent=parent)
         data_raypath = cls.find_ray_data(ds_process=ds_process, parent=parent)
+
+        if data_backscatter is None:
+            logger.error("Step not computed: Backscatter data not found")
+            return False
+
+        if data_raypath is None:
+            logger.error("Step not computed: Raypath data not found")
+            return False
 
         if p_method_type is TransmissionLossEnum.spherical:
             # FIXME: This alpha value is really a static gain and should be treated as such. I need to figure out a way
@@ -109,6 +117,7 @@ class TransmissonLoss:
                     var_bs_data = grp_process.createVariable(varname='backscatter_data',
                                                              datatype='f8',
                                                              dimensions=('ping', 'beam'))
+
                     var_bs_data[:] = data
 
                 elif data_name == 'trasmission_loss':
@@ -170,7 +179,7 @@ class TransmissonLoss:
     def find_bs_data(cls, ds_process: Dataset, parent: str):
         grp_parent = ds_process.groups[parent]
         try:
-            var_backscatter = grp_parent.groups['backscatter_data']
+            var_backscatter = grp_parent.variables['backscatter_data']
             data_backscatter = var_backscatter[:]
             return data_backscatter
         except KeyError:
