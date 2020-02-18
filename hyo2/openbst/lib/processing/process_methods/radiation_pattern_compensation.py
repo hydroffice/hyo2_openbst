@@ -2,7 +2,7 @@ import logging
 # import numpy as np
 
 from enum import Enum
-# from netCDF4 import Dataset
+from netCDF4 import Dataset, Group
 
 from hyo2.openbst.lib.nc_helper import NetCDFHelper
 
@@ -29,7 +29,7 @@ class RadiationPatternParameters:
     def __init__(self):
         self.method_type = RadiationPatternEnum.calibration_file
         self.fit_curve = False
-        self.curve_order = 2
+        self.curve_order = 3
 
     def nc_write_parameters(self, grp_process: Group):
         try:
@@ -58,15 +58,24 @@ class RadiationPatternCorrection:
         pass
 
     @classmethod
-    def radiation_pattern_correction(cls):
-        pass
+    def radiation_pattern_correction(cls, ds_process: Dataset, ds_raw: Dataset,
+                                     parent: str, parameters: RadiationPatternParameters):
+        p_method_type = parameters.method_type
+
+        if p_method_type is RadiationPatternEnum.calibration_file:
+            pass
+        elif p_method_type is RadiationPatternEnum.custom_curve:
+            pass
+        else:
+            raise TypeError("Unrecognized Method Type: %s" % p_method_type)
+        return data_out
 
     @classmethod
     def write_data_to_nc(cls, data_dict: dict, grp_process: Group):
         pass
 
     @classmethod
-    def calibration_file(cls):
+    def calibration_file(cls, data_dict: dict, grp_process: Group):
         pass
 
     @classmethod
