@@ -177,18 +177,28 @@ class Process:
         # Store the process
         if process_method is ProcessMethods.RAWDECODE:
             process_written = RawDecoding.write_data_to_nc(data_dict=data, grp_process=grp_process)
+
+        elif process_method is ProcessMethods.CALIBRATION:
+            process_written = RadiationPatternCorrection.write_data_to_nc(data_dict=data, grp_process=grp_process)
+
         elif process_method is ProcessMethods.INTERPOLATION:
             process_written = Interpolation.write_data_to_nc(data_dict=data, grp_process=grp_process)
+
         elif process_method is ProcessMethods.RAYTRACE:
             process_written = RayTrace.write_data_to_nc(data_dict=data, grp_process=grp_process)
+
         elif process_method is ProcessMethods.STATICGAIN:
             process_written = StaticGainCorrection.write_data_to_nc(data_dict=data, grp_process=grp_process)
+
         elif process_method is ProcessMethods.SOURCELEVEL:
             process_written = SourceLevel.write_data_to_nc(data_dict=data, grp_process=grp_process)
+
         elif process_method is ProcessMethods.TRANSMISSIONLOSS:
             process_written = TransmissonLoss.write_data_to_nc(data_dict=data, grp_process=grp_process)
+
         elif process_method is ProcessMethods.TVG:
             process_written = TVG.write_data_to_nc(data_dict=data, grp_process=grp_process)
+            
         else:
             raise RuntimeError("Unrecognized processing method type: %s" % process_method)
 
