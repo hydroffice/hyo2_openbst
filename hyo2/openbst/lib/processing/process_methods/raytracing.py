@@ -86,10 +86,10 @@ class RayTrace:
         return data_out
 
     @classmethod
-    def write_data_to_nc(cls,data_dict: dict, grp_process: Group):
+    def write_data_to_nc(cls, data_dict: dict, grp_process: Group):
         try:
             for data_name, data in data_dict.items():
-                if data_name == 'ray_path_length':
+                if data_name == 'path_length':
                     grp_process.createDimension(dimname='ping', size=None)
                     grp_process.createDimension(dimname='beam', size=None)
                     var_range_data = grp_process.createVariable(varname='path_length',
@@ -111,7 +111,7 @@ class RayTrace:
 
         ray_path_length = detection_point / sample_rate * surface_sound_speed / 2
         data_out = {
-            'ray_path_length': ray_path_length
+            'path_length': ray_path_length
         }
         return data_out
 
