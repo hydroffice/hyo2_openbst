@@ -175,4 +175,3 @@ class RadiationPatternCorrection:
     @classmethod
     def custom_curve(cls):
         pass
-    
