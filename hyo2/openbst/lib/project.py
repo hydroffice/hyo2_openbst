@@ -263,7 +263,7 @@ class Project:
     
     # ### Process ###
     # TODO: Significant code duplication below, need to reduce this
-
+    # TODO: Add error handling in the event we havent added a raw yet and are calling these functions
     def calibration(self):
         for path_hash in self.raws.raws_list:
             raw_file_path = self.raws_folder.joinpath(path_hash + self.raws.ext)

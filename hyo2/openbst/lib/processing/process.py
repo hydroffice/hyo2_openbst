@@ -101,14 +101,16 @@ class Process:
             data_out = Interpolation.interpolate(ds_raw=ds_raw, parameters=method_parameters)
 
         elif process_method is ProcessMethods.CALIBRATION:
-            ds_aux = Dataset(filename=self.auxiliary_files.path, mode='r')
             cal_list = self.auxiliary_files.calibration_list
+            ds_aux = Dataset(filename=self.auxiliary_files.path, mode='r')
+
             data_out = RadiationPatternCorrection.radiation_pattern_correction(ds_process=ds_process,
                                                                                ds_raw=ds_raw,
                                                                                ds_aux=ds_aux,
                                                                                parent=self.proc_manager.parent_process,
                                                                                parameters=method_parameters,
                                                                                calibration_list=cal_list)
+            ds_aux.close()
 
         elif process_method is ProcessMethods.STATICGAIN:
             data_out = StaticGainCorrection.static_correction(ds_process=ds_process,
@@ -198,7 +200,7 @@ class Process:
 
         elif process_method is ProcessMethods.TVG:
             process_written = TVG.write_data_to_nc(data_dict=data, grp_process=grp_process)
-            
+
         else:
             raise RuntimeError("Unrecognized processing method type: %s" % process_method)
 

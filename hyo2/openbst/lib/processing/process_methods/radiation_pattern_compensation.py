@@ -65,6 +65,7 @@ class RadiationPatternCorrection:
         p_method_type = parameters.method_type
 
         if p_method_type is RadiationPatternEnum.calibration_file:
+
             # Check if there is a calibration file
             if len(calibration_list) < 1:
                 logger.warning("No calibration file found in: %s" % ds_aux.path)
@@ -76,16 +77,15 @@ class RadiationPatternCorrection:
             # extract required variables
             # TODO:This is a hack I need to find a way to intelligently select a calibration file
             #   will need to do checking for frequency
-            grp_cal = ds_aux.groups['calibration_files'].goups[calibration_list[0]]
-            var_angles = grp_cal.variables['angles']
+            grp_cal_container = ds_aux.groups['calibration_files']
+            grp_cal = grp_cal_container.groups[calibration_list[0]]
+            var_angles = grp_cal.variables['angle']
             data_angles = var_angles[:]
-            data_angles = data_angles[:, np.newaxis]
             var_cal = grp_cal.variables['calibration_value']
             data_cal = var_cal[:]
-            data_cal = data_cal[:, np.newaxis]
 
             grp_parent = ds_process.groups[parent]
-            var_backscatter = grp_parent.groups['backscatter_data']
+            var_backscatter = grp_parent.variables['backscatter_data']
             data_backscatter = var_backscatter[:]
 
             grp_raw = ds_raw.groups['raw_bathymetry_data']
@@ -109,7 +109,7 @@ class RadiationPatternCorrection:
         try:
             grp_process.createDimension(dimname='ping', size=None)
             grp_process.createDimension(dimname='beam', size=None)
-            grp_process.createDimension(dimname='angle',size=None)
+            grp_process.createDimension(dimname='angle', size=None)
 
             for data_name, data in data_dict.items():
                 if data_name == 'backscatter_data':
@@ -156,8 +156,8 @@ class RadiationPatternCorrection:
 
         # loop through pings and fit to curve
         calibration_values = np.ones(shape=backscatter_data.shape) * np.nan
-        for ping in num_ping:
-            calibration_values[ping, :] = np.interp(bs_angles, cal_curve_angles, cal_curve_values)
+        for ping in range(num_ping):
+            calibration_values[ping, :] = np.interp(bs_angles[ping, :], cal_curve_angles[:, 0], cal_curve_values[:, 0])
 
         # correct bs values
         bs_corrected = backscatter_data - calibration_values
