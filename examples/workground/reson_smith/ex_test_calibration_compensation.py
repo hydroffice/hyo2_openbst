@@ -3,7 +3,6 @@ import logging
 from pathlib import Path
 
 from hyo2.openbst.lib.openbst import OpenBST
-from hyo2.openbst.lib.processing.auxilaries.calibration import Calibration
 from hyo2.abc.lib.testing_paths import TestingPaths
 from hyo2.openbst.lib.processing.process_methods.calibration import CalibrationEnum
 
@@ -29,4 +28,3 @@ bst.calibration()
 # Test 2: Method: Calibration File, Pass = No errors
 bst.raw_decode()
 bst.calibration()
-

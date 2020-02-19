@@ -64,11 +64,11 @@ class AreaCompensation:
         data_rx_bw_across = var_rx_bw_across[:]
 
         grp_runtime = ds_raw.groups['runtime_settings']
-        var_tx_bw_along = ds_raw.groups['tx_along_beam_width']
+        var_tx_bw_along = grp_runtime.variables['tx_along_beam_width']
         data_tx_be_along = var_tx_bw_along[:]
-        var_sound_speed = ds_raw.groups['sound_velocity']
+        var_sound_speed = grp_runtime.variables['sound_velocity']
         data_sound_speed = var_sound_speed[:]
-        var_pulse_length = ds_raw.groups['tx_pulse_width']
+        var_pulse_length = grp_runtime.variables['tx_pulse_width']
         data_pulse_length = var_pulse_length[:]
 
         grp_raw = ds_raw.groups['raw_bathymetry_data']
@@ -78,12 +78,20 @@ class AreaCompensation:
         data_backscatter = cls.find_bs_data(ds_process=ds_process, parent=parent)
         data_raypath = cls.find_ray_data(ds_process=ds_process, parent=parent)
 
+        if data_backscatter is None:
+            logger.error("Step not computed: Backscatter data not found")
+            return False
+
+        if data_raypath is None:
+            logger.error("Step not computed: Raypath data not found")
+            return False
+
         if p_method_type is AreaCorrectionEnum.flat_seafloor:
             data_out = cls.flat_seafloor(backscatter=data_backscatter,
                                          rx_angle=data_rx_angle, raypath=data_raypath,
-                                         rx_beamwidth_across=data_rx_bw_across[:, np.newaxis],
+                                         rx_beamwidth_across=data_rx_bw_across,
                                          tx_beamwidth_along=data_tx_be_along[:, np.newaxis],
-                                         pulse_length=data_pulse_length[:, np.newaxis],
+                                         pulse_len=data_pulse_length[:, np.newaxis],
                                          sound_speed=data_sound_speed[:, np.newaxis])
 
         elif p_method_type is AreaCorrectionEnum.local_slope:
@@ -132,20 +140,24 @@ class AreaCompensation:
     def flat_seafloor(cls,
                       backscatter: np.ma.MaskedArray, rx_angle: np.ma.MaskedArray, raypath: np.ma.MaskedArray,
                       rx_beamwidth_across: np.ndarray, tx_beamwidth_along: np.ndarray,
-                      pulse_length: np.ndarray, sound_speed: np.ndarray):
+                      pulse_len: np.ndarray, sound_speed: np.ndarray):
 
-        area_beam_limited = rx_beamwidth_across * tx_beamwidth_along * raypath ** 2
-        area_pulse_limited = ((sound_speed * pulse_length) / (2 * np.sin(np.deg2rad(np.abs(rx_angle))))) * (tx_beamwidth_along * raypath)
+        rx_beamwidth_across = np.deg2rad(rx_beamwidth_across)
+        tx_beamwidth_along = np.deg2rad(tx_beamwidth_along)
+        rx_angle = np.deg2rad(rx_angle)
 
-        area_correction = 10 * np.ma.log10(np.minimum(area_beam_limited, area_pulse_limited))
+        area_beam_lim = rx_beamwidth_across * tx_beamwidth_along * raypath ** 2
+        area_pulse_lim = ((sound_speed * pulse_len) / (2 * np.sin(np.abs(rx_angle)))) * (tx_beamwidth_along * raypath)
+
+        area_correction = 10 * np.ma.log10(np.minimum(area_beam_lim, area_pulse_lim))
 
         bs_corrected = backscatter - area_correction
 
         data_out = {
             'backscatter_data': bs_corrected,
             'area_correction': area_correction,
-            'area_corr_beam_limited': 10 * np.ma.log10(area_beam_limited),
-            'area_corr_pulse_limited': 10 * np.ma.log10(area_pulse_limited)
+            'area_corr_beam_limited': 10 * np.ma.log10(area_beam_lim),
+            'area_corr_pulse_limited': 10 * np.ma.log10(area_pulse_lim)
         }
 
         return data_out
