@@ -3,7 +3,7 @@ import logging
 from hyo2.openbst.lib.processing.process_methods.dicts import ProcessMethods
 
 from hyo2.openbst.lib.processing.process_methods.area_correction import AreaCorrectionParameters
-from hyo2.openbst.lib.processing.process_methods.radiation_pattern_compensation import RadiationPatternParameters
+from hyo2.openbst.lib.processing.process_methods.calibration import CalibrationParameters
 from hyo2.openbst.lib.processing.process_methods.interpolation import InterpParameters
 from hyo2.openbst.lib.processing.process_methods.raw_decoding import RawDecodeParameters
 from hyo2.openbst.lib.processing.process_methods.raytracing import RayTraceParams
@@ -21,7 +21,7 @@ class Parameters:
 
     def __init__(self):
         self.area_correction = AreaCorrectionParameters()
-        self.calibration = RadiationPatternParameters()
+        self.calibration = CalibrationParameters()
         self.rawdecode = RawDecodeParameters()
         self.static_gains = StaticGainParameters()
         self.source_level = SourceLevelParameters()

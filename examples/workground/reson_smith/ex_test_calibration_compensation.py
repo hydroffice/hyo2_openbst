@@ -5,7 +5,7 @@ from pathlib import Path
 from hyo2.openbst.lib.openbst import OpenBST
 from hyo2.openbst.lib.processing.auxilaries.calibration import Calibration
 from hyo2.abc.lib.testing_paths import TestingPaths
-from hyo2.openbst.lib.processing.process_methods.radiation_pattern_compensation import RadiationPatternEnum
+from hyo2.openbst.lib.processing.process_methods.calibration import CalibrationEnum
 
 
 logger = logging.getLogger(__name__)
@@ -21,7 +21,7 @@ raw_path = testing.download_data_folder().joinpath('raw_reson', '20190730_144835
 bst.add_raw(raw_path)
 bst.check_health()
 # Test 1: Check that we meet requirements = False
-bst.parameters.calibration.method_type = RadiationPatternEnum.calibration_file
+bst.parameters.calibration.method_type = CalibrationEnum.calibration_file
 bst.parameters.calibration.fit_curve = True
 bst.parameters.calibration.curve_order = 4
 bst.calibration()

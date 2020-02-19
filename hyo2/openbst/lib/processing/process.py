@@ -12,7 +12,7 @@ from hyo2.openbst.lib.processing.parameters import Parameters
 from hyo2.openbst.lib.processing.process_management.process_manager import ProcessManager
 from hyo2.openbst.lib.processing.process_methods.dicts import ProcessMethods
 
-from hyo2.openbst.lib.processing.process_methods.radiation_pattern_compensation import RadiationPatternCorrection
+from hyo2.openbst.lib.processing.process_methods.calibration import Calibration
 from hyo2.openbst.lib.processing.process_methods.area_correction import AreaCompensation
 from hyo2.openbst.lib.processing.process_methods.interpolation import Interpolation
 from hyo2.openbst.lib.processing.process_methods.raw_decoding import RawDecoding
@@ -112,12 +112,12 @@ class Process:
             cal_list = self.auxiliary_files.calibration_list
             ds_aux = Dataset(filename=self.auxiliary_files.path, mode='r')
 
-            data_out = RadiationPatternCorrection.radiation_pattern_correction(ds_process=ds_process,
-                                                                               ds_raw=ds_raw,
-                                                                               ds_aux=ds_aux,
-                                                                               parent=self.proc_manager.parent_process,
-                                                                               parameters=method_parameters,
-                                                                               calibration_list=cal_list)
+            data_out = Calibration.radiation_pattern_correction(ds_process=ds_process,
+                                                                ds_raw=ds_raw,
+                                                                ds_aux=ds_aux,
+                                                                parent=self.proc_manager.parent_process,
+                                                                parameters=method_parameters,
+                                                                calibration_list=cal_list)
             ds_aux.close()
 
         elif process_method is ProcessMethods.STATICGAIN:
@@ -192,7 +192,7 @@ class Process:
             process_written = AreaCompensation.write_data_to_nc(data_dict=data, grp_process=grp_process)
 
         elif process_method is ProcessMethods.CALIBRATION:
-            process_written = RadiationPatternCorrection.write_data_to_nc(data_dict=data, grp_process=grp_process)
+            process_written = Calibration.write_data_to_nc(data_dict=data, grp_process=grp_process)
 
         elif process_method is ProcessMethods.INTERPOLATION:
             process_written = Interpolation.write_data_to_nc(data_dict=data, grp_process=grp_process)
