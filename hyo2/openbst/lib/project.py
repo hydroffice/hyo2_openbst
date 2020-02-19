@@ -263,6 +263,19 @@ class Project:
     
     # ### Process ###
     # TODO: Significant code duplication below, need to reduce this
+    # TODO: Add error handling in the event we havent added a raw yet and are calling these functions
+    def calibration(self):
+        for path_hash in self.raws.raws_list:
+            raw_file_path = self.raws_folder.joinpath(path_hash + self.raws.ext)
+            process_file_path = self.process_folder.joinpath(path_hash + self.process.ext)
+
+            processed = self.process.run_process(process_method=self.process.process_method_types.CALIBRATION,
+                                                 process_file_path=process_file_path,
+                                                 raw_path=raw_file_path,
+                                                 parameters=self.parameters)
+            if processed is True:
+                self.info.manage_parent(parent=self.process.proc_manager.parent_process)
+                print('File corrected for radiation pattern correction: %s' % process_file_path.resolve())
 
     def raw_decode(self):
         for path_hash in self.raws.raws_list:

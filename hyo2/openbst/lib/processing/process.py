@@ -11,6 +11,7 @@ from hyo2.openbst.lib.processing.auxilaries.auxiliary import Auxiliary
 from hyo2.openbst.lib.processing.parameters import Parameters
 from hyo2.openbst.lib.processing.process_management.process_manager import ProcessManager
 from hyo2.openbst.lib.processing.process_methods.dicts import ProcessMethods
+from hyo2.openbst.lib.processing.process_methods.radiation_pattern_compensation import RadiationPatternCorrection
 from hyo2.openbst.lib.processing.process_methods.interpolation import Interpolation
 from hyo2.openbst.lib.processing.process_methods.raw_decoding import RawDecoding
 from hyo2.openbst.lib.processing.process_methods.raytracing import RayTrace
@@ -99,6 +100,18 @@ class Process:
         elif process_method is ProcessMethods.INTERPOLATION:
             data_out = Interpolation.interpolate(ds_raw=ds_raw, parameters=method_parameters)
 
+        elif process_method is ProcessMethods.CALIBRATION:
+            cal_list = self.auxiliary_files.calibration_list
+            ds_aux = Dataset(filename=self.auxiliary_files.path, mode='r')
+
+            data_out = RadiationPatternCorrection.radiation_pattern_correction(ds_process=ds_process,
+                                                                               ds_raw=ds_raw,
+                                                                               ds_aux=ds_aux,
+                                                                               parent=self.proc_manager.parent_process,
+                                                                               parameters=method_parameters,
+                                                                               calibration_list=cal_list)
+            ds_aux.close()
+
         elif process_method is ProcessMethods.STATICGAIN:
             data_out = StaticGainCorrection.static_correction(ds_process=ds_process,
                                                               ds_raw=ds_raw,
@@ -166,18 +179,28 @@ class Process:
         # Store the process
         if process_method is ProcessMethods.RAWDECODE:
             process_written = RawDecoding.write_data_to_nc(data_dict=data, grp_process=grp_process)
+
+        elif process_method is ProcessMethods.CALIBRATION:
+            process_written = RadiationPatternCorrection.write_data_to_nc(data_dict=data, grp_process=grp_process)
+
         elif process_method is ProcessMethods.INTERPOLATION:
             process_written = Interpolation.write_data_to_nc(data_dict=data, grp_process=grp_process)
+
         elif process_method is ProcessMethods.RAYTRACE:
             process_written = RayTrace.write_data_to_nc(data_dict=data, grp_process=grp_process)
+
         elif process_method is ProcessMethods.STATICGAIN:
             process_written = StaticGainCorrection.write_data_to_nc(data_dict=data, grp_process=grp_process)
+
         elif process_method is ProcessMethods.SOURCELEVEL:
             process_written = SourceLevel.write_data_to_nc(data_dict=data, grp_process=grp_process)
+
         elif process_method is ProcessMethods.TRANSMISSIONLOSS:
             process_written = TransmissonLoss.write_data_to_nc(data_dict=data, grp_process=grp_process)
+
         elif process_method is ProcessMethods.TVG:
             process_written = TVG.write_data_to_nc(data_dict=data, grp_process=grp_process)
+
         else:
             raise RuntimeError("Unrecognized processing method type: %s" % process_method)
 

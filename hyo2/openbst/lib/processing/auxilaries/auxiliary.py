@@ -205,7 +205,7 @@ class Auxiliary:
             var_frequency.units = "s-1"
             var_frequency[:] = cal_obj.frequency
 
-            var_angles = grp_cal.createVariable(varname="angles",
+            var_angles = grp_cal.createVariable(varname="angle",
                                                 datatype='f8',
                                                 dimensions=("angle",))
             var_angles.long_name = "angle_in_sonar_reference_frame"
