@@ -35,7 +35,7 @@ process_requirements = {
     ProcessMethods.GEOLOCATION: ProcessMethods.RAYTRACE,
     ProcessMethods.GRIDDING: ProcessMethods.GEOLOCATION,
     ProcessMethods.TRANSMISSIONLOSS: ProcessMethods.RAYTRACE,
-    ProcessMethods.INSONIFIEDAREA: ProcessMethods.INTERPOLATION,
+    ProcessMethods.INSONIFIEDAREA: ProcessMethods.RAYTRACE,
     ProcessMethods.ANGULARDEPENDENCE: ProcessMethods.INSONIFIEDAREA,
     ProcessMethods.DESPECKLE: None,
     ProcessMethods.ANTIALIASING: None

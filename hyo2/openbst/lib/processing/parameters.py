@@ -1,8 +1,10 @@
 import logging
 
-from hyo2.openbst.lib.processing.process_methods.radiation_pattern_compensation import RadiationPatternParameters
-from hyo2.openbst.lib.processing.process_methods.interpolation import InterpParameters
 from hyo2.openbst.lib.processing.process_methods.dicts import ProcessMethods
+
+from hyo2.openbst.lib.processing.process_methods.area_correction import AreaCorrectionParameters
+from hyo2.openbst.lib.processing.process_methods.calibration import CalibrationParameters
+from hyo2.openbst.lib.processing.process_methods.interpolation import InterpParameters
 from hyo2.openbst.lib.processing.process_methods.raw_decoding import RawDecodeParameters
 from hyo2.openbst.lib.processing.process_methods.raytracing import RayTraceParams
 from hyo2.openbst.lib.processing.process_methods.source_level import SourceLevelParameters
@@ -18,7 +20,8 @@ class Parameters:
     """Class to store processing parameters"""
 
     def __init__(self):
-        self.calibration = RadiationPatternParameters()
+        self.area_correction = AreaCorrectionParameters()
+        self.calibration = CalibrationParameters()
         self.rawdecode = RawDecodeParameters()
         self.static_gains = StaticGainParameters()
         self.source_level = SourceLevelParameters()
@@ -31,6 +34,8 @@ class Parameters:
     def get_process_params(self, process_type: ProcessMethods):
         if process_type == ProcessMethods.RAWDECODE:
             return self.rawdecode
+        elif process_type == ProcessMethods.INSONIFIEDAREA:
+            return self.area_correction
         elif process_type == ProcessMethods.CALIBRATION:
             return self.calibration
         elif process_type == ProcessMethods.INTERPOLATION:
