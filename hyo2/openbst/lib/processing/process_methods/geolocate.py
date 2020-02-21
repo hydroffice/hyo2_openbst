@@ -142,7 +142,27 @@ class Geolocation:
                     var_depth[:] = data
                     var_depth.long_name = 'depth_below_sonar'
                     var_depth.units = 'm'
-                return True
+                elif data_name == 'eastings':
+                    var_east = grp_process.createVariable(varname='eastings',
+                                                          datatype='f8',
+                                                          dimensions=('ping', 'beam'))
+                    var_east.long_name = 'eastings'
+                    var_east.units = 'm'
+
+                elif data_name == 'northings':
+                    var_north = grp_process.createVariable(varname='northings',
+                                                           datatype='f8',
+                                                           dimensions=('ping', 'beam'))
+                    var_north.long_name = 'northings'
+                    var_north.units = 'm'
+
+                elif data_name == 'zone_number':
+                    crs.zone_number = data
+
+                elif data_name == 'zone_letter':
+                    crs.zone_letter = data
+
+            return True
         except RuntimeError:
             return False
 
@@ -202,21 +222,21 @@ class Geolocation:
                                                                                        zone_letter=zn_letter)
 
             data_out = {
+                'geoid': geoid,
+                'projection': projection,
                 'latitude': lat_sounding,
                 'longitude': lon_sounding,
-                'depth': z_shiprf,
-                'geoid': geoid,
-                'projection': projection
+                'depth': z_shiprf
             }
-        else:
+        elif projection == 'UTM':
             data_out = {
-                'easting': ee_sounding,
-                'norting': nn_sounding,
-                'depth': z_shiprf,
+                'geoid': geoid,
+                'projection': projection,
                 'zone_letter': zn_letter,
                 'zone_number': zn_num,
-                'geoid': geoid,
-                'projection': projection
+                'eastings': ee_sounding,
+                'northings': nn_sounding,
+                'depth': z_shiprf,
             }
         return data_out
 

@@ -23,3 +23,5 @@ bst.raw_decode()
 bst.interpolation()
 bst.raytrace()
 bst.geolocate()
+bst.parameters.geolocate.prj = 'UTM'
+bst.geolocate()
