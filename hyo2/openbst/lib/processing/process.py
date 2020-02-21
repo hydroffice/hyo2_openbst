@@ -12,8 +12,9 @@ from hyo2.openbst.lib.processing.parameters import Parameters
 from hyo2.openbst.lib.processing.process_management.process_manager import ProcessManager
 from hyo2.openbst.lib.processing.process_methods.dicts import ProcessMethods
 
-from hyo2.openbst.lib.processing.process_methods.calibration import Calibration
 from hyo2.openbst.lib.processing.process_methods.area_correction import AreaCompensation
+from hyo2.openbst.lib.processing.process_methods.calibration import Calibration
+from hyo2.openbst.lib.processing.process_methods.geolocate import Geolocation
 from hyo2.openbst.lib.processing.process_methods.interpolation import Interpolation
 from hyo2.openbst.lib.processing.process_methods.raw_decoding import RawDecoding
 from hyo2.openbst.lib.processing.process_methods.raytracing import RayTrace
@@ -105,6 +106,12 @@ class Process:
                                                         parent=self.proc_manager.parent_process,
                                                         parameters=method_parameters)
 
+        elif process_method is ProcessMethods.GEOLOCATION:
+            data_out = Geolocation.geolocate(ds_process=ds_process,
+                                             ds_raw=ds_raw,
+                                             parent=self.proc_manager.parent_process,
+                                             parameters=method_parameters)
+
         elif process_method is ProcessMethods.INTERPOLATION:
             data_out = Interpolation.interpolate(ds_raw=ds_raw, parameters=method_parameters)
 
@@ -190,6 +197,9 @@ class Process:
 
         elif process_method is ProcessMethods.INSONIFIEDAREA:
             process_written = AreaCompensation.write_data_to_nc(data_dict=data, grp_process=grp_process)
+
+        elif process_method is ProcessMethods.GEOLOCATION:
+            process_written = Geolocation.write_data_to_nc(data_dict=data, grp_process=grp_process)
 
         elif process_method is ProcessMethods.CALIBRATION:
             process_written = Calibration.write_data_to_nc(data_dict=data, grp_process=grp_process)

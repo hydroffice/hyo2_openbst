@@ -8,7 +8,6 @@ from typing import Optional
 
 from hyo2.openbst.lib.nc_helper import NetCDFHelper
 
-
 logger = logging.getLogger(__name__)
 
 
@@ -60,8 +59,8 @@ class Geolocation:
         pass
 
     @classmethod
-    def geolocation(cls,ds_process: Dataset, ds_raw: Dataset,
-                    parent: str, parameters: GeolocateParameters):
+    def geolocate(cls, ds_process: Dataset, ds_raw: Dataset,
+                  parent: str, parameters: GeolocateParameters):
 
         p_method_type = parameters.method_type
         p_prj = parameters.prj
