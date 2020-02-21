@@ -3,6 +3,7 @@ import logging
 from hyo2.openbst.lib.processing.process_methods.dicts import ProcessMethods
 
 from hyo2.openbst.lib.processing.process_methods.area_correction import AreaCorrectionParameters
+from hyo2.openbst.lib.processing.process_methods.geolocate import GeolocateParameters
 from hyo2.openbst.lib.processing.process_methods.calibration import CalibrationParameters
 from hyo2.openbst.lib.processing.process_methods.interpolation import InterpParameters
 from hyo2.openbst.lib.processing.process_methods.raw_decoding import RawDecodeParameters
@@ -21,6 +22,7 @@ class Parameters:
 
     def __init__(self):
         self.area_correction = AreaCorrectionParameters()
+        self.geolocate = GeolocateParameters()
         self.calibration = CalibrationParameters()
         self.rawdecode = RawDecodeParameters()
         self.static_gains = StaticGainParameters()
@@ -36,6 +38,8 @@ class Parameters:
             return self.rawdecode
         elif process_type == ProcessMethods.INSONIFIEDAREA:
             return self.area_correction
+        elif process_type == ProcessMethods.GEOLOCATION:
+            return self.geolocate
         elif process_type == ProcessMethods.CALIBRATION:
             return self.calibration
         elif process_type == ProcessMethods.INTERPOLATION:

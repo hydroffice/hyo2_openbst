@@ -62,7 +62,8 @@ setup(
         "h5py",
         "lxml",
         'numpy',
-        'gdal'
+        'gdal',
+        'utm'
     ],
     python_requires='>=3.5',
     entry_points={
