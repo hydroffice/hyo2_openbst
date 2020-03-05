@@ -14,15 +14,20 @@ class Auxiliary:
     ext = ".nc"
 
     def __init__(self, process_path: Path) -> None:
+        self._filename = 'auxiliary.nc'
         self._ssp_name = "sound_speed_profiles"
         self._calibration_name = "calibration_files"
-        self._path = process_path.joinpath("auxiliary.nc")
+        self._path = process_path.joinpath(self._filename)
         self._nc()
         self._ds.close()
 
     @property
     def path(self) -> Path:
         return self._path
+
+    @property
+    def filename(self) -> Path:
+        return self._filename
 
     @property
     def ds(self) -> Dataset:

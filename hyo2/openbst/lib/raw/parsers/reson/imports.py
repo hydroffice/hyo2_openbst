@@ -343,6 +343,7 @@ class RawImport:
         var_time = grp_snippet.createVariable(varname="time", datatype="f8", dimensions=("ping",))
         var_time[:] = times_snippets
 
+        # TODO: I am casting here from a float to a signed int. This was not deeply thought about but deserves atten.
         var_detect_sample = grp_snippet.createVariable(varname="detect_sample",
                                                        datatype="i8",
                                                        dimensions=("ping", "beam_number"),
