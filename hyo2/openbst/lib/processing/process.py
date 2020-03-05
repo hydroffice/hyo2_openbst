@@ -52,6 +52,8 @@ class Process:
         raw_process_list = list()
         for hash_file in glob.glob(str(self._path.joinpath("*" + Process.ext))):
             hash_path = Path(hash_file)
+            if hash_path.name == self.auxiliary_files.filename:
+                continue
             raw_process_list.append(hash_path.name.split('.')[0])
         return raw_process_list
 

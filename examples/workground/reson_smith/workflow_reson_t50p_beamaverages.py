@@ -269,7 +269,7 @@ def run(raw_input, calib_input):
 
     # - Correct for the Transmission Loss
     # TODO: current assumption is spherical spreading
-    transmission_loss = 40 * np.log10(range_m) + 2 * (alpha[:, np.newaxis] / 1000) * range_m
+    transmission_loss = 40 * np.log10(range_m) + 2 * alpha * range_m
     datacorr_transmissionloss = datacorr_sourcelevel + transmission_loss
 
     # -- Plot the corrected values10

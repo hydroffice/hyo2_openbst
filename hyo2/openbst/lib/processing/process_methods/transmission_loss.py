@@ -120,7 +120,7 @@ class TransmissonLoss:
 
                     var_bs_data[:] = data
 
-                elif data_name == 'trasmission_loss':
+                elif data_name == 'transmission_loss':
                     var_tl_data = grp_process.createVariable(varname='transmission_loss_data',
                                                              datatype='f8',
                                                              dimensions=('ping', 'beam'))
@@ -147,9 +147,9 @@ class TransmissonLoss:
                              ray_path: np.ma.MaskedArray,
                              alpha: Union[float, np.ma.MaskedArray] = 0.0):
 
-        spreading_loss = 20 * np.ma.log10(ray_path)
-        absorption_loss = alpha / 1000 * ray_path
-        transmission_loss = 2 * spreading_loss + 2 * absorption_loss
+        spreading_loss = 2 * 20 * np.ma.log10(ray_path)
+        absorption_loss = 2 * (alpha / 1000) * ray_path
+        transmission_loss = spreading_loss + absorption_loss
 
         bs_corrected = backscatter + transmission_loss
 
