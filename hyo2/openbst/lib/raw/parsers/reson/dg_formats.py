@@ -2,6 +2,8 @@ import logging
 import struct
 from enum import Enum
 
+import numpy as np
+
 
 class ResonDatagrams(Enum):
 
@@ -364,13 +366,53 @@ class Data7004(ResonData):
 class Data7006(ResonData):
     def __init__(self, chunk):
         super().__init__()
-        self.header = None
-        self.data = None
+        self.desc = "Bathymetric Data"
+        self.parse_check = False
+        self.header_fmt = '<QIHIBBf'
+        self.header_size = struct.calcsize(self.header_fmt)
+
+        self.sonar_id = None
+        self.ping_number = None
+        self.multiping = None
+        self.num_rx_beams = None
+        self.flags = None
+        self.sound_velocity_flag = None
+        self.sound_velocity = None
+
+        self.range = None
+        self.quality = None
+        self.intensity = None
+        self.min_filter_info = None
+        self.max_filter_info = None
 
         self.parse(chunk)
 
     def parse(self, chunk):
-        pass
+        header_chunk = chunk[0:self.header_size]
+        header_unpack = struct.unpack(self.header_fmt, header_chunk)
+        self.sonar_id = header_unpack[0]
+        self.ping_number = header_unpack[1]
+        self.multiping = header_unpack[2]
+        self.num_rx_beams = header_unpack[3]
+        self.flags = header_unpack[4]
+        self.sound_velocity_flag = header_unpack[5]
+        self.sound_velocity = header_unpack[6]
+
+        data_chunk = chunk[self.header_size:]
+        n = self.num_rx_beams
+        n2 = 2*n
+        n3 = 3*n
+        n4 = 4*n
+        data_fmt = f'<{n}f{n}B{n}f{n}f{n}f'
+        data_unpack = struct.unpack(data_fmt, data_chunk)
+        self.range = data_unpack[:n]
+        self.quality = data_unpack[n:n2]
+        self.intensity = data_unpack[n2:n3]
+        self.min_filter_info = data_unpack[n3:n4]
+        self.max_filter_info = data_unpack[n4:]
+
+        self.parse_check = True
+        return self.parse_check
 
 
 class Data7007(ResonData):
@@ -424,6 +466,37 @@ class Data7010(ResonData):
         data_chunk = chunk[self.header_size:]
         fmt_tvg = '<%df' % self.num_samples
         self.tvg_curve = struct.unpack(fmt_tvg, data_chunk)
+
+        self.parse_check = True
+        return self.parse_check
+
+
+class Data7011(ResonData):
+    def __init__(self, chunk):
+        super().__init__()
+        self.desc = "Image Data"
+        self.parse_check = False
+        self.header_fmt = '<IHIIHHHI8I'
+        self.header_size = struct.calcsize(self.header_fmt)
+
+        self.ping_number = None
+        self.multiping = None
+
+        self.image = None
+        self.parse(chunk)
+
+    def parse(self, chunk):
+        header_chunk = chunk[0:self.header_size]
+        header_unpack = struct.unpack(self.header_fmt, header_chunk)
+        self.ping_number = header_unpack[0]
+        self.multiping = header_unpack[1]
+        width = header_unpack[2]
+        height = header_unpack[3]
+        depth = header_unpack[4]
+
+        data_chunk = chunk[self.header_size:]
+        assert depth == 1  # only 8-bit images are supported currently...
+        self.image = np.frombuffer(data_chunk, dtype=np.uint8).reshape(width, height, -1)
 
         self.parse_check = True
         return self.parse_check
@@ -681,6 +754,9 @@ def parse(chunk: bytes, dg_type: ResonDatagrams) -> ResonData:
 
     elif dg_type is ResonDatagrams.TVG:
         datapacket = Data7010(chunk)
+
+    elif dg_type is ResonDatagrams.IMAGEDATA:
+        datapacket = Data7011(chunk)
 
     elif dg_type is ResonDatagrams.BEAMFORMEDDATA:
         datapacket = Data7018(chunk)
